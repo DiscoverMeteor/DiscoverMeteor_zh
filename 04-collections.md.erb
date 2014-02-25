@@ -6,3 +6,328 @@ number: 4
 contents: Learn about Meteor's core feature, realtime collections.|Understand how Meteor's data synchronization works.|Integrate collections with our templates.|Turn our basic prototype into a functioning realtime application!
 ---
 
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Posts = new Meteor.Collection('posts');
+~~~
+<%= caption "collections/posts.js" %>
+
+<%= commit "4-1", "Added a posts collection" %>
+
+////
+
+<% note do %>
+
+### To Var Or Not To Var?
+
+////
+
+<% end %>
+
+////
+
+<% note do %>
+
+### Console vs Console vs Console
+
+////
+
+#### Terminal
+
+<%= screenshot "terminal", "The Terminal" %>
+
+- ////
+- ////
+- ////
+- ////
+
+#### Browser Console
+
+<%= screenshot "browser-console", "The Browser Console" %>
+
+- ////
+- ////
+- ////
+- ////
+
+#### Mongo Shell
+
+<%= screenshot "mongo-shell", "The Mongo Shell" %>
+
+- ////
+- ////
+- ////
+- ////
+
+////
+
+<% end %>
+
+### Server-Side Collections
+
+////
+
+////
+
+~~~bash
+> db.posts.insert({title: "A new post"});
+
+> db.posts.find();
+{ "_id": ObjectId(".."), "title" : "A new post"};
+~~~
+<%= caption "The Mongo Shell" %>
+
+<% note do %>
+
+### Mongo on Meteor.com
+
+////
+
+////
+
+<% end %>
+
+////
+
+### Client-Side Collections
+
+////
+
+////
+
+////
+
+<% note do %>
+
+### Introducing MiniMongo
+
+////
+
+<% end %>
+
+### Client-Server Communication
+
+////
+
+////
+
+////
+
+~~~bash
+> db.posts.find();
+{title: "A new post", _id: ObjectId("..")};
+~~~
+<%= caption "The Mongo Shell" %>
+
+~~~js
+❯ Posts.findOne();
+{title: "A new post", _id: LocalCollection._ObjectID};
+~~~
+<%= caption "First browser console" %>
+
+////
+
+~~~js
+❯ Posts.find().count();
+1
+❯ Posts.insert({title: "A second post"});
+'xxx'
+❯ Posts.find().count();
+2
+~~~
+<%= caption "First browser console" %>
+
+////
+
+~~~bash
+❯ db.posts.find();
+{title: "A new post", _id: ObjectId("..")};
+{title: "A second post", _id: 'yyy'};
+~~~
+<%= caption "The Mongo Shell" %>
+
+////
+
+////
+
+~~~js
+❯ Posts.find().count();
+2
+~~~
+<%= caption "Second browser console" %>
+
+////
+
+////
+
+////
+
+### Keeping it Real-time
+
+////
+
+////
+
+### Populating the Database
+
+////
+
+////
+
+////
+
+~~~bash
+$ meteor reset
+~~~
+
+////
+
+////
+
+~~~js
+if (Posts.find().count() === 0) {
+  Posts.insert({
+    title: 'Introducing Telescope',
+    author: 'Sacha Greif',
+    url: 'http://sachagreif.com/introducing-telescope/'
+  });
+  
+  Posts.insert({
+    title: 'Meteor',
+    author: 'Tom Coleman',
+    url: 'http://meteor.com'
+  });
+  
+  Posts.insert({
+    title: 'The Meteor Book',
+    author: 'Tom Coleman',
+    url: 'http://themeteorbook.com'
+  });
+}
+~~~
+<%= caption "server/fixtures.js" %>
+
+<%= commit "4-2", "Added data to the posts collection." %>
+
+////
+
+////
+
+### Wiring the data to our HTML with helpers
+
+////
+
+~~~js
+❯ Posts.find().fetch();
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+~~~js
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find();
+  }
+});
+~~~
+<%= caption "client/views/posts/posts_list.js" %>
+<%= highlight "2~4" %>
+
+<%= commit "4-3", "Wired collection into `postsList` template." %>
+
+<% note do %>
+
+### Find & Fetch
+
+////
+
+////
+
+<% end %>
+
+////
+
+<%= screenshot "4-3", "Using live data" %>
+
+////
+
+////
+
+~~~js
+❯ Posts.insert({
+  title: 'Meteor Docs', 
+  author: 'Tom Coleman', 
+  url: 'http://docs.meteor.com'
+});
+~~~
+<%= caption "Browser console" %>
+
+////
+
+<%= screenshot "4-4", "Adding posts via the console" %>
+
+////
+
+<% note do %>
+
+### Inspecting DOM Changes
+
+////
+
+////
+
+<% end %>
+
+### Connecting Collections: Publications and Subscriptions
+
+////
+
+////
+
+~~~bash
+$ meteor remove autopublish
+~~~
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.publish('posts', function() {
+  return Posts.find();
+});
+~~~
+<%= caption "server/publications.js" %>
+
+////
+
+~~~js
+Meteor.subscribe('posts');
+~~~
+<%= caption "client/main.js" %>
+
+<%= commit "4-4", "Removed `autopublish` and set up a basic publication." %>
+
+////
+
+### Conclusion
+
+////

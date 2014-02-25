@@ -6,3 +6,211 @@ number: 4.5
 sidebar: true
 contents: Understand how publications and subscriptions work.|Learn what the default Autopublish package does.|See a few more examples of publication patterns.
 ---
+
+////
+
+////
+
+////
+
+### The Olden Days
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### The Meteor Way
+
+////
+
+<%= diagram "client-server", "Pushing a subset of the database to the client.", "pull-right" %>
+
+////
+
+////
+
+////
+
+### Publishing
+
+////
+
+////
+
+////
+
+<%= diagram "collections-1", "All the posts contained in our database.", "pull-center" %>
+
+////
+
+////
+
+<%= diagram "collections-2", "Excluding flagged posts.", "pull-center" %>
+
+////
+
+~~~js
+// on the server
+Meteor.publish('posts', function() {
+  return Posts.find({flagged: false}); 
+});
+~~~
+
+////
+
+<% note do %>
+
+### DDP
+
+////
+
+////
+
+<% end %>
+
+### Subscribing
+
+////
+
+////
+
+////
+
+<%= diagram "collections-3", "Subscribing to Bob's posts will mirror them on the client.", "pull-center" %>
+
+////
+
+~~~js
+// on the server
+Meteor.publish('posts', function(author) {
+  return Posts.find({flagged: false, author: author});
+});
+~~~
+
+////
+
+~~~js
+// on the client
+Meteor.subscribe('posts', 'bob-smith');
+~~~
+
+////
+
+### Finding
+
+////
+
+<%= diagram "collections-4", "Selecting a subset of documents on the client.", "pull-center" %>
+
+////
+
+~~~js
+// on the client
+Template.posts.helpers({
+  posts: function(){
+    return Posts.find(author: 'bob-smith', category: 'JavaScript');
+  }
+});
+~~~
+
+////
+
+### Autopublish
+
+////
+
+////
+
+<%= diagram "autopublish", "Autopublish", "pull-center"%>
+
+////
+
+////
+
+////
+
+### Publishing Full Collections
+
+////
+
+~~~js 
+Meteor.publish('allPosts', function(){
+  return Posts.find();
+});
+~~~
+
+<%= diagram "fullcollection", "Publishing a full collection", "pull-center" %>
+
+////
+
+### Publishing Partial Collections
+
+////
+
+~~~js 
+Meteor.publish('somePosts', function(){
+  return Posts.find({'author':'Tom'});
+});
+~~~
+
+<%= diagram "partialcollection", "Publishing a partial collection", "pull-center" %>
+
+<% note do %>
+
+### Behind The Scenes
+
+////
+
+////
+
+////
+
+////
+
+- ////
+- ////
+- ////
+
+////
+
+<% end %>
+
+### Publishing Partial Properties
+
+////
+
+////
+
+~~~js
+Meteor.publish('allPosts', function(){
+  return Posts.find({}, {fields: {
+    date: false
+  }});
+});
+~~~
+
+<%= diagram "partialproperties", "Publishing partial properties", "pull-center" %>
+
+////
+
+~~~js
+Meteor.publish('allPosts', function(){
+  return Posts.find({'author':'Tom'}, {fields: {
+    date: false
+  }});
+});
+~~~
+
+### Summing Up
+
+////
+
+////
+
+////

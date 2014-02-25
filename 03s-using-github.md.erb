@@ -7,3 +7,132 @@ sidebar: true
 contents: Learn how to use GitHub to follow along with the book.
 ---
 
+////
+
+////
+
+### Being Committed
+
+////
+
+////
+
+////
+
+<%= screenshot "s3-1", "A Git commit as shown on GitHub." %>
+
+////
+
+////
+
+<%= screenshot "s3-2", "Modifying code." %>
+
+////
+
+////
+
+<%= screenshot "s3-3", "Deleting code." %>
+
+////
+
+### Browsing A Commit's Code
+
+////
+
+////
+
+<%= screenshot "s3-5", "The Browse code button." %>
+
+////
+
+<%= screenshot "s3-6", "The repository at commit 3-2." %>
+
+////
+
+<%= screenshot "s3-7", "The repository at commit 14-2." %>
+
+### Accessing A Commit Locally
+
+////
+
+////
+
+~~~bash
+$ git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
+~~~
+
+////
+
+////
+
+~~~bash
+$ cd github_microscope
+~~~
+
+////
+
+////
+
+~~~bash
+$ git checkout chapter3-1
+Note: checking out 'chapter3-1'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at a004b56... Added basic posts list template and static data.
+~~~
+
+////
+
+////
+
+////
+
+////
+
+<%= screenshot "s3-4", "Finding a commit hash." %>
+
+////
+
+~~~bash
+$ git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
+Previous HEAD position was a004b56... Added basic posts list template and static data.
+HEAD is now at c7af59e... Augmented the postsList route to take a limit
+~~~
+
+////
+
+~~~bash
+$ git checkout master
+~~~
+
+### Historical Perspective
+
+////
+
+////
+
+<%= screenshot "s3-8", "GitHub's History button." %>
+
+////
+
+<%= screenshot "s3-9", "Displaying a file's history." %>
+
+### The Blame Game
+
+////
+
+<%= screenshot "s3-10", "GitHub's Blame button." %>
+
+////
+
+<%= screenshot "s3-11", "GitHub's Blame view." %>
+
+////

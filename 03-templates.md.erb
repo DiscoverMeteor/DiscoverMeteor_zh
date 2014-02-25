@@ -5,3 +5,226 @@ date: 0003/01/01
 number: 3
 contents: Learn about Meteor's templating language, Handlebars.|Create your first three templates.|Learn how Meteor managers work.|Get a basic prototype working with static data.
 ---
+
+////
+
+////
+
+////
+
+~~~html
+<head>
+  <title>Microscope</title>
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <div class="navbar-inner">
+        <a class="brand" href="/">Microscope</a>
+      </div>
+    </header>
+    <div id="main" class="row-fluid">
+      {{> postsList}}
+    </div>
+  </div>
+</body>
+~~~
+<%= caption "client/main.html" %>
+
+////
+
+### Meteor Templates
+
+////
+
+////
+
+<% note do %>
+
+### Finding Files
+
+////
+
+////
+
+<% end %>
+
+////
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/posts_list.html" %>
+
+////
+
+~~~html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+    </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/post_item.html" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+<% note do %>
+
+### Going Further
+
+////
+
+<% end %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### Template Managers
+
+////
+
+////
+
+////
+
+<% note do %>
+
+### Managers?
+
+////
+
+////
+
+////
+
+<% end %>
+
+////
+
+~~~js
+var postsData = [
+  {
+    title: 'Introducing Telescope',
+    author: 'Sacha Greif',
+    url: 'http://sachagreif.com/introducing-telescope/'
+  }, 
+  {
+    title: 'Meteor',
+    author: 'Tom Coleman',
+    url: 'http://meteor.com'
+  }, 
+  {
+    title: 'The Meteor Book',
+    author: 'Tom Coleman',
+    url: 'http://themeteorbook.com'
+  }
+];
+Template.postsList.helpers({
+  posts: postsData
+});
+~~~
+<%= caption "client/views/posts/posts_list.js" %>
+
+////
+
+<%= screenshot "3-1", "Our first templates with static data" %>
+
+<%= commit "3-1", "Added basic posts list template and static data." %>
+
+////
+
+////
+
+////
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/posts_list.html" %>
+
+////
+
+### The Value of "this"
+
+////
+
+~~~js
+Template.postItem.helpers({
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  }
+});
+~~~
+<%= caption "client/views/posts/post_item.js" %>
+
+<%= commit "3-2", "Setup a `domain` helper on the `postItem`." %>
+
+////
+
+<%= screenshot "3-2", "Displaying domains for each links." %>
+
+////
+
+////
+
+////
+
+////
+
+<% note do %>
+
+### JavaScript Magic
+
+////
+
+////
+
+////
+
+<% end %>
+
+////
+
+<% note do %>
+
+### Hot Code Reload
+
+////
+
+////
+
+////
+
+<% end %>

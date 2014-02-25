@@ -6,3 +6,327 @@ number: 5
 contents: Learn about routing in Meteor.|Create post discussion pages, with unique URLs.|Learn how to link to those URLs properly.
 ---
 
+////
+
+////
+
+////
+
+### Adding the Iron Router Package
+
+////
+
+////
+
+////
+
+~~~bash
+$ mrt add iron-router
+~~~
+<%= caption "Terminal" %>
+
+////
+
+////
+
+<% note do %>
+
+### Router Vocabulary
+
+////
+
+- ////
+- ////
+- ////
+- ////
+- ////
+- ////
+- ////
+- ////
+
+////
+
+<% end %>
+
+### Routing: Mapping URLs To Templates
+
+////
+
+////
+
+////
+
+<%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
+
+////
+
+////
+
+~~~html
+<head>
+  <title>Microscope</title>
+</head>
+~~~
+<%= caption "client/main.html" %>
+
+////
+
+~~~html
+<template name="layout">
+  <div class="container">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">Microscope</a>
+    </div>
+  </header>
+  <div id="main" class="row-fluid">
+    {{yield}}
+  </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/application/layout.html" %>
+
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout'
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+});
+~~~
+<%= caption "lib/router.js"%>
+
+////
+
+<% note do %>
+
+### The `/lib` folder
+
+////
+
+////
+
+<% end %>
+
+### Named Routes
+
+////
+
+////
+
+////
+
+////
+
+~~~html
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+  </div>
+</header>
+
+//...
+~~~
+<%= caption "client/views/application/layout.html"%>
+<%= highlight "3" %>
+
+<%= commit "5-1", "Very basic routing." %>
+
+### Waiting on Data
+
+////
+
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { return Meteor.subscribe('posts'); }
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "3,4" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~html
+<template name="loading">
+  {{>spinner}}
+</template>
+~~~
+<%= caption "client/views/includes/loading.html" %>
+
+////
+
+<%= commit "5-2", "Wait on the post subscription." %>
+
+<% note do %>
+
+### A First Glance At Reactivity
+
+////
+
+////
+
+////
+
+<% end %>
+
+### Routing To A Specific Post
+
+////
+
+////
+
+////
+
+~~~html
+<template name="postPage">
+  {{> postItem}}
+</template>
+~~~
+<%= caption "client/views/posts/post_page.html" %>
+
+////
+
+////
+
+~~~js
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+  
+  this.route('postPage', {
+    path: '/posts/:_id'
+  });
+});
+
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "4~6" %>
+
+////
+
+////
+
+////
+
+////
+
+<%= diagram "router-diagram-2", "The data context.", "pull-center" %>
+
+////
+
+~~~js
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+  
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+});
+
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "4~7" %>
+
+////
+
+////
+
+<% note do %>
+
+### More About Data Contexts
+
+////
+
+////
+
+~~~html
+{{#each widgets}}
+  {{> widgetItem}}
+{{/each}}
+~~~
+
+////
+
+~~~html
+{{#with myWidget}}
+  {{> widgetPage}}
+{{/with}}
+~~~
+
+////
+
+~~~js
+{{> widgetPage myWidget}}
+~~~
+
+<% end %>
+
+### Using a Dynamic Named Route Helper
+
+////
+
+////
+
+~~~html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+    </div>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/post_item.html"%>
+<%= highlight "6" %>
+<%= commit "5-3", "Routing to a single post page." %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+<%= screenshot "5-2", "A single post page." %>
+
+<% note do %>
+
+### HTML5 pushState
+
+////
+
+////
+
+////
+
+<% end %>

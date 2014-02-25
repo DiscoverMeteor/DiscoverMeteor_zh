@@ -6,3 +6,212 @@ number: 2.5
 sidebar: true
 contents: Learn how to deploy on Meteor.com.|Learn how to deploy on Modulus.|Learn how to deploy on your own server using Meteor Up.
 ---
+
+////
+
+////
+
+////
+
+<% note do %>
+
+### Introducing Sidebars
+
+////
+
+////
+
+<% end %>
+
+### Deploying On Meteor
+
+////
+
+////
+
+~~~bash
+$ meteor deploy myapp.meteor.com
+~~~
+
+////
+
+////
+
+### Password Protection
+
+////
+
+~~~~bash
+$ meteor deploy myapp.meteor.com -p
+~~~~
+
+////
+
+////
+
+### Deploying On Modulus
+
+////
+
+<% note do %>
+
+### Demeteorizer
+
+////
+
+<% end %>
+
+////
+
+~~~bash
+$ npm install -g modulus
+~~~
+
+////
+
+~~~bash
+$ modulus login
+~~~
+
+////
+
+~~~bash
+$ modulus project create
+~~~
+
+////
+
+////
+
+~~~bash
+$ modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
+~~~
+
+////
+
+~~~bash
+$ modulus deploy
+~~~
+
+////
+
+### Meteor Up
+
+////
+
+////
+
+////
+
+////
+
+### Initializing Meteor Up
+
+////
+
+~~~bash
+$ npm install -g mup
+~~~
+
+////
+
+////
+
+////
+
+~~~bash
+$ mkdir ~/microscope-deploy
+$ cd ~/microscope-deploy
+$ mup init
+~~~
+
+<% note do %>
+
+### Sharing with Dropbox
+
+////
+
+<% end %>
+
+### Meteor Up Configuration
+
+////
+
+////
+
+////
+
+~~~js
+{
+  //server authentication info
+  "servers": [{
+    "host": "hostname",
+    "username": "root",
+    "password": "password"
+    //or pem file (ssh based authentication)
+    //"pem": "~/.ssh/id_rsa"
+  }],
+
+  //install MongoDB in the server
+  "setupMongo": true,
+
+  //location of app (local directory)
+  "app": "/path/to/the/app",
+
+  //configure environmental
+  "env": {
+    "ROOT_URL": "http://supersite.com"
+  }
+}
+~~~
+<%= caption "mup.json" %>
+
+////
+
+**Server Authentication**
+
+////
+
+////
+
+**MongoDB Configuration**
+
+////
+
+////
+
+**Meteor App Path**
+
+////
+
+**Environment Variables**
+
+////
+
+### Setting Up and Deploying
+
+////
+
+~~~bash
+$ mup setup
+~~~
+
+////
+
+~~~bash
+$ mup deploy
+~~~
+
+////
+
+### Displaying Logs
+
+////
+
+~~~bash
+$ mup logs -f
+~~~
+
+////
+
+////
