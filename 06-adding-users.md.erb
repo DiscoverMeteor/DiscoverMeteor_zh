@@ -6,3 +6,164 @@ number: 6
 contents: Learn about user accounts in Meteor.|Add all the authentication we'll need for Microscope.|Use the built-in accounts-ui package to get an instant user interface.
 ---
 
+////
+
+////
+
+////
+
+### Accounts: users made simple
+
+////
+
+////
+
+////
+
+~~~bash
+$ mrt add accounts-ui-bootstrap-dropdown
+$ mrt add accounts-password
+~~~
+<%= caption "Terminal" %>
+
+////
+
+////
+
+~~~html
+<template name="layout">
+  <div class="container">
+    {{>header}}
+    <div id="main" class="row-fluid">
+      {{yield}}
+    </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/application/layout.html" %>
+<%= highlight "6" %>
+
+~~~html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav pull-right">
+          <li>{{loginButtons}}</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+</template>
+~~~
+<%= caption "client/views/includes/header.html" %>
+
+////
+
+<%= screenshot "6-1", "Meteor's built-in accounts UI" %>
+
+////
+
+////
+
+~~~js
+Accounts.ui.config({
+  passwordSignupFields: 'USERNAME_ONLY'
+});
+~~~
+<%= caption "client/helpers/config.js" %>
+
+<%= commit "6-1", "Added accounts and added template to the header" %>
+
+### Creating Our First User
+
+////
+
+////
+
+~~~js
+❯ Meteor.users.findOne();
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+~~~js
+❯ Meteor.users.find().count();
+1
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+~~~bash
+> db.users.count()
+2
+~~~
+<%= caption "Mongo console" %>
+
+////
+
+### A Mystery Publication!
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~bash
+> db.users.findOne()
+{
+  "createdAt" : 1365649830922,
+  "_id" : "kYdBd9hr3fWPGPcii",
+  "services" : {
+    "password" : {
+      "srp" : {
+        "identity" : "qyFCnw4MmRbmGyBdN",
+        "salt" : "YcBjRa7ArXn5tdCdE",
+        "verifier" : "df2c001edadf4e475e703fa8cd093abd4b63afccbca48fad1d2a0986ff2bcfba920d3f122d358c4af0c287f8eaf9690a2c7e376d701ab2fe1acd53a5bc3e843905d5dcaf2f1c47c25bf5dd87764d1f58c8c01e4539872a9765d2b27c700dcdedadf5ac82521467356d3f91dbeaf9848158987c6d359c5423e6b9cabf34fa0b45"
+      }
+    },
+    "resume" : {
+      "loginTokens" : [
+        {
+          "token" : "BMHipQqjfLoPz7gru",
+          "when" : 1365649830922
+        }
+      ]
+    }
+  },
+  "username" : "tmeasday"
+}
+~~~
+<%= caption "Mongo console" %>
+
+////
+
+~~~js
+❯ Meteor.users.findOne();
+Object {_id: "kYdBd9hr3fWPGPcii", username: "tmeasday"}
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+

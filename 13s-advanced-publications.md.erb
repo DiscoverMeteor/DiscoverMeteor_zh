@@ -6,3 +6,177 @@ number: 13.5
 sidebar: true
 contents: Learn more advanced patterns for manipulating publications.|See just how flexible publications and subscriptions can get. 
 ---
+
+////
+ 
+### Publishing a Collection Multiple Times
+
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+<%= diagram "doublecollection", "Publishing a collection twice", "pull-center" %>
+
+~~~js
+Meteor.publish('allPosts', function() {
+  return Posts.find({}, {fields: {title: true, author: true}});
+});
+
+Meteor.publish('postDetail', function(postId) {
+  return Posts.find(postId);
+});
+~~~
+
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+~~~js
+Meteor.publish('newPosts', function(limit) {
+  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+});
+
+Meteor.publish('bestPosts', function(limit) {
+  return Posts.find({}, {sort: {votes: -1, submitted: -1}, limit: limit});
+});
+~~~
+<%= caption "server/publications.js" %>
+
+### Subscribing to a Publication Multiple Times
+
+////
+ 
+////
+ 
+////
+ 
+<%= diagram "subscribetwice", "Subscribing twice to one publication", "pull-center" %>
+
+////
+ 
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+~~~
+
+////
+ 
+~~~js
+Meteor.subscribe('posts', {submitted: -1, limit: 10});
+Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
+~~~
+
+////
+ 
+////
+ 
+### Multiple Collections in a Single Subscription
+
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+<%= diagram "multiplecollections", "Two collections in one subscription", "pull-center" %>
+
+~~~js
+Meteor.publish('topComments', function(topPostIds) {
+  return Comments.find({postId: topPostIds});
+});
+~~~
+
+////
+ 
+////
+ 
+~~~js
+Meteor.publish('topPosts', function(limit) {
+  var sub = this, commentHandles = [], postHandle = null;
+  
+  // send over the top two comments attached to a single post
+  function publishPostComments(postId) {
+    var commentsCursor = Comments.find({postId: postId}, {limit: 2});
+    commentHandles[post._id] = 
+      Meteor.Collection._publishCursor(commentsCursor, sub, 'comments');
+  }
+    
+  postHandle = Posts.find({}, {limit: limit}).observeChanges({
+    added: function(id, post) {
+      publishPostComments(post._id);
+      sub.added('posts', id, post);
+    },
+    changed: function(id, fields) {
+      sub.changed('posts', id, fields);
+    },
+    removed: function(id) {
+      // stop observing changes on the post's comments
+      commentHandles[id] && commentHandles[id].stop();
+      // delete the post
+      sub.removed('posts', id);
+    }
+  });
+  
+  sub.ready();
+  
+  // make sure we clean everything up (note `_publishCursor`
+  //   does this for us with the comment observers)
+  sub.onStop(function() { postsHandle.stop(); });
+});
+~~~
+
+////
+ 
+////
+ 
+////
+ 
+### Linking different collections
+
+////
+ 
+<%= diagram "linkedcollections", "One collection for two subscriptions", "pull-center" %>
+
+////
+ 
+////
+ 
+////
+ 
+////
+ 
+~~~js
+  Meteor.publish('videos', function() {
+    var sub = this;
+    
+    var videosCursor = Resources.find({type: 'video'});
+    Meteor.Collection._publishCursor(videosCursor, sub, 'videos');
+    
+    // _publishCursor doesn't call this for us in case we do this more than once.
+    sub.ready();
+  });
+~~~
+
+////
+ 
+////
+ 

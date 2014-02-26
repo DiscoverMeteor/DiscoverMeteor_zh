@@ -5,3 +5,265 @@ date: 0014/01/01
 points: 10
 contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion of new posts.
 ---
+
+////
+
+### Meteor & the DOM
+
+////
+
+////
+
+////
+
+////
+
+1. ////
+2. ////
+3. ////
+4. ////
+5. ////
+6. ////
+
+////
+
+<%= diagram "animation_diagram", "Swtiching two posts", "pull-center" %>
+
+////
+
+////
+
+////
+
+### Proper Timing
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### CSS Positioning
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~css
+.post{
+  position:relative;
+  transition:all 300ms 0ms ease-in;
+}
+~~~
+<%= caption "client/stylesheets/style.css" %>
+
+////
+
+////
+
+<% note do %>
+
+### Position:absolute
+
+////
+
+////
+
+<% end %>
+
+### Total Recall
+
+////
+
+////
+
+> //// 
+
+////
+
+////
+
+### Ranking Posts
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Template.postsList.helpers({
+  postsWithRank: function() {
+    this.posts.rewind();
+    return this.posts.map(function(post, index, cursor) {
+      post._rank = index;
+      return post;
+    });
+  }
+});
+~~~
+<%= caption "/client/views/posts/posts_list.js" %>
+<%= highlight "2~8" %>
+
+////
+
+////
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each postsWithRank}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if nextPath}}
+      <a class="load-more" href="{{nextPath}}">Load more</a>
+    {{/if}}
+  </div>
+</template>
+~~~
+<%= caption "/client/views/posts/posts_list.html" %>
+
+<%= highlight "3" %>
+
+<% note do %>
+
+### Be Kind, Rewind
+
+////
+
+////
+
+////
+
+<% end %>
+
+### Putting it together
+
+////
+
+~~~js
+Template.postItem.helpers({
+  //...
+});
+
+Template.postItem.rendered = function(){
+  // animate post from previous position to new position
+  var instance = this;
+  var rank = instance.data._rank;
+  var $this = $(this.firstNode);
+  var postHeight = 80;
+  var newPosition = rank * postHeight;
+ 
+  // if element has a currentPosition (i.e. it's not the first ever render)
+  if (typeof(instance.currentPosition) !== 'undefined') {
+    var previousPosition = instance.currentPosition;
+    // calculate difference between old position and new position and send element there
+    var delta = previousPosition - newPosition;
+    $this.css("top", delta + "px");
+  }
+  
+  // let it draw in the old position, then..
+  Meteor.defer(function() {
+    instance.currentPosition = newPosition;
+    // bring element back to its new original position
+    $this.css("top",  "0px");
+  }); 
+};
+
+Template.postItem.events({
+  //...
+});
+~~~
+<%= caption "/client/views/posts/post_item.js" %>
+<%= highlight "5~27" %>
+
+<%= commit "14-1", "Added post reordering animation." %>
+
+////
+
+////
+
+////
+
+### Animating New Posts
+
+////
+
+////
+
+1. ////
+2. ////
+
+////
+
+////
+
+~~~js
+Template.postItem.helpers({
+  //...
+});
+
+Template.postItem.rendered = function(){
+  // animate post from previous position to new position
+  var instance = this;
+  var rank = instance.data._rank;
+  var $this = $(this.firstNode);
+  var postHeight = 80;
+  var newPosition = rank * postHeight;
+  
+  // if element has a currentPosition (i.e. it's not the first ever render)
+  if (typeof(instance.currentPosition) !== 'undefined') {
+    var previousPosition = instance.currentPosition;
+    // calculate difference between old position and new position and send element there
+    var delta = previousPosition - newPosition;
+    $this.css("top", delta + "px");
+  } else {
+    // it's the first ever render, so hide element
+    $this.addClass("invisible");
+  }
+  
+  // let it draw in the old position, then..
+  Meteor.defer(function() {
+    instance.currentPosition = newPosition;
+    // bring element back to its new original position
+    $this.css("top",  "0px").removeClass("invisible");
+  }); 
+};
+
+Template.postItem.events({
+  //...
+});
+~~~
+<%= caption "/client/views/posts/post_item.js" %>
+<%= highlight "19~22,28" %>
+
+<%= commit "14-2", "Fade items in when they are drawn." %>
+
+////
+
+<% note do %>
+
+### CSS & JavaScript
+
+////
+
+////
+
+<% end %>
+
+////

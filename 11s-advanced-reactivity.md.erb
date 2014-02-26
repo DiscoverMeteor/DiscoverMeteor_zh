@@ -6,3 +6,132 @@ number: 11.5
 sidebar: true
 contents: Learn about how to create reactive data sources in Meteor.|Create a simple example of a reactive data source.|See how Deps compares to AngularJS.
 ---
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+currentLikeCount = 0;
+Meteor.setInterval(function() {
+  var postId;
+  if (Meteor.user() && postId = Session.get('currentPostId')) {
+    getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
+      function(err, count) {
+        if (!err)
+          currentLikeCount = count;
+      });
+  }
+}, 5 * 1000);
+~~~
+
+////
+
+~~~js
+Template.postItem.likeCount = function() {
+  return currentLikeCount;
+}
+~~~
+
+////
+
+### Tracking Reactivity: Computations
+
+////
+
+////
+
+////
+
+### Turning a Variable Into a Reactive Function
+
+////
+
+~~~js
+var _currentLikeCount = 0;
+var _currentLikeCountListeners = new Deps.Dependency();
+
+currentLikeCount = function() {
+  _currentLikeCountListeners.depend();
+  return _currentLikeCount;
+}
+
+Meteor.setInterval(function() {
+  var postId;
+  if (Meteor.user() && postId = Session.get('currentPostId')) {
+    getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
+      function(err, count) {
+        if (!err && count !== _currentLikeCount) {
+          _currentLikeCount = count;
+          _currentLikeCountListeners.changed();
+        }
+      });
+  }
+}, 5 * 1000);
+~~~
+<%= highlight "1~7,14~17" %>
+
+////
+
+////
+
+### Template Computation and Controlling Redraws
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### Comparing Deps to Angular
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+$rootScope.$watch('currentLikeCount', function(likeCount) {
+  console.log('Current like count is ' + likeCount);
+});
+~~~
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.setInterval(function() {
+  getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
+    function(err, count) {
+      if (!err) {
+        $rootScope.currentLikeCount = count;
+        $rootScope.$apply();
+      }
+    });
+}, 5 * 1000);
+~~~
+<%= highlight "5~6" %>
+
+////

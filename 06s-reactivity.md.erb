@@ -7,3 +7,100 @@ sidebar: true
 contents: Learn about Meteor's reactive code dependency system.|Understand the motivations and how it makes code declarative.|Learn to use advanced code that uses reactive data.
 ---
 
+////
+
+////
+
+////
+
+////
+
+~~~js
+Posts.find().observe({
+  added: function(post) {
+    // when 'added' callback fires, add HTML element
+    $('ul').append('<li id="' + post._id + '">' + post.title + '</li>');
+  },
+  changed: function(post) {
+    // when 'changed' callback fires, modify HTML element's text
+    $('ul li#' + post._id).text(post.title);
+  },
+  removed: function(post) {
+    // when 'removed' callback fires, remove HTML element
+    $('ul li#' + post._id).remove();
+  }
+});
+~~~
+
+////
+
+<% note do %>
+
+### When *Should* We Use `observe()`?
+
+////
+
+////
+
+<% end %>
+
+### A Declarative Approach
+
+////
+
+////
+
+////
+
+~~~html
+<template name="postsList">
+  <ul>
+    {{#each posts}}
+      <li>{{title}}</li>
+    {{/each}}
+  </ul>
+</template>
+~~~
+
+////
+
+~~~js
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find();
+  }
+});
+~~~
+
+////
+
+### Dependency Tracking in Meteor: Computations
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### Setting Up a Computation
+
+////
+
+~~~js
+Deps.autorun(function() {
+  console.log('There are ' + Posts.find().count() + ' posts');
+});
+~~~
+
+////
+
+~~~js
+> Posts.insert({title: 'New Post'});
+There are 4 posts.
+~~~
+
+////

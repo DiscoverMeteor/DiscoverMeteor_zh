@@ -6,3 +6,151 @@ number: 5.5
 sidebar: true
 contents: Learn about the Meteor Session|Learn about the autorun function|Learn about Hot Code Reload
 ---
+
+////
+
+////
+
+////
+
+### The Meteor Session
+
+////
+
+////
+
+////
+
+### Changing the Session
+
+////
+
+~~~js
+❯ Session.set('pageTitle', 'A different title');
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+~~~html
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="{{pathFor 'postsList'}}">{{pageTitle}}</a>
+  </div>
+</header>
+~~~
+<%= caption "client/views/application/layout.html"%>
+
+~~~js
+Template.layout.helpers({
+  pageTitle: function() { return Session.get('pageTitle'); }
+});
+~~~
+<%= caption "client/views/application/layout.js"%>
+
+////
+
+////
+
+~~~js
+❯ Session.set('pageTitle', 'A brand new title');
+~~~
+<%= caption "Browser console" %>
+
+////
+
+<% note do %>
+
+### Identical Changes
+
+////
+
+<% end %>
+
+### Introducing Autorun
+
+////
+
+////
+
+~~~js
+helloWorld = function() {
+  alert(Session.get('message'));
+}
+~~~
+
+////
+
+////
+
+////
+
+~~~js
+❯ Deps.autorun( function() { console.log('Value is: ' + Session.get('pageTitle')); } );
+Value is: A brand new title
+~~~
+<%= caption "Browser console" %>
+
+////
+
+~~~js
+❯ Session.set('pageTitle', 'Yet another value');
+Value is: Yet another value
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+~~~js
+Deps.autorun(function() {
+  alert(Session.get('message'));
+});
+~~~
+
+////
+
+### Hot Code Reload
+
+////
+
+////
+
+////
+
+~~~js
+❯ Session.set('pageTitle', 'A brand new title');
+❯ Session.get('pageTitle');
+'A brand new title'
+~~~
+<%= caption "Browser console" %>
+
+////
+
+~~~js
+❯ Session.get('pageTitle');
+'A brand new title'
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+////
+
+~~~js
+❯ Session.get('pageTitle');
+null
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+1. ////
+2. ////

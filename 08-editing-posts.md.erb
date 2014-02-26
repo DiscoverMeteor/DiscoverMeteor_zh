@@ -6,3 +6,260 @@ number: 8
 contents: Add a form for editing your posts.|Set up edit permissions.|Restrict which properties can be edited.
 ---
 
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout'
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postEdit', {
+    path: '/posts/:_id/edit',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postSubmit', {
+    path: '/submit'
+  });
+});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    if (Meteor.loggingIn())
+      this.render('loading')
+    else
+      this.render('accessDenied');
+  
+    this.stop();
+  }
+}
+
+Router.before(requireLogin, {only: 'postSubmit'});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "12~15" %>
+
+### The Post Edit Template
+
+////
+
+~~~html
+<template name="postEdit">
+  <form class="main">
+    <div class="control-group">
+        <label class="control-label" for="url">URL</label>
+        <div class="controls">
+            <input name="url" type="text" value="{{url}}" placeholder="Your URL"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="title">Title</label>
+        <div class="controls">
+            <input name="title" type="text" value="{{title}}" placeholder="Name your post"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" value="Submit" class="btn btn-primary submit"/>
+        </div>
+    </div>
+    <hr/>
+    <div class="control-group">
+        <div class="controls">
+            <a class="btn btn-danger delete" href="#">Delete post</a>
+        </div>
+    </div>
+  </form>
+</template>
+~~~
+<%= caption "client/views/posts/post_edit.html" %>
+
+////
+
+~~~js
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // display the error to the user
+        alert(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  
+  'click .delete': function(e) {
+    e.preventDefault();
+    
+    if (confirm("Delete this post?")) {
+      var currentPostId = this._id;
+      Posts.remove(currentPostId);
+      Router.go('postsList');
+    }
+  }
+});
+~~~
+<%= caption "client/views/posts/post_edit.js" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### Adding Links
+
+////
+
+~~~html
+<template name="postItem">
+  <div class="post">
+    <div class="post-content">
+      <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
+      <p>
+        submitted by {{author}}
+        {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
+      </p>
+    </div>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/post_item.html" %>
+<%= highlight "5~8" %>
+
+////
+
+~~~js
+Template.postItem.helpers({
+  ownPost: function() {
+    return this.userId == Meteor.userId();
+  },
+  domain: function() {
+    var a = document.createElement('a');
+    a.href = this.url;
+    return a.hostname;
+  }
+});
+~~~
+<%= caption "client/views/posts/post_item.js" %>
+<%= highlight "2~4" %>
+
+<%= screenshot "8-1", "Post edit form." %>
+
+<%= commit "8-1", "Added edit posts form." %>
+
+////
+
+### Setting Up Permissions
+
+////
+
+////
+
+~~~js
+// check that the userId specified owns the documents
+ownsDocument = function(userId, doc) {
+  return doc && doc.userId === userId;
+}
+~~~
+<%= caption "lib/permissions.js" %>
+
+////
+
+////
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Meteor.methods({
+  ...
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "3~6" %>
+
+<%= commit "8-2", "Added basic permission to check the post's owner." %>
+
+### Limiting Edits
+
+////
+
+////
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  update: ownsDocument,
+  remove: ownsDocument
+});
+
+Posts.deny({
+  update: function(userId, post, fieldNames) {
+    // may only edit the following two fields:
+    return (_.without(fieldNames, 'url', 'title').length > 0);
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "8~13" %>
+
+<%= commit "8-3", "Only allow changing certain fields of posts." %>
+
+////
+
+////
+
+<% note do %>
+
+### Method Calls vs Client-side Data Manipulation
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+- ////
+- ////
+- ////
+
+<% end %>
+

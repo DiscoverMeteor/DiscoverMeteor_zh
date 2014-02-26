@@ -5,3 +5,216 @@ date: 0009/01/01
 number: 9
 contents: Create a better mechanism for displaying errors and messages.|Learn how to use `Template.rendered` to know when a user has seen an error.|Use a router filter to make sure errors are only seen once.
 ---
+
+////
+
+////
+
+### Introducing Local Collections
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+// Local (client-only) collection
+Errors = new Meteor.Collection(null);
+~~~
+<%= caption "client/helpers/errors.js" %>
+
+////
+
+~~~js
+throwError = function(message) {
+  Errors.insert({message: message})
+}
+~~~
+<%= caption "client/helpers/errors.js" %>
+
+////
+
+### Displaying errors
+
+////
+
+~~~html
+<template name="layout">
+  <div class="container">
+    {{> header}}
+    {{> errors}}
+    <div id="main" class="row-fluid">
+      {{yield}}
+    </div>
+  </div>
+</template>
+~~~
+<%= caption "client/views/application/layout.html" %>
+<%= highlight "7" %>
+
+////
+
+~~~html
+<template name="errors">
+  <div class="errors row-fluid">
+    {{#each errors}}
+      {{> error}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="error">
+  <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    {{message}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/includes/errors.html" %>
+
+<% note do %>
+
+### Twin Templates
+
+////
+
+////
+
+<% end %>
+
+////
+
+~~~js
+Template.errors.helpers({
+  errors: function() {
+    return Errors.find();
+  }
+});
+~~~
+<%= caption "client/views/includes/errors.js" %>
+
+<%= commit "9-1", "Basic error reporting." %>
+
+### Creating errors
+
+////
+
+////
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
+        
+        if (error.error === 302)
+          Router.go('postPage', {_id: error.details})
+      } else {
+        Router.go('postPage', {_id: id});
+      }
+    });
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "12~14, 16~21" %>
+
+<%= commit "9-2", "Actually use the error reporting." %>
+
+////
+
+<%= screenshot "9-1", "Triggering an error" %>
+
+### Clearing Errors
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+// Local (client-only) collection
+Errors = new Meteor.Collection(null);
+
+throwError = function(message) {
+  Errors.insert({message: message, seen: false})
+}
+
+clearErrors = function() {
+  Errors.remove({seen: true});
+}
+~~~
+<%= caption "client/helpers/errors.js" %>
+<%= highlight "5,8~10" %>
+
+////
+
+~~~js
+// ...
+
+Router.before(requireLogin, {only: 'postSubmit'})
+Router.before(function() { clearErrors() });
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "4" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Template.errors.helpers({
+  errors: function() {
+    return Errors.find();
+  }
+});
+
+Template.error.rendered = function() {
+  var error = this.data;
+  Meteor.defer(function() {
+    Errors.update(error._id, {$set: {seen: true}});
+  });
+};
+~~~
+<%= caption "client/views/includes/errors.js" %>
+<%= highlight "7~12" %>
+
+<%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
+
+////
+
+////
+
+<% note do %>
+
+### The `rendered` callback
+
+////
+
+////
+
+<% end %>

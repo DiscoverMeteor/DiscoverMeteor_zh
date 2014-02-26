@@ -6,3 +6,55 @@ number: 8.5
 sidebar: true
 contents: Learn about Allow and Deny callbacks.|Understand in which order callbacks are called.
 ---
+
+////
+
+////
+
+////
+
+////
+
+### Multiple callbacks
+
+////
+
+////
+
+<%= diagram "allow_deny", "Note: n/e stands for Not Executed" %>
+
+////
+
+////
+
+### Latency Compensation
+
+////
+
+////
+
+////
+
+### Server-side permissions
+
+////
+
+////
+
+### Using deny as a callback
+
+////
+
+~~~js
+Posts.deny({
+  update: function(userId, doc, fields, modifier) {
+    doc.lastModified = +(new Date());
+    return false;
+  },
+  transform: null
+});
+~~~
+
+////
+
+////

@@ -5,3 +5,467 @@ date: 0012/01/01
 number: 12
 contents: Learn more about Meteor's subscriptions, and how we can use them to control data.|Implement infinite-style pagination.|Use the `iron-router-progress` package to implement a nifty iOS-style progress bar.|Create a special subscription to deal with direct links to posts page.
 ---
+
+////
+
+////
+
+////
+
+////
+
+### Adding More Posts
+
+////
+
+~~~js
+// Fixture data 
+if (Posts.find().count() === 0) {
+
+  //...
+  
+  Posts.insert({
+    title: 'The Meteor Book',
+    userId: tom._id,
+    author: tom.profile.name,
+    url: 'http://themeteorbook.com',
+    submitted: now - 12 * 3600 * 1000,
+    commentsCount: 0
+  });
+  
+  for (var i = 0; i < 10; i++) {
+    Posts.insert({
+      title: 'Test post #' + i,
+      author: sacha.profile.name,
+      userId: sacha._id,
+      url: 'http://google.com/?q=test-' + i,
+      submitted: now - i * 3600 * 1000,
+      commentsCount: 0
+    });
+  }
+}
+~~~
+<%= caption "server/fixtures.js" %>
+<%= highlight "15~24" %>
+
+////
+
+<%= screenshot "12-1", "Displaying dummy data. " %>
+
+<%= commit "12-1", "Added enough posts that pagination is necessary." %>
+
+### Infinite Pagination
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('notifications')]
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+////
+
+~~~js
+Router.map(function() {
+  //...
+  
+  this.route('postsList', {
+    path: '/:postsLimit?'
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+////
+
+////
+
+////
+
+~~~js
+Router.map(function() {
+  //..
+  
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var postsLimit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: postsLimit});
+    }
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "6~9" %>
+
+////
+
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+
+Meteor.publish('comments', function(postId) {
+  return Comments.find({postId: postId});
+});
+
+Meteor.publish('notifications', function() {
+  return Notifications.find({userId: this.userId});
+});
+~~~
+<%= caption "server/publications.js" %>
+<%= highlight "1~3" %>
+
+<% note do %>
+
+### Passing Parameters
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.publish('posts', function(sort, limit) {
+  return Posts.find({}, {sort: sort, limit: limit});
+});
+~~~
+
+<% end %>
+
+////
+
+////
+
+~~~js
+Router.map(function() {
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+    },
+    data: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return {
+        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+      };
+    }
+  });
+  
+  //..
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "8~13" %>
+
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('notifications')]
+  }
+});
+
+Router.map(function() {
+  //...
+
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    waitOn: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return Meteor.subscribe('posts', {sort: {submitted: -1}, limit: limit});
+    },
+    data: function() {
+      var limit = parseInt(this.params.postsLimit) || 5; 
+      return {
+        posts: Posts.find({}, {sort: {submitted: -1}, limit: limit})
+      };
+    }
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5, 11~21" %>
+
+<%= commit "12-2", "Augmented the postsList route to take a limit." %>
+
+////
+
+<%= screenshot "12-2", "Controlling the number of posts on the homepage. " %>
+
+<% note do %>
+
+### Why Not Pages?
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+<% end %>
+
+### Creating a Route Controller
+
+////
+
+////
+
+~~~js
+PostsListController = RouteController.extend({
+  template: 'postsList',
+  increment: 5, 
+  limit: function() { 
+    return parseInt(this.params.postsLimit) || this.increment; 
+  },
+  findOptions: function() {
+    return {sort: {submitted: -1}, limit: this.limit()};
+  },
+  waitOn: function() {
+    return Meteor.subscribe('posts', this.findOptions());
+  },
+  data: function() {
+    return {posts: Posts.find({}, this.findOptions())};
+  }
+});
+
+Router.map(function() {
+  //...
+
+  this.route('postsList', {
+    path: '/:postsLimit?',
+    controller: PostsListController
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+
+////
+
+////
+
+////
+
+////
+
+<%= commit "12-3", "Refactored postsLists route into a RouteController." %>
+
+### Adding A Load More Link
+
+////
+
+////
+
+////
+
+~~~js
+PostsListController = RouteController.extend({
+  template: 'postsList',
+  increment: 5, 
+  limit: function() { 
+    return parseInt(this.params.postsLimit) || this.increment; 
+  },
+  findOptions: function() {
+    return {sort: {submitted: -1}, limit: this.limit()};
+  },
+  waitOn: function() {
+    return Meteor.subscribe('posts', this.findOptions());
+  },
+  posts: function() {
+    return Posts.find({}, this.findOptions());
+  },
+  data: function() {
+    var hasMore = this.posts().fetch().length === this.limit();
+    var nextPath = this.route.path({postsLimit: this.limit() + this.increment});
+    return {
+      posts: this.posts(),
+      nextPath: hasMore ? nextPath : null
+    };
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "16~23" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~html
+<template name="postsList">
+  <div class="posts">
+    {{#each posts}}
+      {{> postItem}}
+    {{/each}}
+    
+    {{#if nextPath}}
+      <a class="load-more" href="{{nextPath}}">Load more</a>
+    {{/if}}
+  </div>
+</template>
+~~~
+<%= caption "client/views/posts/posts_list.html" %>
+<%= highlight "7~10" %>
+
+////
+
+<%= screenshot "12-3", "The “load more” button. " %>
+
+<%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
+
+<% note do %>
+
+### Count vs Length
+
+////
+
+<% end %>
+
+### A Better Progress Bar
+
+////
+
+////
+
+////
+
+~~~bash
+mrt add iron-router-progress
+~~~
+<%= caption "bash console" %>
+
+////
+
+////
+
+~~~js
+Router.map(function() {
+ 
+  //...
+  
+  this.route('postSubmit', {
+    path: '/submit',
+    disableProgress: true
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "7" %>
+
+<%= commit "12-5", "Use the iron-router-progress package to make pagination nicer." %>
+
+### Accessing Any Post
+
+////
+
+<%= screenshot "12-4", "An empty template." %>
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.publish('posts', function(options) {
+  return Posts.find({}, options);
+});
+
+Meteor.publish('singlePost', function(id) {
+  return id && Posts.find(id);
+});
+~~~
+<%= caption "server/publications.js" %>
+<%= highlight "5~7" %>
+
+////
+
+~~~js
+Router.map(function() {
+
+  //...
+    
+  this.route('postPage', {
+    path: '/posts/:_id',
+    waitOn: function() {
+      return [
+        Meteor.subscribe('singlePost', this.params._id),
+        Meteor.subscribe('comments', this.params._id)
+      ];
+    },
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+
+  this.route('postEdit', {
+    path: '/posts/:_id/edit',
+    waitOn: function() { 
+      return Meteor.subscribe('singlePost', this.params._id);
+    },
+    data: function() { return Posts.findOne(this.params._id); }    
+  });
+  
+  /...
+
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "7~12,18~20" %>
+
+<%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
+
+////

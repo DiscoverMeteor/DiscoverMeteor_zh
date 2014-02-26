@@ -6,3 +6,127 @@ number: 7.5
 sidebar: true
 contents: Understand latency compensation.|Slow your app down and see what's going on.|Learn how Meteor Methods call each other.
 ---
+
+////
+
+<%= diagram "latency1", "Without latency compensation", "pull-right" %>
+
+////
+
+////
+
+- *+0ms:* ////
+- *+200ms:* ////
+- *+500ms:* ////
+
+If this were the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (that lag being more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
+
+### Latency Compensation
+
+<%= diagram "latency2", "With latency compensation", "pull-right" %>
+
+////
+
+////
+
+- *+0ms:* ////
+- *+0ms:* ////
+- *+200ms:* ////
+- *+500ms:* ////
+
+////
+
+### Observing Latency Compensation
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.methods({
+  post: function(postAttributes) {
+    // […]
+    
+    // pick out the whitelisted keys
+    var post = _.extend(_.pick(postAttributes, 'url', 'message'), {
+      title: postAttributes.title + (this.isSimulation ? '(client)' : '(server)'),
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date().getTime()
+    });
+    
+    // wait for 5 seconds
+    if (! this.isSimulation) {
+      var Future = Npm.require('fibers/future');
+      var future = new Future();
+      Meteor.setTimeout(function() {
+        future.return();
+      }, 5 * 1000);
+      future.wait();
+    }
+    
+    var postId = Posts.insert(post);
+    
+    return postId;
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "6, 7, 13~22" %>
+
+////
+
+////
+
+////
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(event) {
+    event.preventDefault();
+    
+    var post = {
+      url: $(event.target).find('[name=url]').val(),
+      title: $(event.target).find('[name=title]').val(),
+      message: $(event.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error)
+        return alert(error.reason);
+    });
+    Router.go('postsList');
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+<%= highlight "15" %>
+
+<%= scommit "7-5-1", "Demonstrate the order that posts appear using a sleep." %>
+
+////
+
+<%= screenshot "s5-1", "Our post as first stored in the client collection" %>
+
+////
+
+<%= screenshot "s5-2", "Our post once the client receives the update from the server collection" %>
+
+### Client Collection Methods
+
+////
+
+////
+
+1. ////
+2. ////
+  
+### Methods Calling Methods
+
+////
+ 
+////
+
+////

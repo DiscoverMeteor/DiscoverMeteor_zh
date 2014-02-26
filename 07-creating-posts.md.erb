@@ -5,3 +5,418 @@ date: 0007/01/01
 number: 7
 contents: Learn how to submit a post client-side.|Implement a simple security check.|Restrict access to the post submit form.|Learn to use a server-side Method for added security.
 ---
+
+////
+
+////
+
+### Building The New Post Page
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { return Meteor.subscribe('posts'); }
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+  
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+  
+  this.route('postSubmit', {
+    path: '/submit'
+  });
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "13~15" %>
+
+////
+
+### Adding A Link To The Header
+
+////
+
+~~~html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li><a href="{{pathFor 'postSubmit'}}">New</a></li>
+        </ul>
+        <ul class="nav pull-right">
+          <li>{{loginButtons}}</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+</template>
+~~~
+<%= caption "client/views/includes/header.html" %>
+<%= highlight "11~16" %>
+
+////
+
+~~~html
+<template name="postSubmit">
+  <form class="main">
+    <div class="control-group">
+        <label class="control-label" for="url">URL</label>
+        <div class="controls">
+            <input name="url" type="text" value="" placeholder="Your URL"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="title">Title</label>
+        <div class="controls">
+            <input name="title" type="text" value="" placeholder="Name your post"/>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="message">Message</label>
+        <div class="controls">
+            <textarea name="message" type="text" value=""/>
+        </div>
+    </div> 
+
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" value="Submit" class="btn btn-primary"/>
+        </div>
+    </div>
+  </form>
+</template>
+
+~~~
+<%= caption "client/views/posts/post_submit.html" %>
+
+////
+
+<%= screenshot "7-1", "The post submit form" %>
+
+////
+
+### Creating Posts
+
+////
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+    
+    post._id = Posts.insert(post);
+    Router.go('postPage', post);
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+
+<%= commit "7-1", "Added a submit post page and linked to it in the header." %>
+
+////
+
+////
+
+////
+
+### Adding Some Security
+
+////
+
+////
+
+////
+
+~~~bash
+$ meteor remove insecure
+~~~
+<%= caption "Terminal" %>
+
+////
+
+### Allowing Post Inserts
+
+////
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Posts.allow({
+  insert: function(userId, doc) {
+    // only allow posting if you are logged in
+    return !! userId;
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+<%= highlight "3~8" %>
+
+<%= commit "7-2", "Removed insecure, and allowed certain writes to posts." %>
+
+////
+
+////
+
+////
+
+<%= screenshot "7-2", "Insert failed: Access denied " %>
+
+////
+
+ - ////
+ - ////
+ - ////
+
+////
+
+### Securing Access To The New Post Form
+
+////
+
+////
+
+////
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout'
+});
+
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+  
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+  
+  this.route('postSubmit', {
+    path: '/submit'
+  });
+});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    this.render('accessDenied');
+    this.stop();
+  }
+}
+
+Router.before(requireLogin, {only: 'postSubmit'});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "18~25" %>
+
+////
+
+~~~html
+<template name="accessDenied">
+  <div class="alert alert-error">You can't get here! Please log in.</div>
+</template>
+~~~
+<%= caption "client/views/includes/access_denied.html" %>
+
+<%= commit "7-3", "Denied access to new posts page when not logged in." %>
+
+////
+
+<%= screenshot "7-3", "The access denied template" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Router.map(function() {
+  this.route('postsList', {path: '/'});
+  
+  this.route('postPage', {
+    path: '/posts/:_id',
+    data: function() { return Posts.findOne(this.params._id); }
+  });
+  
+  this.route('postSubmit', {
+    path: '/submit'
+  });
+});
+
+var requireLogin = function() {
+  if (! Meteor.user()) {
+    if (Meteor.loggingIn())
+      this.render(this.loadingTemplate);
+    else
+      this.render('accessDenied');
+    
+    this.stop();
+  }
+}
+
+Router.before(requireLogin, {only: 'postSubmit'});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "16~19" %>
+
+<%= commit "7-4", "Show a loading screen while waiting to login." %>
+
+### Hiding the Link
+
+////
+
+~~~html
+<ul class="nav">
+  {{#if currentUser}}<li><a href="{{pathFor 'postSubmit'}}">Submit Post</a></li>{{/if}}
+</ul>
+~~~
+<%= caption "client/views/includes/header.html" %>
+
+<%= commit "7-5", "Only show submit post link if logged in." %>
+
+////
+
+### Meteor Method: Better Abstraction and Security
+
+////
+
+- ////
+- ////
+- ////
+
+////
+
+- ////
+- ////
+- ////
+
+////
+
+////
+
+////
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val(),
+      message: $(e.target).find('[name=message]').val()
+    }
+    
+    Meteor.call('post', post, function(error, id) {
+      if (error)
+        return alert(error.reason);
+        
+      Router.go('postPage', {_id: id});
+    });
+  }
+});
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+
+////
+
+////
+
+~~~js
+Posts = new Meteor.Collection('posts');
+
+Meteor.methods({
+  post: function(postAttributes) {
+    var user = Meteor.user(),
+      postWithSameLink = Posts.findOne({url: postAttributes.url});
+    
+    // ensure the user is logged in
+    if (!user)
+      throw new Meteor.Error(401, "You need to login to post new stories");
+    
+    // ensure the post has a title
+    if (!postAttributes.title)
+      throw new Meteor.Error(422, 'Please fill in a headline');
+    
+    // check that there are no previous posts with the same link
+    if (postAttributes.url && postWithSameLink) {
+      throw new Meteor.Error(302, 
+        'This link has already been posted', 
+        postWithSameLink._id);
+    }
+    
+    // pick out the whitelisted keys
+    var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date().getTime()
+    });
+    
+    var postId = Posts.insert(post);
+    
+    return postId;
+  }
+});
+~~~
+<%= caption "collections/posts.js" %>
+
+<%= commit "7-6", "Use a method to submit the post." %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+////
+
+### Sorting Posts
+
+////
+
+~~~js
+Template.postsList.helpers({
+  posts: function() {
+    return Posts.find({}, {sort: {submitted: -1}});
+  }
+});
+~~~
+<%= caption "client/views/posts/posts_list.js" %>
+<%= highlight "3" %>
+
+<%= commit "7-7", "Sort posts by submitted timestamp." %>
+
+////
+
+////

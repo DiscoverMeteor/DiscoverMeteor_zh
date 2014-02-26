@@ -6,3 +6,240 @@ number: 9.5
 sidebar: true
 contents: Write a local in-app package.|Write some tests for your package.|Release your package on Atmosphere.
 ---
+
+////
+
+////
+
+////
+
+~~~js
+Package.describe({
+  summary: "A pattern to display application errors to the user"
+});
+
+Package.on_use(function (api, where) {
+  api.use(['minimongo', 'mongo-livedata', 'templating'], 'client');
+
+  api.add_files(['errors.js', 'errors_list.html', 'errors_list.js'], 'client');
+  
+  if (api.export) 
+    api.export('Errors');
+});
+~~~
+<%= caption "packages/errors/package.js" %>
+
+////
+
+~~~js
+Errors = {
+  // Local (client-only) collection
+  collection: new Meteor.Collection(null),
+  
+  throw: function(message) {
+    Errors.collection.insert({message: message, seen: false})
+  },
+  clearSeen: function() {
+    Errors.collection.remove({seen: true});
+  }
+};
+
+~~~
+<%= caption "packages/errors/errors.js" %>
+
+~~~html
+<template name="meteorErrors">
+  {{#each errors}}
+    {{> meteorError}}
+  {{/each}}
+</template>
+
+<template name="meteorError">
+  <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    {{message}}
+  </div>
+</template>
+~~~
+<%= caption "packages/errors/errors_list.html" %>
+
+~~~js
+Template.meteorErrors.helpers({
+  errors: function() {
+    return Errors.collection.find();
+  }
+});
+
+Template.meteorError.rendered = function() {
+  var error = this.data;
+  Meteor.defer(function() {
+    Errors.collection.update(error._id, {$set: {seen: true}});
+  });
+};
+~~~
+<%= caption "packages/errors/errors_list.js" %>
+
+### Testing the package out with Microscope
+
+////
+
+~~~bash
+$ rm client/helpers/errors.js
+$ rm client/views/includes/errors.html
+$ rm client/views/includes/errors.js
+~~~
+<%= caption "removing old files on the bash console" %>
+
+////
+
+~~~js
+Router.before(function() { Errors.clearSeen(); });
+~~~
+<%= caption "lib/router.js" %>
+
+~~~html
+  {{> header}}
+  {{> meteorErrors}}
+~~~
+<%= caption "client/views/application/layout.html" %>
+
+~~~js
+Meteor.call('post', post, function(error, id) {
+  if (error) {
+    // display the error to the user
+    Errors.throw(error.reason);
+
+~~~
+<%= caption "client/views/posts/post_submit.js" %>
+
+~~~js
+Posts.update(currentPostId, {$set: postProperties}, function(error) {
+  if (error) {
+    // display the error to the user
+    Errors.throw(error.reason);
+~~~
+<%= caption "client/views/posts/post_edit.js" %>
+
+<%= scommit "9-5-1", "Created basic errors package and linked it in." %>
+
+////
+
+### Writing tests
+
+////
+
+////
+
+~~~js
+Tinytest.add("Errors collection works", function(test) {
+  test.equal(Errors.collection.find({}).count(), 0);
+  
+  Errors.throw('A new error!');
+  test.equal(Errors.collection.find({}).count(), 1);
+  
+  Errors.collection.remove({});
+});
+
+Tinytest.addAsync("Errors template works", function(test, done) {  
+  Errors.throw('A new error!');
+  test.equal(Errors.collection.find({seen: false}).count(), 1);
+  
+  // render the template
+  OnscreenDiv(Spark.render(function() {
+    return Template.meteorErrors();
+  }));
+  
+  // wait a few milliseconds
+  Meteor.setTimeout(function() {
+    test.equal(Errors.collection.find({seen: false}).count(), 0);
+    test.equal(Errors.collection.find({}).count(), 1);
+    Errors.clearSeen();
+    
+    test.equal(Errors.collection.find({seen: true}).count(), 0);
+    done();
+  }, 500);
+});
+~~~
+<%= caption "packages/errors/errors_tests.js" %>
+
+////
+
+////
+
+////
+
+~~~js
+Package.on_test(function(api) {
+  api.use('errors', 'client');
+  api.use(['tinytest', 'test-helpers'], 'client');  
+  
+  api.add_files('errors_tests.js', 'client');
+});
+~~~
+<%= caption "packages/errors/package.js" %>
+
+<%= scommit "9-5-2", "Added tests to the package." %>
+
+////
+
+~~~bash
+$ meteor test-packages errors
+~~~
+<%= caption "Terminal" %>
+
+<%= screenshot "s7-1", "Passing all tests" %>
+
+### Releasing the package
+
+////
+
+////
+
+~~~json
+{
+  "name": "errors",
+  "description": "A pattern to display application errors to the user",
+  "homepage": "https://github.com/tmeasday/meteor-errors",
+  "author": "Tom Coleman <tom@thesnail.org>",
+  "version": "0.1.0",
+  "git": "https://github.com/tmeasday/meteor-errors.git",
+  "packages": {
+  }
+}
+~~~
+<%= caption "packages/errors/smart.json" %>
+
+<%= scommit "9-5-3", "Added a smart.json" %>
+
+////
+
+////
+
+////
+
+~~~bash
+$ git init
+$ git add -A
+$ git commit -m "Created Errors Package"
+$ git remote add origin https://github.com/tmeasday/meteor-errors.git
+$ git push origin master
+$ mrt release .
+Done!
+~~~
+<%= caption "Terminal (run from within `packages/errors`)" %>
+
+////
+
+////
+
+////
+
+~~~bash
+$ rm -r packages/errors
+$ mrt add errors
+~~~
+<%= caption "Terminal (run from the top level of the app)" %>
+
+<%= scommit "9-5-4", "Removed package from development tree." %>
+
+////

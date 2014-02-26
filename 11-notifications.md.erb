@@ -5,3 +5,242 @@ date: 0011/01/01
 number: 11
 contents: Add a notifications collection to notify users of other user's actions.|Learn how to only share the relevant notifications with a given user.|Learn more about Meteor publications and subscriptions.
 ---
+
+////
+
+////
+
+////
+
+### Creating notifications
+
+////
+
+////
+
+~~~js
+Notifications = new Meteor.Collection('notifications');
+
+Notifications.allow({
+  update: ownsDocument
+});
+
+createCommentNotification = function(comment) {
+  var post = Posts.findOne(comment.postId);
+  if (comment.userId !== post.userId) {
+    Notifications.insert({
+      userId: post.userId,
+      postId: post._id,
+      commentId: comment._id,
+      commenterName: comment.author,
+      read: false
+    });
+  }
+};
+~~~
+<%= caption "collections/notifications.js" %>
+
+////
+
+////
+
+////
+
+~~~js
+Comments = new Meteor.Collection('comments');
+
+Meteor.methods({
+  comment: function(commentAttributes) {
+
+    // [...]
+
+    // create the comment, save the id
+    comment._id = Comments.insert(comment);
+    
+    // now create a notification, informing the user that there's been a comment
+    createCommentNotification(comment);
+    
+    return comment._id;
+  }
+});
+~~~
+<%= caption "collections/comments.js" %>
+<%= highlight "8~14" %>
+
+////
+
+~~~js
+// [...]
+
+Meteor.publish('notifications', function() {
+  return Notifications.find();
+});
+~~~
+<%= caption "server/publications.js" %>
+
+~~~js
+Router.configure({
+  layoutTemplate: 'layout',
+  loadingTemplate: 'loading',
+  waitOn: function() { 
+    return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')]
+  }
+});
+~~~
+<%= caption "lib/router.js" %>
+<%= highlight "5" %>
+
+<%= commit "11-1", "Added basic notifications collection." %>
+
+### Displaying Notifications
+
+////
+
+~~~html
+<template name="header">
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          {{#if currentUser}}
+            <li>
+              <a href="{{pathFor 'postSubmit'}}">Submit Post</a>
+            </li>
+            <li class="dropdown">
+              {{> notifications}}
+            </li>
+          {{/if}}
+        </ul>
+        <ul class="nav pull-right">
+          <li>{{loginButtons}}</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+</template>
+~~~
+<%= caption "client/views/includes/header.html" %>
+<%= highlight "12~19" %>
+
+////
+
+~~~html
+<template name="notifications">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+    Notifications
+    {{#if notificationCount}}
+      <span class="badge badge-inverse">{{notificationCount}}</span>
+    {{/if}}
+    <b class="caret"></b>
+  </a>
+  <ul class="notification dropdown-menu">
+    {{#if notificationCount}}
+      {{#each notifications}}
+        {{> notification}}
+      {{/each}}
+    {{else}}
+      <li><span>No Notifications</span></li>
+    {{/if}}
+  </ul>
+</template>
+
+<template name="notification">
+  <li>
+    <a href="{{notificationPostPath}}">
+      <strong>{{commenterName}}</strong> commented on your post
+    </a>
+  </li>
+</template>
+~~~
+<%= caption "client/views/notifications/notifications.html" %>
+
+////
+
+////
+
+~~~js
+Template.notifications.helpers({
+  notifications: function() {
+    return Notifications.find({userId: Meteor.userId(), read: false});
+  },
+  notificationCount: function(){
+    return Notifications.find({userId: Meteor.userId(), read: false}).count();
+  }
+});
+
+Template.notification.helpers({
+  notificationPostPath: function() {
+    return Router.routes.postPage.path({_id: this.postId});
+  }
+})
+
+Template.notification.events({
+  'click a': function() {
+    Notifications.update(this._id, {$set: {read: true}});
+  }
+})
+~~~
+<%= caption "client/views/notifications/notifications.js" %>
+
+<%= commit "11-2", "Display notifications in the header." %>
+
+////
+
+////
+
+<%= screenshot "11-1", "Displaying notifications." %>
+
+### Controlling access to notifications
+
+////
+
+////
+
+~~~js
+❯ Notifications.find().count();
+1
+~~~
+<%= caption "Browser console" %>
+
+////
+
+////
+
+////
+
+////
+
+////
+
+~~~js
+Meteor.publish('notifications', function() {
+  return Notifications.find({userId: this.userId});
+});
+~~~
+<%= caption "server/publications.js" %>
+
+<%= commit "11-3", "Only sync notifications that are relevant to the user." %>
+
+////
+
+~~~js
+❯ Notifications.find().count();
+1
+~~~
+<%= caption "Browser console (user 1)" %>
+
+~~~js
+❯ Notifications.find().count();
+0
+~~~
+<%= caption "Browser console (user 2)" %>
+
+////
+
+////
