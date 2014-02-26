@@ -1,48 +1,48 @@
 ---
-title: Getting Started
+title: 开始
 slug: getting-started
 date: 0002/01/01
 number: 2
-contents: Install Meteor & Meteorite.|Learn about the 5 types of Meteor packages.|Setup the file structure of your Meteor app.
+contents: 安装 Meteor 和 Meteorite|学习 Meteor 包的五种类型|建立 Meteor 程序的文件结构
 paragraphs: 49
 ---
 
-////
+第一印象是十分重要的，Meteor 的安装uocheng可以说没什么坑。大多数情况下，五分钟内就能安装好。
 
-////
+首先，我们从 http://meteor.com 网站上安装 Meteor：
 
 ~~~bash
 $ curl https://install.meteor.com | sh
 ~~~
 
-////
+上述命令会在系统中安装 `meteor` 可执行文件，然后就可以使用 Meteor 了。
 
 <% note do %>
 
-### *Not* Installing Meteor
+### 不安装 Meteor
 
-////
+如果无法再本地安装 Meteor，或者不想安装，我们推荐你使用 [Nitrous.io](http://nitrous.io)>
 
-////
+Nitrous.io 这个服务可以直接在浏览器中运行程序、编辑代码。我们写了[一篇简短的文章](https://www.discovermeteor.com/blog/meteor-nitrous/)介绍如何使用 Nitrous.io。
 
-////
+你可以一直阅读到这篇文章“Installing Meteor & Meteorite”部分，然后再回到本书，从“创建简单的应用”一节开始阅读。
 
 <% end %>
- 
+
 ### Meteorite
 
-////
+默认情况下，Meteor 暂时不支持第三方代码包，为了解决这个问题，Tom Coleman（本书作者之一）和一些社区成员开发了 [Meteorite](http://oortcloud.github.io/meteorite/)。Meteorite 包装了 Meteor，可以用来安装 Meteor 和其他代码包。
 
-////
+Microscope 的某些功能要使用第三方代码包实现，所以我们要安装 Meteorite。
 
-### Installing Meteorite
+### 安装 Meteorite
 
-////
- 
-- [Node download site](http://nodejs.org/download/)
-- [Git download site](http://git-scm.com/downloads)
+安装 Meteorite 之前，请确保系统中安装了 Node 和 git。请按照针对各操作系统的安装方法安装，或者参照下面的链接：
 
-////
+- [Node 下载地址](http://nodejs.org/download/)
+- [Git 下载地址](http://git-scm.com/downloads)
+
+然后再安装 Meteorite。Meteorite 是个 [npm](https://npmjs.org/)（Node Package Module，Node 模块的标准格式）可执行文件，可以使用下面的命令安装：
 
 ~~~bash
 $ npm install -g meteorite
@@ -50,93 +50,93 @@ $ npm install -g meteorite
 
 <% note do %>
 
-### Permission errors?
+### 权限出错？
 
-////
+在某些系统上，安装 Meteorite 需要 root 权限。为了避免出现问题，请使用 `sudo -H`：
 
 ~~~bash
 $ sudo -H npm install -g meteorite
 ~~~
 
-////
+关于权限问题的详细说明请参阅 [Meteorite 的文档](https://github.com/oortcloud/meteorite/blob/master/README.md#permission-woes)。
 
 <% end %>
 
-////
+就这么简单！从现在开始一切都交给 Meteorite 处理了。
 
-////
+注意：Meteorite 目前不支持 Windows 系统，你可以阅读[这篇教程](https://www.discovermeteor.com/blog/using-meteor-and-atmopshere-on-windows/)寻找解决办法。
 
 <% note do %>
 
-  ### `mrt` vs `meteor`
-  
-////
-  
+### `mrt` vs `meteor`
+
+安装 Meteorite 时安装了 `mrt` 可执行文件，我们使用 `mrt` 在应用程序中安装代码包。如果要启动服务器，则会使用 `meteor`。
+
 <% end %>
 
-### Creating a Simple App
+### 创建简单的应用
 
-////
+安装好 Meteorite 之后，我们来创建一个应用。创建应用要使用 Meteorite 的命令行工具 `mrt`：
 
 ~~~bash
 $ mrt create microscope
 ~~~
 
-////
+上述命令会下载 Meteor，然后新建一个基本可用的 Meteor 项目。命令执行完成后，会看到新建了一个文件夹，名为 `microscope/`，包含以下文件：
 
 ~~~bash
-microscope.css  
-microscope.html 
-microscope.js   
-smart.json 
+microscope.css
+microscope.html
+microscope.js
+smart.json
 ~~~
 
-////
+Meteor 生成的应用只是一个简单的骨架，演示一些简单的模式。
 
-////
+虽然这个应用没什么功能，但也能运行。要运行应用，请切换到终端，输入下面的命令：
 
 ~~~bash
 $ cd microscope
 $ meteor
 ~~~
 
-////
+现在打开浏览器，访问 `http://localhost:3000`（或者等效的 `http://0.0.0.0:3000`），应该能看到下面的网页：
 
-<%= screenshot "2-1", "Meteor's Hello World." %>
+<%= screenshot "2-1", "Meteor 的 Hello World 网页" %>
 
-<%= commit "2-1", "Created basic microscope project." %>
+<%= commit "2-1", "创建 Microscope 项目的基础文件" %>
 
-////
+恭喜！你的第一个 Meteor 应用顺利运行了。顺便说一下，如果想停止运行程序，只要切换到对应的终端窗口按 `ctrl+c` 键即可。
 
-### Adding a Package
+### 添加代码包
 
-////
+下面我们使用 Meteorite 添加一个智能代码包，在项目中引入 [Bootstrap](http://getbootstrap.com/)：
 
 ~~~bash
 $ mrt add bootstrap
 ~~~
 
-<%= commit "2-2", "Added bootstrap package." %>
+<%= commit "2-2", "添加 bootstrap 代码包" %>
 
 <% note do %>
 
-### A Note on Packages
+### 关于代码包
 
-////
+Meteor 中的代码包有点特殊，分为五种：
 
-- ////
-- ////
-- ////
-- ////
-- ////
+- Meteor 核心代码本身分成多个**核心代码包**（core package），每个 Meteor 应用中都有，你基本上无需关注
+- Meteor **智能代码包**（smart package）大约有 [37 个](http://docs.meteor.com/#packages)（可以执行 `meteor list` 查看完整列表），是 Meteor 自带的，可以有选择的引入应用。不用 Meteorite 也可以引入智能代码包，执行 `meteor add packagename` 即可
+- **本地代码包**（local package）是自己开发的代码包，保存在 `/packages` 文件夹中。同样，不使用 Meteorite 也可以引入本地代码包
+-**Atmosphere 智能代码包**（Atmosphere smart package）是 [Atmosphere](https://atmosphere.meteor.com/) 网站中列出的第三方代码包。引入这些代码包，必须使用 Meteorite
+- **NPM 代码包**（NPM package）是 Node.js 的代码包，虽不能直接用于 Meteor，但可以在上述几种代码包中使用
 
 <% end %>
 
-### The File Structure of a Meteor App
+### Meteor 应用的文件结构
 
-////
+开始编写代码之前，我们必须要正确的设置项目。为了保证项目整洁，请打开 `microscope` 文件夹，删除 `microscope.html`、`microscope.js` 和 `microscope.css`。
 
-////
+然后在 `microscope` 文件夹中新建五个子文件夹：`/client`，`/server`，`/public`，`/lib` 和 `/collections`。然后在 `/client` 文件夹中新建两个空文件：`main.html` 和 `main.js`。如果程序无法运行了先别担心，从下一章开始我们会编写代码。
 
 ////
 
