@@ -30,7 +30,7 @@ Posts = new Meteor.Collection('posts');
 ~~~
 <%= caption "collections/posts.js" %>
 
-<%= commit "4-1"， "Added a posts collection" %>
+<%= commit "4-1"， "增加一个 post 集合" %>
 
 代码所在的目录既不是 'client/' 也不是 'server/' 所以 'Posts' 会共同存在运行在服务器和客户端。 然而， 这个集合的使用在两种环境下十分不同。
 
@@ -52,7 +52,7 @@ Posts = new Meteor.Collection('posts');
 
 #### 终端命令行(Terminal)
 
-<%= screenshot "terminal"， "The Terminal" %>
+<%= screenshot "终端命令行"， "终端命令行" %>
 
 - 由操作系统启动
 - **服务器端** 'console.log()' 会输出到这里
@@ -70,7 +70,7 @@ Posts = new Meteor.Collection('posts');
 
 #### Mongo 外壳程序 (Mongo Shell)
 
-<%= screenshot "mongo-shell"， "The Mongo Shell" %>
+<%= screenshot "mongo 外壳"， "Mongo 外壳" %>
 
 - 从终端由 'meteor mongo' 或者 'mrt mongo' 来启动
 - 你可以在这里直接操作 App 的数据库
@@ -123,27 +123,27 @@ Meteor 的客户端 Mongo 的技术实现被成为 MiniMongo。 它目前还不�
 
 <% end %>
 
-### Client-Server Communication
+### 客户端-服务器通讯
 
-////
+这一切最关键的是如何让客户端的集合数据与服务器端同名的集合数据同步（以我们现在这个例子来说是 posts）。
 
-////
+与其现在就解释细节不如让我们先来看看发生了什么。
 
-////
+现在我们打开两个浏览器窗口，分别打开他们的浏览器控制台。然后在终端命令行打开 Mongo 外壳程序。现在可以在这三个地方看到我们早前时候建立的那个文档。
 
 ~~~bash
 > db.posts.find();
 {title: "A new post"， _id: ObjectId("..")};
 ~~~
-<%= caption "The Mongo Shell" %>
+<%= caption " Mongo 外壳" %>
 
 ~~~js
 ❯ Posts.findOne();
 {title: "A new post"， _id: LocalCollection._ObjectID};
 ~~~
-<%= caption "First browser console" %>
+<%= caption "第一个浏览器控制台" %>
 
-////
+让我们来创建一个帖子。在其中一个浏览器窗口中运行这个插入命令：
 
 ~~~js
 ❯ Posts.find().count();
@@ -153,54 +153,54 @@ Meteor 的客户端 Mongo 的技术实现被成为 MiniMongo。 它目前还不�
 ❯ Posts.find().count();
 2
 ~~~
-<%= caption "First browser console" %>
+<%= caption "第一个浏览器控制台" %>
 
-////
+毫无疑问，这个帖子被加入到本地集合中。现在让我们查看一下 Mongo：
 
 ~~~bash
 ❯ db.posts.find();
 {title: "A new post"， _id: ObjectId("..")};
 {title: "A second post"， _id: 'yyy'};
 ~~~
-<%= caption "The Mongo Shell" %>
+<%= caption "Mongo 外壳" %>
 
-////
+如同你所看见的那样，这个帖子一路上行一直到 Mongo 数据库中，而我们却没有为这个连接客户端和服务器的过程写任何一行代码。（严格地说，我们的确写了一行代码：‘new Meteor.Collection('posts')’）。但是这没关系！
 
-////
+现在到第二个浏览器窗口的控制台中输入这个命令：
 
 ~~~js
 ❯ Posts.find().count();
 2
 ~~~
-<%= caption "Second browser console" %>
+<%= caption "第二个浏览器的控制台" %>
 
-////
+这个帖子居然也在这儿！甚至于我们连刷新都没有在第二个浏览器做过，更何况我们也没有写任何代码来推送更新。 这一切想魔术一般 - 而且是即时的， 尽管这一切以后看起来都很显而易见。
 
-////
+实际情况是服务器端的集合被客户端的集合通知说有一个新帖子，然后执行了一个任务把这个帖子放入 Mongo 数据库，进而会送到所有连接着的 ‘post’ 即可。
 
-////
+在浏览器的控制台取出所有的帖子没什么用处。 我们以后会学习如何把这些数据显示在模板中，并把这个简单的 HTML 原型变成一个有用的实时 Web 应用。
 
-### Keeping it Real-time
+### 保持实时
 
-////
+从浏览器控制台看到集合算是一件事儿，我们更应该关注的是能在屏幕上显示数据和数据的变化。要做到这一点，我们需要把我们的应用从一个单一显示静态数据的‘页面’变成可以实时动态数据的‘应用’。
 
-////
+让我们看怎么做。
 
-### Populating the Database
+### 从数据库提取数据
 
-////
+首先我们先放点数据在数据库里。我们要做的是让服务器第一次初始启动的时候从一个数据文件中读取数据结构存在‘Posts’ 集合中。
 
-////
+首先我们要确保数据库中没有数据。我们使用 ‘meteor reset’ 命令清空数据库初始化我们的项目。 当然，如果在真实的正在运行的正式项目上请务必十分小心。
 
-////
+停止 Meteor 服务（通过键入 ‘ctrl-c’） 然后在命令行输入：
 
 ~~~bash
 $ meteor reset
 ~~~
 
-////
+这个 reset 命令彻底地把 Mongo 数据库清空了。在开发的时候这个命令很有用，尤其当我们的数据库发生数据混乱的时候。
 
-////
+现在数据库已经清空，我们可以增加下面的代码以便在服务器启动时候检查数据库 Posts 集合，如果为空则载入三条帖子。
 
 ~~~js
 if (Posts.find().count() === 0) {
@@ -225,24 +225,24 @@ if (Posts.find().count() === 0) {
 ~~~
 <%= caption "server/fixtures.js" %>
 
-<%= commit "4-2"， "Added data to the posts collection." %>
+<%= commit "4-2"， "在 posts 集合中加入数据." %>
 
-////
+我们把这个文件放到了 ‘server/‘目录中，因此永远不会被加载到任何用户的浏览器中。这段代码在服务器启动的时候会立即运行，然后调用’插入‘功能在数据库的’posts‘集合中插入三条简单的帖子。因为我们还没有加入任何数据安全功能，所以无论在服务器还是在客户端运行这个文件都事实上没有区别的。
 
-////
+现在我们用 ’meteor‘ 命令启动服务，这三条帖子会被装在到数据库中。
 
-### Wiring the data to our HTML with helpers
+### 用 helper 把数据连接到 HTML
 
-////
+现在如果我们打开一个浏览器的控制台，我们可以看到这三个帖子都被转载到 MiniMongo 中了：
 
 ~~~js
 ❯ Posts.find().fetch();
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台" %>
 
-////
+要把这些帖子渲染到 HTML 中，我们需要用模板的 helper。在第三章我们看到 Meteor 允许我们把 *数据上下文* 捆绑到我们的 Handlerbars 模板上，从而用 HTML 视图显示这些简单的数据结构。 我们可以同样把我们的集合数据捆绑起来。我们马上就替换掉静态的 ’postsData‘ Javascript 对象成为一个动态地集合。
 
-////
+现在请随手删掉’postsData‘ 代码。 下面是 ’posts_list.js‘ 修改后的样子：
 
 ~~~js
 Template.postsList.helpers({
@@ -254,25 +254,25 @@ Template.postsList.helpers({
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "2~4" %>
 
-<%= commit "4-3"， "Wired collection into `postsList` template." %>
+<%= commit "4-3"， "把集合连接到 `postsList` 模板上。" %>
 
 <% note do %>
 
-### Find & Fetch
+### 查找与提取
 
-////
+在 Meteor 中， ’find()' 返回值是一个*游标*。 游标是一种[随动数据源](http://docs.meteor.com/#find)。如果你想输出内容，你可以对游标使用 ‘fetch()‘ 来把游标转换成数组。
 
-////
+Meteor 十分智能地在应用中保持游标状态而避免动不动就把游标变成数组。这就造成了你不会经常在 Meteor 代码中看到 fetch() 被调用 （基于同样原因，我们在上述例子中也没有使用 fetch ）。
 
 <% end %>
 
-////
+现在，预期把帖子们变成静态的数组，不如直接把游标赋给 ‘posts’ helper。但是如何做得到呢？如果我们回到浏览器上，我们可以看到：
 
-<%= screenshot "4-3"， "Using live data" %>
+<%= screenshot "4-3"， "使用活数据" %>
 
-////
+我们可以清晰地看到 `{{#each}}` helper 已经枚举了 ’Posts‘ 中的所有帖子，而且显示到屏幕上。服务器端的集合从 Mongo 数据库中取出贴子数据， 通过网络传到客户端的集合中， 进而 handlers 的 helper 把这些数据加载到模板中。
 
-////
+现在我们只需要再走一步；让我们通过控制台增加另一个帖子：
 
 ~~~js
 ❯ Posts.insert({
@@ -281,39 +281,39 @@ Template.postsList.helpers({
   url: 'http://docs.meteor.com'
 });
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台" %>
 
-////
+再看浏览器 -  你会看到这些：
 
-<%= screenshot "4-4"， "Adding posts via the console" %>
+<%= screenshot "4-4"， "通过控制台增加帖子" %>
 
-////
+你刚才第一次看到随动功能生效了。当我们告诉 handlebars 去枚举 `Posts.find()` 游标的时候，它自己知道如何发现游标的变动， 从而用最简单的方式将变化后的正确数据显示到屏幕上。
 
 <% note do %>
 
-### Inspecting DOM Changes
+### 检查 DOM 变动
 
-////
+在目前的情况下，最简单的变动应该就是增加一个 `<div class="post">...</div>`。 如果你想看看是否的确如此，你可以打开 DOM 检查器然后选择某个已经存在的帖子的 `<div>` 。
 
-////
+现在在 Javascript 控制台，插入另外一个帖子。当你回到检查器，会发现一条新的`<div>`对应了新增的那个帖子。同时，原先选中的*那个*旧的`<div>`仍然存在。这是一种判断元素是否被重新渲染的有效方式。
 
 <% end %>
 
-### Connecting Collections: Publications and Subscriptions
+### 连接集合: 发布与订阅
 
-////
+到此为止，我们仍然用着 ’autopublish‘ 这个包，这个包并不是为正式产品化的应用程序准备的。正如它的名字陈述的那样，它简单地把整个集合分享给所有连接的客户端。这个可不是我们期望的样子，所以让我们去掉它。
 
-////
+打开一个终端窗口， 输入：
 
 ~~~bash
 $ meteor remove autopublish
 ~~~
 
-////
+这个操作有了立即的反应。当你打开浏览器，你会发现所有的帖子都不见了！这是因为我们一直依赖于 ’autopublish‘ 来让我们的客户端可以镜像般地得到数据库中的所有帖子。
 
-////
+最终我们需要做得到我们仅仅把我们客户端需要看到的帖子传输过来（需要考虑分页的情况）。不过暂时我们可以先设置把 ’Posts‘ 所有帖子都发布出来。
 
-////
+为达到这个目的，我们建立一个简单的 ’Publish()‘ 函数，它仅仅返回一个反映所有帖子的游标。
 
 ~~~js
 Meteor.publish('posts'， function() {
@@ -322,17 +322,17 @@ Meteor.publish('posts'， function() {
 ~~~
 <%= caption "server/publications.js" %>
 
-////
+在客户端我们需要*订阅*这个发布。我们仅仅需要增加这样一行到 ‘main.js‘ 文件中：
 
 ~~~js
 Meteor.subscribe('posts');
 ~~~
 <%= caption "client/main.js" %>
 
-<%= commit "4-4"， "Removed `autopublish` and set up a basic publication." %>
+<%= commit "4-4"， "删除 `autopublish` 并建立基本的发布功能" %>
 
-////
+如果你现在看一眼浏览器， 发现帖子都回来了。 哇！好险啊！
 
-### Conclusion
+### 总结
 
-////
+我们都做了什么？尽管我们还没有用户界面，至少我们已经有了一个能用的应用。我们可以把这个应用部署到网络上，（使用浏览器的控制台）发帖子，并看到帖子显示在其他用户的浏览器上。
