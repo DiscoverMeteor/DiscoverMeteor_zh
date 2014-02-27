@@ -81,11 +81,11 @@ Posts = new Meteor.Collection('posts');
 
 <% end %>
 
-### Server-Side Collections
+### 服务器端的集合
 
-////
+在服务器端, 集合可以认为是操作Mongo数据库的API. 你可以像'Posts.insert()'或者'Posts.update()'这样操作Mongo, 而且你对'posts'集合的操作会存储到Mongo中.
 
-////
+如果想直接看看MongoDB, 可以打开第二个终端窗口(这时候Meteor还在第一个终端窗口继续运行呢),去你的App的目录. 输入命令'meteor mongo' 启动Mongo 外壳程序Shell. 现在你可以输入标准的Mongo命令 (如同以往,你可以敲'ctrl + c'快捷键退出回到终端控制台). 比如让我们插入一个新的post:
 
 ~~~bash
 > db.posts.insert({title: "A new post"});
@@ -97,29 +97,29 @@ Posts = new Meteor.Collection('posts');
 
 <% note do %>
 
-### Mongo on Meteor.com
+### Meteor.com上的Mongo
 
-////
+注意如果你把App部署在 *.meteor.com上, 你一样可以通过 'meteor mongo myApp'的方式进入你的App的Mongo外壳操作.
 
-////
+而且你还可以输入'meteor logs myApp'得到你的App的log 日志.
 
 <% end %>
 
-////
+Mongo的语法由于借用Javascript的语法所以十分令人熟悉. 我们现在在Mongo外壳里不做过多的数据操作, 不过我们可以随时来这里检查数据确保他们正常存在.
 
-### Client-Side Collections
+### 客户端集合
 
-////
+客户端的集合更加有趣. 当你在客户端申明'Posts= new Meteor.Collection('posts');`你实际上是创建了一个本地的,在浏览器缓存中的真实的Mongo集合. 当我们说客户端集合被"缓存"是指它保存了你数据的一个*子集*,而且对这些数据提供了十分*快速*的访问.
 
-////
+有一点我们必须要明白, 因为这是Meteor工作的一个基础: 通常说来, 客户端的集合的数据是你Mongo数据库的所有数据的一个子集(毕竟我们不会想把*整个*数据库的数据全传到客户端来)
 
-////
+第二, 那些数据是被存储在*浏览器内存*中得, 也就是说访问这些数据几乎不需要时间, 不像去服务器访问'Posts.find()'那样需要等待,因为数据事实上已经载入了
 
 <% note do %>
 
-### Introducing MiniMongo
+### 介绍MiniMongo
 
-////
+Meteor的客户端Mongo的技术实现被成为MiniMongo. 它目前还不是一个完美的实现, 而且你会发现偶尔Mongo的功能在这里不能实现. 不过本书中涉及到的功能都是可以在Mongo和MiniMongo中实现的.
 
 <% end %>
 
