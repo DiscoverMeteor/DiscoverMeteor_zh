@@ -32,52 +32,52 @@ Posts = new Meteor.Collection('posts');
 
 <%= commit "4-1", "Added a posts collection" %>
 
-////
+代码所在的目录既不是'client/'也不是'server/' 所以'Posts'会共同存在运行在服务器和客户端. 然而, 这个集合的使用在两种环境下十分不同.
 
 <% note do %>
 
-### To Var Or Not To Var?
+### 要 Var 还是不要 Var?
 
-////
+在Meteor中, 关键字'var'限制对象的作用域在文件范围内. 我们想要'Posts'作用于整个APP范围内, 因此我们在这里不要Var这个关键字.
 
 <% end %>
 
-////
+在服务器, 集合有一个任务就是和Mongo数据库联络, 读取任何数据变化. 在这种情况下, 它可以比对标准的数据库. 在客户端,集合是一个*安全*拷贝来自于实时一致的数据*子集*. 客户端的集合总是(通常)透明地实时更新数据子集.
 
 <% note do %>
 
-### Console vs Console vs Console
+### Console , Console 与 Console
 
-////
+在这一章, 我们开始使用**浏览器控制台**, 不过不要和**终端**或者**Mongo Shell**搞混了. 现在对它们做个比对.
 
-#### Terminal
+#### 终端命令行(Terminal)
 
 <%= screenshot "terminal", "The Terminal" %>
 
-- ////
-- ////
-- ////
-- ////
+- 由操作系统启动
+- **服务器端** 'console.log()' 会输出到这里
+- 有 '$' 提示符
+- 通常也被成为外壳程序 Shell, Bash
 
-#### Browser Console
+#### 浏览器控制台(Browser Console)
 
 <%= screenshot "browser-console", "The Browser Console" %>
 
-- ////
-- ////
-- ////
-- ////
+- 在浏览器内启动, 执行 Javascript 代码  
+- **客户端**的'console.log()' 会输出到这里
+- 提示符是 '❯'
+- 也通常被称作 JavascriptJava是控制台, 开发工具控制台(DevTools Console)
 
-#### Mongo Shell
+#### Mongo 外壳程序 (Mongo Shell)
 
 <%= screenshot "mongo-shell", "The Mongo Shell" %>
 
-- ////
-- ////
-- ////
-- ////
+- 从终端由'meteor mongo'或者'mrt mongo'来启动
+- 你可以在这里直接操作App的数据库
+- 提示符'>'
+- 也被称作Mongo控制台 (Mongo Console)
 
-////
+注意在各种情况下你都不需要敲提示符('$' '❯'或'>')在命令前面.而且你可以认定任何不是用提示符起始的行都是前一个命令的输出结果.
 
 <% end %>
 
