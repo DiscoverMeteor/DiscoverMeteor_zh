@@ -1,25 +1,29 @@
 ---
-title: Collections
+title: 集合
 slug: collections
 date: 0004/01/01
 number: 4
-contents: Learn about Meteor's core feature, realtime collections.|Understand how Meteor's data synchronization works.|Integrate collections with our templates.|Turn our basic prototype into a functioning realtime application!
+points: 10
+photoUrl: http://www.flickr.com/photos/73449134@N04/8270793784/
+photoAuthor: Mike Lewinski
+contents: 学习Meteor的核心功能, 实时集合.|理解Meteor的数据同步工作方式|将集合与模板结合.|把简陋的原型变成完整的实时应用程序!
+
 paragraphs: 72
 ---
+在第一章我们提到了Meteor的核心功能, 那就是服务器和客户端的自动数据同步.
 
-////
+在这一章我们要仔细了解一下它是如何运作的,以及研究那个让它得以运行的关键技术: Meteor集合
 
-////
+我们现在做一个社交新闻应用, 所以第一件事儿就是做一个人们贴上来的帖子的连接列表. 我们叫它'post'
 
-////
+很自然, 我们需要把他们存起来. Meteor捆绑了MongoDB运行在服务器上作为*持久化*存储.
 
-////
+因此,尽管一个用户在浏览器上有各种状态(比如他们正在阅读哪一页, 或者正在输入那一条评论), 而服务器上,尤其是Mongo,保存的是永久保留的*一致*数据. 说到*一致*, 我们是指对于所有用户来说都是一样的数据: 每个用户也许在看不同的页面, 但是帖子Post的主列表对所有用户来说却始终是一样的.
 
-////
+这些数据在Meteor中被存储在集合(**Collection**)中. 集合是一种特殊的数据结构, 通过发布(publications)和订阅(subscriptions)机制把数据实时同步上行或者下行到连接着的各个用户的浏览器或者Mongo数据库中.
+让我们看看如何做到的
 
-////
-
-////
+我们希望我们的帖子Post可以持久存储并分享给用户们, 所以我们一开始就要建立一个叫"Posts"的集合来存储他们. 如果你还没有在根文件夹建立一个叫做'collections/'的文件夹, 并在里面放一个'posts.js' 的文件的话,那现在就加上 
 
 ~~~js
 Posts = new Meteor.Collection('posts');
