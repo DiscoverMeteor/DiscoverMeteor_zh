@@ -8,7 +8,7 @@
 
 如果你对这个项目感兴趣，欢迎做出自己的贡献。
 
-在此之前，请先阅读[翻译注意事项](issues/3)。
+在此之前，请先阅读[翻译注意事项](https://github.com/DiscoverMeteor/DiscoverMeteor_zh/issues/3)。
 
 ## 发布协议
 
