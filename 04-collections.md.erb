@@ -4,122 +4,122 @@ slug: collections
 date: 0004/01/01
 number: 4
 points: 10
-photoUrl: http://www.flickr.com/photos/73449134@N04/8270793784/
+photoUrl: http://www。flickr。com/photos/73449134@N04/8270793784/
 photoAuthor: Mike Lewinski
-contents: 学习Meteor的核心功能, 实时集合.|理解Meteor的数据同步工作方式|将集合与模板结合.|把简陋的原型变成完整的实时应用程序!
+contents: 学习Meteor的核心功能， 实时集合。|理解Meteor的数据同步工作方式|将集合与模板结合。|把简陋的原型变成完整的实时应用程序！
 
 paragraphs: 72
 ---
-在第一章我们提到了Meteor的核心功能, 那就是服务器和客户端的自动数据同步.
+在第一章我们提到了Meteor的核心功能， 那就是服务器和客户端的自动数据同步。
 
-在这一章我们要仔细了解一下它是如何运作的,以及研究那个让它得以运行的关键技术: Meteor集合
+在这一章我们要仔细了解一下它是如何运作的，以及研究那个让它得以运行的关键技术: Meteor集合
 
-我们现在做一个社交新闻应用, 所以第一件事儿就是做一个人们贴上来的帖子的连接列表. 我们叫它'post'
+我们现在做一个社交新闻应用， 所以第一件事儿就是做一个人们贴上来的帖子的连接列表。 我们叫它'post'
 
-很自然, 我们需要把他们存起来. Meteor捆绑了MongoDB运行在服务器上作为*持久化*存储.
+很自然， 我们需要把他们存起来。 Meteor捆绑了MongoDB运行在服务器上作为*持久化*存储。
 
-因此,尽管一个用户在浏览器上有各种状态(比如他们正在阅读哪一页, 或者正在输入那一条评论), 而服务器上,尤其是Mongo,保存的是永久保留的*一致*数据. 说到*一致*, 我们是指对于所有用户来说都是一样的数据: 每个用户也许在看不同的页面, 但是帖子Post的主列表对所有用户来说却始终是一样的.
+因此，尽管一个用户在浏览器上有各种状态(比如他们正在阅读哪一页， 或者正在输入那一条评论)， 而服务器上，尤其是Mongo，保存的是永久保留的*一致*数据。 说到*一致*， 我们是指对于所有用户来说都是一样的数据: 每个用户也许在看不同的页面， 但是帖子Post的主列表对所有用户来说却始终是一样的。
 
-这些数据在Meteor中被存储在集合(**Collection**)中. 集合是一种特殊的数据结构, 通过发布(publications)和订阅(subscriptions)机制把数据实时同步上行或者下行到连接着的各个用户的浏览器或者Mongo数据库中.
+这些数据在Meteor中被存储在集合(**Collection**)中。 集合是一种特殊的数据结构， 通过发布(publications)和订阅(subscriptions)机制把数据实时同步上行或者下行到连接着的各个用户的浏览器或者Mongo数据库中。
 让我们看看如何做到的
 
-我们希望我们的帖子Post可以持久存储并分享给用户们, 所以我们一开始就要建立一个叫"Posts"的集合来存储他们. 如果你还没有在根文件夹建立一个叫做'collections/'的文件夹, 并在里面放一个'posts.js' 的文件的话,那现在就加上 
+我们希望我们的帖子Post可以持久存储并分享给用户们， 所以我们一开始就要建立一个叫"Posts"的集合来存储他们。 如果你还没有在根文件夹建立一个叫做'collections/'的文件夹， 并在里面放一个'posts。js' 的文件的话，那现在就加上 
 
 ~~~js
-Posts = new Meteor.Collection('posts');
+Posts = new Meteor。Collection('posts');
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "collections/posts。js" %>
 
-<%= commit "4-1", "Added a posts collection" %>
+<%= commit "4-1"， "Added a posts collection" %>
 
-代码所在的目录既不是'client/'也不是'server/' 所以'Posts'会共同存在运行在服务器和客户端. 然而, 这个集合的使用在两种环境下十分不同.
+代码所在的目录既不是'client/'也不是'server/' 所以'Posts'会共同存在运行在服务器和客户端。 然而， 这个集合的使用在两种环境下十分不同。
 
 <% note do %>
 
 ### 要 Var 还是不要 Var?
 
-在Meteor中, 关键字'var'限制对象的作用域在文件范围内. 我们想要'Posts'作用于整个APP范围内, 因此我们在这里不要Var这个关键字.
+在Meteor中， 关键字'var'限制对象的作用域在文件范围内。 我们想要'Posts'作用于整个APP范围内， 因此我们在这里不要Var这个关键字。
 
 <% end %>
 
-在服务器, 集合有一个任务就是和Mongo数据库联络, 读取任何数据变化. 在这种情况下, 它可以比对标准的数据库. 在客户端,集合是一个*安全*拷贝来自于实时一致的数据*子集*. 客户端的集合总是(通常)透明地实时更新数据子集.
+在服务器， 集合有一个任务就是和Mongo数据库联络， 读取任何数据变化。 在这种情况下， 它可以比对标准的数据库。 在客户端，集合是一个*安全*拷贝来自于实时一致的数据*子集*。 客户端的集合总是(通常)透明地实时更新数据子集。
 
 <% note do %>
 
-### Console , Console 与 Console
+### Console ， Console 与 Console
 
-在这一章, 我们开始使用**浏览器控制台**, 不过不要和**终端**或者**Mongo Shell**搞混了. 现在对它们做个比对.
+在这一章， 我们开始使用**浏览器控制台**， 不过不要和**终端**或者**Mongo Shell**搞混了。 现在对它们做个比对。
 
 #### 终端命令行(Terminal)
 
-<%= screenshot "terminal", "The Terminal" %>
+<%= screenshot "terminal"， "The Terminal" %>
 
 - 由操作系统启动
-- **服务器端** 'console.log()' 会输出到这里
+- **服务器端** 'console。log()' 会输出到这里
 - 有 '$' 提示符
-- 通常也被成为外壳程序 Shell, Bash
+- 通常也被成为外壳程序 Shell， Bash
 
 #### 浏览器控制台(Browser Console)
 
-<%= screenshot "browser-console", "The Browser Console" %>
+<%= screenshot "browser-console"， "The Browser Console" %>
 
-- 在浏览器内启动, 执行 Javascript 代码  
-- **客户端**的'console.log()' 会输出到这里
+- 在浏览器内启动， 执行 Javascript 代码  
+- **客户端**的'console。log()' 会输出到这里
 - 提示符是 '❯'
-- 也通常被称作 JavascriptJava是控制台, 开发工具控制台(DevTools Console)
+- 也通常被称作 JavascriptJava是控制台， 开发工具控制台(DevTools Console)
 
 #### Mongo 外壳程序 (Mongo Shell)
 
-<%= screenshot "mongo-shell", "The Mongo Shell" %>
+<%= screenshot "mongo-shell"， "The Mongo Shell" %>
 
 - 从终端由'meteor mongo'或者'mrt mongo'来启动
 - 你可以在这里直接操作App的数据库
 - 提示符'>'
 - 也被称作Mongo控制台 (Mongo Console)
 
-注意在各种情况下你都不需要敲提示符('$' '❯'或'>')在命令前面.而且你可以认定任何不是用提示符起始的行都是前一个命令的输出结果.
+注意在各种情况下你都不需要敲提示符('$' '❯'或'>')在命令前面。而且你可以认定任何不是用提示符起始的行都是前一个命令的输出结果。
 
 <% end %>
 
 ### 服务器端的集合
 
-在服务器端, 集合可以认为是操作Mongo数据库的API. 你可以像'Posts.insert()'或者'Posts.update()'这样操作Mongo, 而且你对'posts'集合的操作会存储到Mongo中.
+在服务器端， 集合可以认为是操作Mongo数据库的API。 你可以像'Posts。insert()'或者'Posts。update()'这样操作Mongo， 而且你对'posts'集合的操作会存储到Mongo中。
 
-如果想直接看看MongoDB, 可以打开第二个终端窗口(这时候Meteor还在第一个终端窗口继续运行呢),去你的App的目录. 输入命令'meteor mongo' 启动Mongo 外壳程序Shell. 现在你可以输入标准的Mongo命令 (如同以往,你可以敲'ctrl + c'快捷键退出回到终端控制台). 比如让我们插入一个新的post:
+如果想直接看看MongoDB， 可以打开第二个终端窗口(这时候Meteor还在第一个终端窗口继续运行呢)，去你的App的目录。 输入命令'meteor mongo' 启动Mongo 外壳程序Shell。 现在你可以输入标准的Mongo命令 (如同以往，你可以敲'ctrl + c'快捷键退出回到终端控制台)。 比如让我们插入一个新的post:
 
 ~~~bash
-> db.posts.insert({title: "A new post"});
+> db。posts。insert({title: "A new post"});
 
-> db.posts.find();
-{ "_id": ObjectId(".."), "title" : "A new post"};
+> db。posts。find();
+{ "_id": ObjectId("。。")， "title" : "A new post"};
 ~~~
 <%= caption "The Mongo Shell" %>
 
 <% note do %>
 
-### Meteor.com上的Mongo
+### Meteor。com上的Mongo
 
-注意如果你把App部署在 *.meteor.com上, 你一样可以通过 'meteor mongo myApp'的方式进入你的App的Mongo外壳操作.
+注意如果你把App部署在 *。meteor。com上， 你一样可以通过 'meteor mongo myApp'的方式进入你的App的Mongo外壳操作。
 
-而且你还可以输入'meteor logs myApp'得到你的App的log 日志.
+而且你还可以输入'meteor logs myApp'得到你的App的log 日志。
 
 <% end %>
 
-Mongo的语法由于借用Javascript的语法所以十分令人熟悉. 我们现在在Mongo外壳里不做过多的数据操作, 不过我们可以随时来这里检查数据确保他们正常存在.
+Mongo的语法由于借用Javascript的语法所以十分令人熟悉。 我们现在在Mongo外壳里不做过多的数据操作， 不过我们可以随时来这里检查数据确保他们正常存在。
 
 ### 客户端集合
 
-客户端的集合更加有趣. 当你在客户端申明'Posts= new Meteor.Collection('posts');`你实际上是创建了一个本地的,在浏览器缓存中的真实的Mongo集合. 当我们说客户端集合被"缓存"是指它保存了你数据的一个*子集*,而且对这些数据提供了十分*快速*的访问.
+客户端的集合更加有趣。 当你在客户端申明'Posts= new Meteor。Collection('posts');`你实际上是创建了一个本地的，在浏览器缓存中的真实的Mongo集合。 当我们说客户端集合被"缓存"是指它保存了你数据的一个*子集*，而且对这些数据提供了十分*快速*的访问。
 
-有一点我们必须要明白, 因为这是Meteor工作的一个基础: 通常说来, 客户端的集合的数据是你Mongo数据库的所有数据的一个子集(毕竟我们不会想把*整个*数据库的数据全传到客户端来)
+有一点我们必须要明白， 因为这是Meteor工作的一个基础: 通常说来， 客户端的集合的数据是你Mongo数据库的所有数据的一个子集(毕竟我们不会想把*整个*数据库的数据全传到客户端来)
 
-第二, 那些数据是被存储在*浏览器内存*中得, 也就是说访问这些数据几乎不需要时间, 不像去服务器访问'Posts.find()'那样需要等待,因为数据事实上已经载入了
+第二， 那些数据是被存储在*浏览器内存*中得， 也就是说访问这些数据几乎不需要时间， 不像去服务器访问'Posts。find()'那样需要等待，因为数据事实上已经载入了
 
 <% note do %>
 
 ### 介绍MiniMongo
 
-Meteor的客户端Mongo的技术实现被成为MiniMongo. 它目前还不是一个完美的实现, 而且你会发现偶尔Mongo的功能在这里不能实现. 不过本书中涉及到的功能都是可以在Mongo和MiniMongo中实现的.
+Meteor的客户端Mongo的技术实现被成为MiniMongo。 它目前还不是一个完美的实现， 而且你会发现偶尔Mongo的功能在这里不能实现。 不过本书中涉及到的功能都是可以在Mongo和MiniMongo中实现的。
 
 <% end %>
 
@@ -132,25 +132,25 @@ Meteor的客户端Mongo的技术实现被成为MiniMongo. 它目前还不是一�
 ////
 
 ~~~bash
-> db.posts.find();
-{title: "A new post", _id: ObjectId("..")};
+> db。posts。find();
+{title: "A new post"， _id: ObjectId("。。")};
 ~~~
 <%= caption "The Mongo Shell" %>
 
 ~~~js
-❯ Posts.findOne();
-{title: "A new post", _id: LocalCollection._ObjectID};
+❯ Posts。findOne();
+{title: "A new post"， _id: LocalCollection。_ObjectID};
 ~~~
 <%= caption "First browser console" %>
 
 ////
 
 ~~~js
-❯ Posts.find().count();
+❯ Posts。find()。count();
 1
-❯ Posts.insert({title: "A second post"});
+❯ Posts。insert({title: "A second post"});
 'xxx'
-❯ Posts.find().count();
+❯ Posts。find()。count();
 2
 ~~~
 <%= caption "First browser console" %>
@@ -158,9 +158,9 @@ Meteor的客户端Mongo的技术实现被成为MiniMongo. 它目前还不是一�
 ////
 
 ~~~bash
-❯ db.posts.find();
-{title: "A new post", _id: ObjectId("..")};
-{title: "A second post", _id: 'yyy'};
+❯ db。posts。find();
+{title: "A new post"， _id: ObjectId("。。")};
+{title: "A second post"， _id: 'yyy'};
 ~~~
 <%= caption "The Mongo Shell" %>
 
@@ -169,7 +169,7 @@ Meteor的客户端Mongo的技术实现被成为MiniMongo. 它目前还不是一�
 ////
 
 ~~~js
-❯ Posts.find().count();
+❯ Posts。find()。count();
 2
 ~~~
 <%= caption "Second browser console" %>
@@ -203,29 +203,29 @@ $ meteor reset
 ////
 
 ~~~js
-if (Posts.find().count() === 0) {
-  Posts.insert({
-    title: 'Introducing Telescope',
-    author: 'Sacha Greif',
-    url: 'http://sachagreif.com/introducing-telescope/'
+if (Posts。find()。count() === 0) {
+  Posts。insert({
+    title: 'Introducing Telescope'，
+    author: 'Sacha Greif'，
+    url: 'http://sachagreif。com/introducing-telescope/'
   });
   
-  Posts.insert({
-    title: 'Meteor',
-    author: 'Tom Coleman',
-    url: 'http://meteor.com'
+  Posts。insert({
+    title: 'Meteor'，
+    author: 'Tom Coleman'，
+    url: 'http://meteor。com'
   });
   
-  Posts.insert({
-    title: 'The Meteor Book',
-    author: 'Tom Coleman',
-    url: 'http://themeteorbook.com'
+  Posts。insert({
+    title: 'The Meteor Book'，
+    author: 'Tom Coleman'，
+    url: 'http://themeteorbook。com'
   });
 }
 ~~~
-<%= caption "server/fixtures.js" %>
+<%= caption "server/fixtures。js" %>
 
-<%= commit "4-2", "Added data to the posts collection." %>
+<%= commit "4-2"， "Added data to the posts collection。" %>
 
 ////
 
@@ -236,7 +236,7 @@ if (Posts.find().count() === 0) {
 ////
 
 ~~~js
-❯ Posts.find().fetch();
+❯ Posts。find()。fetch();
 ~~~
 <%= caption "Browser console" %>
 
@@ -245,16 +245,16 @@ if (Posts.find().count() === 0) {
 ////
 
 ~~~js
-Template.postsList.helpers({
+Template。postsList。helpers({
   posts: function() {
-    return Posts.find();
+    return Posts。find();
   }
 });
 ~~~
-<%= caption "client/views/posts/posts_list.js" %>
+<%= caption "client/views/posts/posts_list。js" %>
 <%= highlight "2~4" %>
 
-<%= commit "4-3", "Wired collection into `postsList` template." %>
+<%= commit "4-3"， "Wired collection into `postsList` template。" %>
 
 <% note do %>
 
@@ -268,24 +268,24 @@ Template.postsList.helpers({
 
 ////
 
-<%= screenshot "4-3", "Using live data" %>
+<%= screenshot "4-3"， "Using live data" %>
 
 ////
 
 ////
 
 ~~~js
-❯ Posts.insert({
-  title: 'Meteor Docs', 
-  author: 'Tom Coleman', 
-  url: 'http://docs.meteor.com'
+❯ Posts。insert({
+  title: 'Meteor Docs'， 
+  author: 'Tom Coleman'， 
+  url: 'http://docs。meteor。com'
 });
 ~~~
 <%= caption "Browser console" %>
 
 ////
 
-<%= screenshot "4-4", "Adding posts via the console" %>
+<%= screenshot "4-4"， "Adding posts via the console" %>
 
 ////
 
@@ -316,20 +316,20 @@ $ meteor remove autopublish
 ////
 
 ~~~js
-Meteor.publish('posts', function() {
-  return Posts.find();
+Meteor。publish('posts'， function() {
+  return Posts。find();
 });
 ~~~
-<%= caption "server/publications.js" %>
+<%= caption "server/publications。js" %>
 
 ////
 
 ~~~js
-Meteor.subscribe('posts');
+Meteor。subscribe('posts');
 ~~~
-<%= caption "client/main.js" %>
+<%= caption "client/main。js" %>
 
-<%= commit "4-4", "Removed `autopublish` and set up a basic publication." %>
+<%= commit "4-4"， "Removed `autopublish` and set up a basic publication。" %>
 
 ////
 
