@@ -3,11 +3,11 @@ title: 开始
 slug: getting-started
 date: 0002/01/01
 number: 2
-contents: 安装 Meteor 和 Meteorite|学习 Meteor 包的五种类型|建立 Meteor 程序的文件结构
+contents: 安装 Meteor 和 Meteorite|学习 Meteor 包的五种类型|建立 Meteor 应用的文件结构
 paragraphs: 49
 ---
 
-第一印象是十分重要的，Meteor 的安装过程可以说没什么坑。大多数情况下，五分钟内就能安装好。
+第一印象十分重要，安装 Meteor 并不会遇到什么困难。大多数情况下，在五分钟内便可以完成。
 
 首先，我们从 http://meteor.com 网站上安装 Meteor：
 
@@ -15,29 +15,29 @@ paragraphs: 49
 $ curl https://install.meteor.com | sh
 ~~~
 
-上述命令会在系统中安装 `meteor` 可执行文件，然后就可以使用 Meteor 了。
+以上命令会在系统中安装 `meteor` 可执行文件，然后就可以使用 Meteor 了。
 
 <% note do %>
 
-### 不安装 Meteor
+### 选择*不安装* Meteor
 
-如果无法再本地安装 Meteor，或者不想安装，我们推荐你使用 [Nitrous.io](http://nitrous.io)>
+如果你无法或者不想在本地安装 Meteor ，我们推荐你使用 [Nitrous.io](http://nitrous.io)。
 
-Nitrous.io 这个服务可以直接在浏览器中运行程序、编辑代码。我们写了[一篇简短的文章](https://www.discovermeteor.com/blog/meteor-nitrous/)介绍如何使用 Nitrous.io。
+使用 Nitrous.io 可以让你在览器中直接编辑代码并运行程序。我们撰写了[一篇简短的指南](https://www.discovermeteor.com/blog/meteor-nitrous/)，介绍如何使用 Nitrous.io。
 
-你可以一直阅读到这篇文章“Installing Meteor & Meteorite”部分，然后再回到本书，从“创建简单的应用”一节开始阅读。
+你可以一直阅读那篇指南直到“Installing Meteor & Meteorite”部分，然后再回到本章，从“创建简单的应用”一节开始阅读。
 
 <% end %>
 
 ### Meteorite
 
-默认情况下，Meteor 暂时不支持第三方代码包，为了解决这个问题，Tom Coleman（本书作者之一）和一些社区成员开发了 [Meteorite](http://oortcloud.github.io/meteorite/)。Meteorite 包装了 Meteor，可以用来安装 Meteor 和其他代码包。
+默认情况下，Meteor 暂时不支持第三方代码包(package)，为了解决这个问题，Tom Coleman（本书作者之一）和其他一些社区成员开发了 [Meteorite](http://oortcloud.github.io/meteorite/)。Meteorite 包装了 Meteor，可以用来安装 Meteor 并安装和关联其它第三方代码包。
 
-Microscope 的某些功能要使用第三方代码包实现，所以我们要安装 Meteorite。
+因为我们需要为 Microscope 引入一些第三方代码包的功能，所以现在让我们来一起安装 Meteorite。
 
 ### 安装 Meteorite
 
-安装 Meteorite 之前，请确保系统中安装了 Node 和 git。请按照针对各操作系统的安装方法安装，或者参照下面的链接：
+安装 Meteorite 之前，请确保系统中安装了 Node 和 git。请针对各操作系统的标准进行安装，或参照下面的链接：
 
 - [Node 下载地址](http://nodejs.org/download/)
 - [Git 下载地址](http://git-scm.com/downloads)
@@ -52,7 +52,7 @@ $ npm install -g meteorite
 
 ### 权限出错？
 
-在某些系统上，安装 Meteorite 需要 root 权限。为了避免出现问题，请使用 `sudo -H`：
+在某些系统上，安装 Meteorite 可能需要 root 权限。为了避免出现问题，请使用 `sudo -H`：
 
 ~~~bash
 $ sudo -H npm install -g meteorite
@@ -64,13 +64,13 @@ $ sudo -H npm install -g meteorite
 
 就这么简单！从现在开始一切都交给 Meteorite 处理了。
 
-注意：Meteorite 目前不支持 Windows 系统，你可以阅读[这篇教程](https://www.discovermeteor.com/blog/using-meteor-and-atmopshere-on-windows/)寻找解决办法。
+注意：Meteorite 目前暂不支持 Windows 系统，你可以阅读[这篇教程](https://www.discovermeteor.com/blog/using-meteor-and-atmopshere-on-windows/)来寻找解决办法。
 
 <% note do %>
 
 ### `mrt` vs `meteor`
 
-安装 Meteorite 时安装了 `mrt` 可执行文件，我们使用 `mrt` 在应用程序中安装代码包。如果要启动服务器，则会使用 `meteor`。
+安装 Meteorite 的同时回安装 `mrt` 可执行文件，我们将用它为应用程序安装新的代码包。当你想要启动服务器，则会使用到 `meteor`。
 
 <% end %>
 
@@ -124,10 +124,10 @@ $ mrt add bootstrap
 
 Meteor 中的代码包有点特殊，分为五种：
 
-- Meteor 核心代码本身分成多个**核心代码包**（core package），每个 Meteor 应用中都有，你基本上无需关注
-- Meteor **智能代码包**（smart package）大约有 [37 个](http://docs.meteor.com/#packages)（可以执行 `meteor list` 查看完整列表），是 Meteor 自带的，可以有选择的引入应用。不用 Meteorite 也可以引入智能代码包，执行 `meteor add packagename` 即可
+- Meteor 核心代码本身分成多个**核心代码包**（core package），每个 Meteor 应用中都包含，你基本上不需要花费精力来维护它们
+- Meteor **智能代码包**（smart package）大约有 [37 个](http://docs.meteor.com/#packages)（可以执行 `meteor list` 来查看完整列表），是 Meteor 自带的，可以有选择的引入应用。不用 Meteorite 就可以引入智能代码包，执行 `meteor add packagename` 即可
 - **本地代码包**（local package）是自己开发的代码包，保存在 `/packages` 文件夹中。同样，不使用 Meteorite 也可以引入本地代码包
--**Atmosphere 智能代码包**（Atmosphere smart package）是 [Atmosphere](https://atmosphere.meteor.com/) 网站中列出的第三方代码包。引入这些代码包，必须使用 Meteorite
+-**Atmosphere 智能代码包**（Atmosphere smart package）是 [Atmosphere](https://atmosphere.meteor.com/) 网站中列出的第三方代码包。你必须使用 Meteorite 才可以引入这些代码包
 - **NPM 代码包**（NPM package）是 Node.js 的代码包，虽不能直接用于 Meteor，但可以在上述几种代码包中使用
 
 <% end %>
@@ -136,54 +136,54 @@ Meteor 中的代码包有点特殊，分为五种：
 
 开始编写代码之前，我们必须要正确的设置项目。为了保证项目整洁，请打开 `microscope` 文件夹，删除 `microscope.html`、`microscope.js` 和 `microscope.css`。
 
-然后在 `microscope` 文件夹中新建五个子文件夹：`/client`，`/server`，`/public`，`/lib` 和 `/collections`。然后在 `/client` 文件夹中新建两个空文件：`main.html` 和 `main.js`。如果程序无法运行了先别担心，从下一章开始我们会编写代码。
+请在 `microscope` 文件夹中新建五个子文件夹：`/client`，`/server`，`/public`，`/lib` 和 `/collections`。然后在 `/client` 文件夹中新建两个空文件：`main.html` 和 `main.js`。如果程序无法运行了先别担心，从下一章开始我们会编写代码。
 
-////
+值得一提的是，上述文件夹中有一些拥有特别的作用。关于文件， Meteor 有以下几条规则：
 
-- ////
-- ////
-- ////
-- ////
-- ////
-- ////
+- 在 `/server` 文件夹中的代码只会在服务器端运行。
+- 在 `/client` 文件夹中的代码只会在客户端运行。
+- 其它代码则将同时运行于服务器端和客户端上。
+- 在 `/lib` 文件夹中的文件将被优先载入。
+- 所有以 `main.*` 命名的文件将在其他文件载入后载入。
+- 请将所有的静态文件（字体，图片等）放置在 `/public` 文件夹中。
 
-////
+需要注意的是，即便 Meteor 包含上述规则，这并不意味着它强制你为你的Meteor 应用采用任何预设的文件结构。上述结构只是我们的建议，并不是一尘不变的。
 
-////
-
-<% note do %>
-
-### Is Meteor MVC?
-
-////
-
-////
-
-<% end %>
-
-### No public?
-
-////
-
-////
+对此如果你想了解更多，我们强烈建议你参阅 [Meteor 官方文档](http://docs.meteor.com/#structuringyourapp)。
 
 <% note do %>
 
-### Underscores vs CamelCase
+### Meteor 采用 MVC 架构吗？
 
-////
+如果你之前有过在其它诸如 Ruby on Rails 框架下开发的经历，此时你心中可能会有这样的疑问， Meteor 采用 MVC (Model View Controller) 架构吗？
 
-////
-
-////
+简短的回答是，不。与 Rails 不同，Meteor 并不为你的应用强加任何预设的架构。因此本书将直接给出我们认为最合理的代码，而不对任何现有架构作过多考虑。
 
 <% end %>
 
-### Taking Care of CSS
+### 不需要 public 文件夹？
 
-////
+好吧，我们承认在之前小小的忽悠了大家一下。其实我们并不需要为我们的应用建立一个 `public/` 文件夹，因为 Microscope 并不需要使用任何的静态文件。但是值得注意的是，大多数 Meteor 应用都会或多或少使用一些图片，因此我们觉得 `public/` 文件夹还是值得一谈的。
 
-////
+另外，你可能注意到了一个隐藏的 `.meteor` 文件夹。这是 Meteor 存储它内部代码的地方，尝试更改里面的内容并不是什么好主意。事实上，你根本不需要关心其中的内容。有两个例外是 `.meteor/packages` 文件和 `.meteor/release` 文件。它们分别列出了你安装的所有智能代码包和你使用的 Meteor 版本。当你为你的应用添加代码包或更改 Meteor 版本时，查看这两个文件的变更可能会为你带来一些帮助。
+
+<% note do %>
+
+### 下划线命名法 vs 驼峰命名法
+
+对于历史悠久的下划线命名法 (`my_variable`) 和驼峰命名法 (`myVariable`) 我们认为选择哪种并不重要，只要你坚持在项目中贯彻它。
+
+在本书中，我们将采用驼峰命名法，因为它是 JavaScript 中的惯例（毕竟它叫 JavaScript 而不是 java_script 呀！）。
+
+对此唯一的例外是，对文件的命名，我们将采用下划线命名法 (`my_file.js`)。对于 CSS 类，我们将使用连字号 (`.my-class`)。这样做的原因是在文件系统中，下划线命名法最常见，而 CSS 语法本身就使用连字号作为连接（比如 `font-family`，`text-align`等）。
+
+<% end %>
+
+### 搞定 CSS
+
+本书并不侧重于 CSS 。所以为了避免在 CSS 细节上花费过多时间，我们决定在本书一开始就为大家提供完整的 CSS 文件。因此你不必再担心这个问题。
+
+CSS 文件将被 Meteor 自动加载并简化。因此，不同于其它的静态文件都被放置于 `/public` 文件夹，请将 CSS 文件放入 `/client` 文件夹。请创建一个 `client/stylesheets/` 文件夹并将以下 `style.css` 文件放置入内。
 
 ~~~css
 .grid-block, .main, .post, .comments li, .comment-form {
@@ -287,9 +287,9 @@ body {
 
 <% note do %>
 
-### A Note on CoffeeScript
+### CoffeeScript 小贴士
 
-////
+在本书中我们将使用原版 javaScript 。但是如果你更倾向于使用 CoffeScript ， Meteor 可以帮助你做到这点。你只需添加 CoffeeScript 代码包，之后便可以在项目中使用 CoffeeScript 了！
 
 `mrt add coffeescript`
 
