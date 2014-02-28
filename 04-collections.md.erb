@@ -30,7 +30,7 @@ Posts = new Meteor.Collection('posts');
 ~~~
 <%= caption "collections/posts.js" %>
 
-<%= commit "4-1"， "增加一个 post 集合" %>
+<%= commit "4-1", "增加一个 post 集合" %>
 
 代码所在的目录既不是 'client/' 也不是 'server/' 所以 'Posts' 会共同存在运行在服务器和客户端。 然而， 这个集合的使用在两种环境下十分不同。
 
@@ -52,7 +52,7 @@ Posts = new Meteor.Collection('posts');
 
 #### 终端命令行(Terminal)
 
-<%= screenshot "终端命令行"， "终端命令行" %>
+<%= screenshot "终端命令行", "终端命令行" %>
 
 - 由操作系统启动
 - **服务器端** 'console.log()' 会输出到这里
@@ -61,7 +61,7 @@ Posts = new Meteor.Collection('posts');
 
 #### 浏览器控制台(Browser Console)
 
-<%= screenshot "browser-console"， "The Browser Console" %>
+<%= screenshot "browser-console", "The Browser Console" %>
 
 - 在浏览器内启动， 执行 Javascript 代码  
 - **客户端**的'console.log()' 会输出到这里
@@ -70,7 +70,7 @@ Posts = new Meteor.Collection('posts');
 
 #### Mongo 外壳程序 (Mongo Shell)
 
-<%= screenshot "mongo 外壳"， "Mongo 外壳" %>
+<%= screenshot "mongo 外壳", "Mongo 外壳" %>
 
 - 从终端由 'meteor mongo' 或者 'mrt mongo' 来启动
 - 你可以在这里直接操作 App 的数据库
@@ -225,7 +225,7 @@ if (Posts.find().count() === 0) {
 ~~~
 <%= caption "server/fixtures.js" %>
 
-<%= commit "4-2"， "在 posts 集合中加入数据." %>
+<%= commit "4-2", "在 posts 集合中加入数据." %>
 
 我们把这个文件放到了 ‘server/‘目录中，因此永远不会被加载到任何用户的浏览器中。这段代码在服务器启动的时候会立即运行，然后调用’插入‘功能在数据库的’posts‘集合中插入三条简单的帖子。因为我们还没有加入任何数据安全功能，所以无论在服务器还是在客户端运行这个文件都事实上没有区别的。
 
@@ -254,7 +254,7 @@ Template.postsList.helpers({
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "2~4" %>
 
-<%= commit "4-3"， "把集合连接到 `postsList` 模板上。" %>
+<%= commit "4-3", "把集合连接到 `postsList` 模板上。" %>
 
 <% note do %>
 
@@ -268,7 +268,7 @@ Meteor 十分智能地在应用中保持游标状态而避免动不动就把游�
 
 现在，预期把帖子们变成静态的数组，不如直接把游标赋给 ‘posts’ helper。但是如何做得到呢？如果我们回到浏览器上，我们可以看到：
 
-<%= screenshot "4-3"， "使用活数据" %>
+<%= screenshot "4-3", "使用活数据" %>
 
 我们可以清晰地看到 `{{#each}}` helper 已经枚举了 ’Posts‘ 中的所有帖子，而且显示到屏幕上。服务器端的集合从 Mongo 数据库中取出贴子数据， 通过网络传到客户端的集合中， 进而 handlers 的 helper 把这些数据加载到模板中。
 
@@ -285,7 +285,7 @@ Meteor 十分智能地在应用中保持游标状态而避免动不动就把游�
 
 再看浏览器 -  你会看到这些：
 
-<%= screenshot "4-4"， "通过控制台增加帖子" %>
+<%= screenshot "4-4", "通过控制台增加帖子" %>
 
 你刚才第一次看到随动功能生效了。当我们告诉 handlebars 去枚举 `Posts.find()` 游标的时候，它自己知道如何发现游标的变动， 从而用最简单的方式将变化后的正确数据显示到屏幕上。
 
@@ -329,7 +329,7 @@ Meteor.subscribe('posts');
 ~~~
 <%= caption "client/main.js" %>
 
-<%= commit "4-4"， "删除 `autopublish` 并建立基本的发布功能" %>
+<%= commit "4-4", "删除 `autopublish` 并建立基本的发布功能" %>
 
 如果你现在看一眼浏览器， 发现帖子都回来了。 哇！好险啊！
 
