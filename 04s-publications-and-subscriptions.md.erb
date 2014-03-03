@@ -28,15 +28,15 @@ App 的第一个任务就是搞清楚这个客户请求什么数据。这个可�
 
 ### Meteor 的方式
 
-////
+让我们看看 Meteor 相对之下是多么的特别。正如我们看到的，Meteor 的关键性创新在于 Rails 程序只跑在 **服务器**上，而一个 Meteor App 还包括客户端的组件跑在**客户端**（浏览器）傻瓜。
 
 <%= diagram "client-server", "Pushing a subset of the database to the client.", "pull-right" %>
 
-////
+这就相当于书店的伙计不仅仅在书店里帮你找书，还跟你回家，每天晚上读给你听 （这听起来怪怪的）。
 
-////
+这种架构可以让 Meteor 多更多很酷的事情，其中一件主要的就是 Metoer 成为 [数据库无处不在] ([database everywhere])(http://docs.meteor.com/#sevenprinciples)。简单说，Meteor 把你的数据拿出一部分子集*复制到客户端*。
 
-////
+这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送*真实的生数据*，让客户端绝对如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问**。[延迟补偿]([latency compensation](http://docs.meteor.com/#sevenprinciples))。
 
 ### Publishing
 
