@@ -38,23 +38,23 @@ App 的第一个任务就是搞清楚这个客户请求什么数据。这个可�
 
 这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送*真实的生数据*，让客户端绝对如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问**。[延迟补偿]([latency compensation](http://docs.meteor.com/#sevenprinciples))。
 
-### Publishing
+### 发布
 
-////
+一个 App 的数据库可能用上万条数据，其中一些还可能是私用和保密敏感数据。显而易见我们不能简单地把数据库镜像到客户端去，无论是安全原因还是扩展性原因。
 
-////
+所以我们需要告诉 Meteor 那些数据**子集**是需要送到客户端，我们将用 **发布** 功能来做这个事儿。
 
-////
+让我们来回到 Microscope。这里是我们 App 数据库中的所有帖子
 
-<%= diagram "collections-1", "All the posts contained in our database.", "pull-center" %>
+<%= diagram "collections-1", "数据库中的所有帖子数据", "pull-center" %>
 
-////
+尽管实际上不存在但是我们还是假设我们的帖子中有几条因为言语不当被打了特殊标记的。我们需要把他们留在数据库中但是不希望让用户看到（发送去客户端）。
 
-////
+我们第一个任务就是告诉 Meteor 那些数据我们*要*发送去客户端。我们告诉 Meteor 我们只**发布**没有打标记的帖子。
 
-<%= diagram "collections-2", "Excluding flagged posts.", "pull-center" %>
+<%= diagram "collections-2", "排除做过标记的帖子", "pull-center" %>
 
-////
+这里是对应的代码，在服务器端代码中。
 
 ~~~js
 // on the server
@@ -63,7 +63,7 @@ Meteor.publish('posts', function() {
 });
 ~~~
 
-////
+这就保证客户端**无论如何**也无法看到打了标记的帖子了。这就是 Meteor App 如何做到安全性的：保证只发布你让这个当前用户看到的数据。
 
 <% note do %>
 
