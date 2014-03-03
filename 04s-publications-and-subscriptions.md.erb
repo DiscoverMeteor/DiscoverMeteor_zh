@@ -1,32 +1,32 @@
 ---
-title: Publications and Subscriptions
+title: 发布与订阅
 slug: publications-and-subscriptions
 date: 0004/01/02
 number: 4.5
 sidebar: true
-contents: Understand how publications and subscriptions work.|Learn what the default Autopublish package does.|See a few more examples of publication patterns.
+contents: 理解发布和阅读是如何工作的。| 学习 default Autopublish 的作用 | 更多的发布模式
 paragraphs: 52
 ---
 
-////
+发布和订阅是Meteor的最基本最重要的概念之一，但是如果也是刚刚开始接触 Meteor 的话，也是有些难度的。
 
-////
+而且容易产生不少误解，比如认为 Meteor 是不安全的， 或者说 Meteor App 无法处理大量数据等等。
 
-////
+人们起初会感觉这些概念很迷惑很大程度上是因为 Meteor 像变魔法一样替你做了很多事儿。尽管这些魔法最终看起来很有效，但是它们掩盖了后台真正做的工作（好像魔术一样）。所以让我们剥去魔法的外衣来看看究竟发生了什么。
 
-### The Olden Days
+### 过去的日子
 
-////
+首先，让我们回顾一下2011年之前，当 Meteor 还没有诞生的时候的老日子。比如说我们要建立一个简单的 Rails app。当用户来我们的站点，客户端（举例说浏览器）向我们的服务器端的 app 发送请求。
 
-////
+App 的第一个任务就是搞清楚这个客户请求什么数据。这个可能是搜索结果的第12页，玛丽的用户信息，鲍勃的最新20条微博，等等等等。 你可以想想成为一个书店的伙计在书架之间帮你寻找你要的书。
 
-////
+当正确的数据被找到，这个 App 的下一个任务就是把数据转换成伟好看的，人类可读的 HTML 格式（对于 API 而言是 JSON 串）。
 
-////
+用书店来举例，那就相当于是把你刚买的书包好，然后装入一个漂亮的袋子。这就是注明的 MVC（模型-视图-控制器）模式中的视图部分。
 
-////
+最终，App 把 HTML 代码送到客户端。这个 App 的任务也就交差了。它可以去卖瓶啤酒然后等着下一个请求来。
 
-### The Meteor Way
+### Meteor 的方式
 
 ////
 
