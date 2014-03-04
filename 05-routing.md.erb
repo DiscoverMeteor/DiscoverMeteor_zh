@@ -1,67 +1,67 @@
 ---
-title: Routing
+title: 路由
 slug: routing
 date: 0005/01/01
 number: 5
-contents: Learn about routing in Meteor.|Create post discussion pages, with unique URLs.|Learn how to link to those URLs properly.
+contents: 学习 Meteor 的路由。|创建拥有唯一 URL 的帖子讨论页。|学习如何正确链接到这些 URL 。
 paragraphs: 72
 ---
 
-////
+现在，我们已经创建了一个帖子列表页面（最终是由用户提交的），我们还需要添加一个单独的帖子页面，提供给用户评论对应的帖子。
 
-////
+我们希望可以通过**固定链接**访问到每个单独的帖子页面，URL 形式是 `http://myapp.com/posts/xyz` （这里的 `xyz` 是 MongoDB 的`_id` 标识符）。
 
-////
+这意味着我们需要某些**路由**来看看浏览器的地址栏里面的路径是什么,并相应地显示正确的内容。
 
-### Adding the Iron Router Package
+### 添加 Iron Router 包
 
-////
+[Iron Router](https://github.com/EventedMind/iron-router) 是特别为 Meteor Apps 开发的路由包。
 
-////
+它不仅能帮助路由（设置路径），还能帮助过滤（为这些路径分配跳转），甚至能控制订阅（控制路径可以访问哪些数据）。（注意：Iron Router 是由  **Discover Meteor** 的其中一名作者 Tom Coleman 开发的。)
 
-////
+首先，让我们从 Atmosphere 中安装这个包：
 
 ~~~bash
 $ mrt add iron-router
 ~~~
 <%= caption "Terminal" %>
 
-////
+这个命令是下载并安装 iron-router 包到我们的 App ，这样我们就可以使用了。请注意，在能够顺利使用这个包之前，你可能需要重启你的 Meteor App（通过按 `ctrl + c` 就能停止进程，然后输入 `mrt` 再次启动它）。
 
-////
+注意，Iron Router 是一个第三方包，这意味着你需要通过 Meteorite   来安装它（ `meteor add iron-router` 是不行的）。
 
 <% note do %>
 
-### Router Vocabulary
+### 路由器的词汇
 
-////
+在本章我们会接触很多路由器的不同功能。如果你对类似 Rails 的框架有一定实践经验的话，你可能已经很熟悉大部分的这些词汇概念了。但是如果没有的话，这里有一个快速词汇表让你来了解一下：
 
-- ////
-- ////
-- ////
-- ////
-- ////
-- ////
-- ////
-- ////
+- **路线**：路线是构建路由的基本模块。它最基本的工作就是当遇到 URL 访问 App 的时候，告诉 App 应该做什么。 
+- **路径**：路径是访问 App 的 URL。它可以是静态的（ `/terms_of_service` ）或者动态的（ `/posts/xyz` ），甚至还可以包含查询参数（ `/search?keyword=meteor` ）。
+- **目录**：路径的一部分，使用正斜杠(`/`)进行分隔。
+- **Hooks**：Hooks 是可以执行在路由之前，之后，甚至是路由正在进行的时候。一个典型的例子是，在显示一个页面之前检测用户是否拥有这个权限。
+- **过滤器**：过滤器类似于 Hooks ，为一个或者多个路线定义的全局过滤器。
+- **路由模板**：每个路线需要指向一个模板。如果你不指定，路由器将会默认去寻找一个具有相同名称的模板。
+- **布局**：你可以想象成一个数码相框的布局。它们包含所有的 HTML 代码放置在当前的模板中，即使模板发生改变它们也不会变。
+- **控制器**：有时候，你会发现很多你的模板都在重复使用一些参数。为了不重复你的代码，你可以让这些路线继承一个 **routing controller** 去包含所有的路由逻辑。
 
-////
+关于更多 Iron Router 的信息，请查看  [GitHub上面的完整文档](https://github.com/EventedMind/iron-router). 
 
 <% end %>
 
-### Routing: Mapping URLs To Templates
+### 路由：把 URL 映射到模板
 
-////
+到目前为止，我们已经使用了一些固定模板（比如 `{{>postsList}}` ）来为我们布局。因此，尽管我们 App 的内容还可以更改，但是页面的基本结构都已经不变了：一个头（ header ），它下面是帖子列表。
 
-////
+Iron Router 负责处理在 HTML `<body>` 标签里面该呈现什么，让我们摆脱了这个枷锁。所以我们不会再自己去定义标签里面的内容，取而代之的是，我们将路由器指定到一个包含 `{{yield}}` 标签的布局模板。
 
-////
+这个 `{{yield}}` 标签将会定义一个动态区域，它会自动呈现对应于当前线路的相应模板（从现在起，我们将指定这个特殊的模板叫 “route templates” ）：
 
 <%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
 
-////
+我们将开始构建我们的布局和添加 `{{yield}}` 标签。首先，我们先从 `main.html` 文件里面删除 `<body>` 标签，并把它的内容放到它们共同的模板 `layout.html` 里面。
 
-////
+我们把 `main.html` 删减内容之后应该是这样的：
 
 ~~~html
 <head>
@@ -70,7 +70,7 @@ $ mrt add iron-router
 ~~~
 <%= caption "client/main.html" %>
 
-////
+而新创建的 `layout.html` 现在将会包含 App 的外层布局：
 
 ~~~html
 <template name="layout">
@@ -88,9 +88,9 @@ $ mrt add iron-router
 ~~~
 <%= caption "client/views/application/layout.html" %>
 
-////
+你会注意到我们已经把 `yield` 标签取代了 `postsList` 模板。
 
-////
+接下来，我们可以恢复之前的根路径 `/ ` URL 映射到 `postsList` 模板。然后我们在根目录创建一个 `/lib` 目录，并在里面创建 `router.js` 文件：
 
 ~~~js
 Router.configure({
@@ -103,27 +103,27 @@ Router.map(function() {
 ~~~
 <%= caption "lib/router.js"%>
 
-////
+我们已经完成了两件重要的事情。第一，我们已经告诉路由器使用我们刚刚创建的布局作为所有路线的默认布局。第二，我们已经定义了一个名为 `postsList` 的新路线，并映射到 `/ ` 路径。
 
 <% note do %>
 
-### The `/lib` folder
+### `/lib` 文件夹
 
-////
+你放在 `/lib` 文件夹里面的所有文件都会在你的 App 运行的时候确保首先被加载（可能除了 smart 包）。这是放置需要随时准备使用的辅助代码的好地方。
 
-////
+不过有一点注意的是：因为 `/lib` 文件夹并不是放在 `/client` 和 `/server` 文件里面，这意味着它的代码将会同时存在于客户端和服务器。
 
 <% end %>
 
-### Named Routes
+### 命名路线
 
-////
+在这里我们先清除一些歧义。我们命名一个路线叫 `postsList` ，然而我们也有一个名字叫 `postsList` 的**模板**。这里是怎么回事？
 
-////
+默认情况下， Iron Router 会自动去寻找一个与路线名字一样的模板。实际上，它甚至会根据路线名去寻找一个**路径**，意思是如果我们没有定义路径（这原本是在我们的路由器上要去定义的 `path` 选项），URL `/postsList` 将会默认访问我们的模板。
 
-////
+你可能想知道为什么我们需要在最前面去命名路线。命名的路线让我们可以使用一些 Iron Router 的功能，使其更容易在我们的 App 中构建链接。其中最有用的一个是 `{{pathFor}}` 的 Handlebars 标签，它可以返回任何路线的部分 URL 路径。
 
-////
+我们希望 home 链接可以指回到帖子列表页，所以除了指定静态的 `/ ` URL ，我们还可以使用 Handlebars 标签。最后的结果都是一样的，不过这给了我们更多的灵活性，因为如果我们更改了路由器里面路线映射的路径， Handlebars 标签仍然可以输出正确的 URL 。
 
 ~~~html
 <header class="navbar">
@@ -139,13 +139,13 @@ Router.map(function() {
 
 <%= commit "5-1", "Very basic routing." %>
 
-### Waiting on Data
+### 等待数据
 
-////
+如果你要部署当前版本的 App （或启动起来去使用上面的链接），你会注意到在所以帖子完全出现之前，列表里面会空了一段时间。这是因为在第一次加载页面的时候，要等到 `posts` 订阅完成后，即从服务器抓取完帖子的数据，才能有帖子显示在页面上。
 
-////
+这应该要有一个更好的用户体验，比如提供一些视觉上的反馈让用户知道正在读取数据，这样用户才会去继续等待。
 
-////
+幸好 Iron Router 给了我们一个简单的方法去实现它。我们把订阅放到 `waitOn` 的返回上： 
 
 ~~~js
 Router.configure({
@@ -161,17 +161,17 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "3,4" %>
 
-////
+我们先停一下。首先，我们修改了 `Router.configure()` 模块，当我们的 App 正在等待数据的时候，通过加载模板（我们将会马上创建） 去告诉路由器重定向。
 
-////
+第二，我们还添加了一个 `waitOn` 方法，去返回我们的 `posts` 订阅。这意味着路由器通过用户的请求路线，将确保 `posts` 在发送给用户之前，它的订阅已经加载完毕。
 
-////
+注意，因为我们在路由器级别上全局定义了 `waitOn` 方法，所以这个只会在用户第一次访问你的 App 的时候发生一次。在那之后，数据已经被加载到了服务器的内存，路由器不需要再次去等待它。
 
-////
+因为我们现在已经让路由器去处理订阅，所以现在你可以放心从 `main.js` 里面删掉它（现在里面应该是空的了）。
 
-////
+这是一个好办法去等待你的订阅，不仅为了用户体验，还因为它可以顺利地确保数据可以马上体现在模板上。这消除了需要处理的模板被呈现之前，底层数据必须可用的问题，这往往需要复杂的解决方案。
 
-////
+最后一块拼图是加载模板。我们将会使用 `spin` 包去创建一个帅气的动画加载画面。通过 `mrt add spin` 去添加它，然后创建  `loading` 模板：
 
 ~~~html
 <template name="loading">
@@ -180,29 +180,29 @@ Router.map(function() {
 ~~~
 <%= caption "client/views/includes/loading.html" %>
 
-////
+注意 `{{>spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
 
 <%= commit "5-2", "Wait on the post subscription." %>
 
 <% note do %>
 
-### A First Glance At Reactivity
+### 第一次接触响应性
 
-////
+响应性是 Meteor 的一个核心部分，虽然我们没有真正的接触到，但我们的加载模板给了我们去接触这个概念的机会。
 
-////
+如果数据还没有加载完成的时候重定向去一个加载模板是很好，不过路由器如何知道在什么时候数据加载完，然后用户应该要重定向回到原本的页面呢？
 
-////
+刚刚我们说的这个就是响应性的体现，不过别担心，很快你会了解到关于它的更多东西。
 
 <% end %>
 
-### Routing To A Specific Post
+### 路由到一个特定的帖子
 
-////
+既然我们已经看到了如何路由到 `postsList` 模板上，现在让我们建立一个路线来显示一个帖子的详细信息吧。
 
-////
+这里有一个问题：我们不能继续单独定义路线与路径的映射，因为可能有成千上万个。所以我们需要建立一个**动态**的路线，并让路线去显示我们要查看的帖子。
 
-////
+首先，我们将创建一个新的模板，简单地呈现相同的我们使用在帖子列表的模板。
 
 ~~~html
 <template name="postPage">
@@ -211,9 +211,9 @@ Router.map(function() {
 ~~~
 <%= caption "client/views/posts/post_page.html" %>
 
-////
+我们以后还会添加更多的元素在这个模板上（如注释），但现在它将仅仅作为放置 `{{> postItem}}` 的外壳。
 
-////
+我们准备创建另一个路线，这次 URL 路径 `/posts/<ID>`  映射到 `postPage` 模板:
 
 ~~~js
 Router.map(function() {
@@ -228,17 +228,17 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "4~6" %>
 
-////
+这个特殊的 `:_id` 标记告诉路由器两件事：第一，去匹配任何符合 `/posts/xyz/`（“ xyz ”可以是任意字符） 格式的路线。第二，无论“ xyz ”里面是什么，都会把它放到路由器的 `params` 数组中的 `_id` 属性里面去。
 
-////
+请注意，我们这里只使用 `_id` 只是为了方便起见。路由器是没有办法知道你是通过一个实际的 `_id` ，还是仅仅通过一些随机的字符去访问。
 
-////
+我们现在路由到正确的模板了，但是我们仍然漏了一个事情：路由器通过这个帖子的 `_id` 可以知道我们想显示哪个帖子，但模板还没有线索。那么，我们要如果解决这个问题呢？
 
-////
+值得庆幸的是，路由器有一个聪明的内置解决方案：它允许你指定一个模板的**数据上下文**。你可以把数据上下文想象成填充的一个美味的蛋糕去填充模板和布局。简单的说，就是你的模板要填上：
 
 <%= diagram "router-diagram-2", "The data context.", "pull-center" %>
 
-////
+在我们的例子中，我们可以从 URL 上获取 `_id` ，并通过它找到我们的帖子从而获得正确的数据上下文：
 
 ~~~js
 Router.map(function() {
@@ -254,17 +254,17 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "4~7" %>
 
-////
+所以每次用户访问这条路线，我们会找到合适的帖子并将其传递给模板。记住， `findOne` 返回的是一个与查询相匹配的帖子，而仅仅需要提供一个 `id` 作为参数，它可以简写成 `{_id: id}` 。
 
-////
+在路线的 `data` 方法里面，`this` 对应于当前匹配的路线，我们可以使用 `this.params` 去访问某部分的路线（可以在 `path` 中通过 `: ` 前缀去表示它们 ）。
 
 <% note do %>
 
-### More About Data Contexts
+### 更多关于数据上下文
 
-////
+所以每次用户访问这条路线，我们会找到合适的帖子并将其传递给模板。记住， `findOne` 返回的是一个与查询相匹配的帖子，而仅仅需要提供一个 `id` 作为参数，它可以简写成 `{_id: id}` 。
 
-////
+在路线的 `data` 方法里面，`this` 对应于当前匹配的路线，我们可以使用 `this.params` 去访问某部分的路线（这里访问我们可以通过 `: ` 前缀 `path`）
 
 ~~~html
 {{#each widgets}}
