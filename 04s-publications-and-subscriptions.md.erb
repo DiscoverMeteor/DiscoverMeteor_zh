@@ -69,23 +69,24 @@ Meteor.publish('posts', function() {
 
 ### DDP
 
-////
+基本上我们可以把发布/订阅模式想象成为一个漏斗，从服务器端（数据源）过滤数据传送到客户端（目标）。
 
-////
+这个漏洞的创术协议叫做**DDP**（Distributed Data Protocol的缩写）。如果想了解 DDP 的更多细节可以通过看 Matt DeBergalis ( Meteor 的创始人之一) 的 【实时讲演视频】(http://2012.realtimeconf.com/video/matt-debergalis)，或者来自 Chris Mather 的这个【屏幕录像】(http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp)，来学习关于这个概念更多的细节。
 
 <% end %>
 
-### Subscribing
+### 订阅
 
-////
+就算是我们想把打了标记的帖子也发送给客户端，我们也不能把成千上万的帖子一股脑都发出去。我们需要一个机制让客户端来确定那些子集是他们在某个特别时候特别需要的，这就是**订阅**这个功能的用途。
 
-////
 
-////
+感谢 MiniMongo ，这个的客户端 MongoDB 的，你订阅的数据会 **镜像** 到客户端。 
+
+举个例子，让我们现在浏览一下 Bob Smith 的个人页面，这里只会显示*他的*帖子。
 
 <%= diagram "collections-3", "Subscribing to Bob's posts will mirror them on the client.", "pull-center" %>
 
-////
+首先，我们给发布功能加一个参数：
 
 ~~~js
 // on the server
@@ -94,22 +95,22 @@ Meteor.publish('posts', function(author) {
 });
 ~~~
 
-////
+然后我们在*订阅*这个发布的时候也加同一个参数。
 
 ~~~js
 // on the client
 Meteor.subscribe('posts', 'bob-smith');
 ~~~
 
-////
+这就是我们让 Meteor 程序在客户端能够具有可伸缩性：不去订阅*全部*数据，而是指选择你现在需要的数据去定阅。这样的话，你就可以避免消耗大量的客户端内存，无论服务器端的总数据量有多大。
 
-### Finding
+### 查找
 
-////
+现在 Bob 的帖子恰巧涵盖了多个类别（比如：‘JavaScript’， ‘Ruby’，‘Python’）。也许我们仍然需要把 Bob 的所有帖子都装入内存，但是这一会儿只显示属于 ‘JavaScript’ 类别的帖子。 这就是 ‘查找’ 的用途。
 
-<%= diagram "collections-4", "Selecting a subset of documents on the client.", "pull-center" %>
+<%= diagram "collections-4", "在客户端选择一个数据子集.", "pull-center" %>
 
-////
+正如我们在服务器上做的一样，我们用了 'Posts.find()' 函数来选择数据的子集：
 
 ~~~js
 // on the client
@@ -120,7 +121,7 @@ Template.posts.helpers({
 });
 ~~~
 
-////
+现在我们应该明白订阅发布机制了， 让我们在深入了解一些常见的应用模式。
 
 ### Autopublish
 
