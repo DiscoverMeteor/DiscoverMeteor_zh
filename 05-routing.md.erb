@@ -237,11 +237,11 @@ Router.map(function() {
 
 我们现在路由到正确的模板了，但是我们仍然漏了一个事情：路由器通过这个帖子的 `_id` 可以知道我们想显示哪个帖子，但模板还没有线索。那么，我们要如果解决这个问题呢？
 
-值得庆幸的是，路由器有一个聪明的内置解决方案：它允许你指定一个模板的**数据上下文**。你可以把数据上下文想象成填充的一个美味的蛋糕去填充模板和布局。简单的说，就是你的模板要填上：
+值得庆幸的是，路由器有一个聪明的内置解决方案：它允许你指定一个模板的**数据源**。你可以把数据源想象成填充的一个美味的蛋糕去填充模板和布局。简单的说，就是你的模板要填上：
 
 <%= diagram "router-diagram-2", "The data context.", "pull-center" %>
 
-在我们的例子中，我们可以从 URL 上获取 `_id` ，并通过它找到我们的帖子从而获得正确的数据上下文：
+在我们的例子中，我们可以从 URL 上获取 `_id` ，并通过它找到我们的帖子从而获得正确的数据源：
 
 ~~~js
 Router.map(function() {
@@ -263,11 +263,11 @@ Router.map(function() {
 
 <% note do %>
 
-### 更多关于数据上下文
+### 更多关于数据源
 
-所以每次用户访问这条路线，我们会找到合适的帖子并将其传递给模板。记住， `findOne` 返回的是一个与查询相匹配的帖子，而仅仅需要提供一个 `id` 作为参数，它可以简写成 `{_id: id}` 。
+通过设置模板的**数据源**，你可以在模板 helper 里面控制 `this` 的值。
 
-在路线的 `data` 方法里面，`this` 对应于当前匹配的路线，我们可以使用 `this.params` 去访问某部分的路线（可以通过在 `path` 里面加上 `: ` 前缀去表示他们）
+这个工作通常会隐式地被 `{{#each}}` 迭代器完成，它会自动设置对应的数据源到每个正在迭代的当前项中：
 
 ~~~html
 {{#each widgets}}
@@ -275,7 +275,7 @@ Router.map(function() {
 {{/each}}
 ~~~
 
-////
+当然我们也可以使用 {{#with}} 去显式地操作，它就像简单地说“拿这个对象，提供给下面的模板应用”。例如，我们可以这样写：
 
 ~~~html
 {{#with myWidget}}
@@ -283,7 +283,7 @@ Router.map(function() {
 {{/with}}
 ~~~
 
-////
+因此通过传递数据源作为**参数**给模板调用也可以实现相同的效果，所以前面的代码块可以重写为：
 
 ~~~js
 {{> widgetPage myWidget}}
@@ -291,11 +291,11 @@ Router.map(function() {
 
 <% end %>
 
-### Using a Dynamic Named Route Helper
+### 使用一个动态的路线命名 Helper
 
-////
+最后，我们需要确保当我们想要链接到某个帖子的时候，它指向的是正确的帖子页面。我们将再次做一些像 `<a href="/posts/{{_id}}">` 这种动态模式，不过使用路线 Helper 会更可靠一点。
 
-////
+我们已经把帖子路线命名为 `postPage` ，所以我们可以使用 `{{pathFor 'postPage'}}` Helper：
 
 ~~~html
 <template name="postItem">
@@ -311,15 +311,15 @@ Router.map(function() {
 <%= highlight "6" %>
 <%= commit "5-3", "Routing to a single post page." %>
 
-////
+不过等等，路由器到底如何准确地知道从 `/posts/xyz` 中的哪个位置去获得 `xyz` 路径？毕竟，我们没有传递任何的 `_id` 给它。
 
-////
+事实证明，Iron Router 是足够聪明地自己去发现它。我们告诉路由器使用 `postPage` 路线，而路由器知道这条路线的某些地方需要使用 `_id` （因为这是我们定义 `path` 的办法）。
 
-////
+因此，路由器将会在最符合逻辑的地方寻找这个 `_id` ： `{{pathFor 'postPage'}}` Helper 中的数据源，或者说 `this` 。恰巧我们的 `this` 对应一个帖子，它就是我们要寻找的拥有 `_id` 属性的地方。
 
-////
+又或者，你可以明确告诉路由器你需要找的 `_id` 属性在哪里，通过传递 Helper 的第二个参数（例如： `{{pathFor 'postPage' someOtherPost}}` ）。这种模式通常会在实际应用中去获取列表中前一个或者后一个的帖子的链接。
 
-////
+为了看看它是否已经正常运作，我们去浏览帖子列表页面并点击其中一个“ Discuss ”的链接。你应该看到类似这样的：
 
 <%= screenshot "5-2", "A single post page." %>
 
@@ -327,10 +327,10 @@ Router.map(function() {
 
 ### HTML5 pushState
 
-////
+这里我们需要知道的是，这些 URL 变化的产生原因是正在使用 [HTML5 pushState](https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history?redirectlocale=en-US&redirectslug=Web%2FGuide%2FDOM%2FManipulating_the_browser_history). 
 
-////
+路由器通过处理 URLs 的点击去访问网站的内部，这样可以防止浏览器跳出我们的 App ，而不只是为了必要的改变 App 的状态。
 
-////
+如果一切运作正常的话，页面应该会瞬间改变。事实上，有时候事情变化得过快，可能需要某种类型的过渡页面。这是本章的范围之外的，但却是一个有趣的话题。
 
 <% end %>
