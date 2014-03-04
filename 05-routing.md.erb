@@ -3,6 +3,9 @@ title: 路由
 slug: routing
 date: 0005/01/01
 number: 5
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/9517814403/
+photoAuthor: Mike Lewinski
 contents: 学习 Meteor 的路由。|创建拥有唯一 URL 的帖子讨论页。|学习如何正确链接到这些 URL 。
 paragraphs: 72
 ---
@@ -264,7 +267,7 @@ Router.map(function() {
 
 所以每次用户访问这条路线，我们会找到合适的帖子并将其传递给模板。记住， `findOne` 返回的是一个与查询相匹配的帖子，而仅仅需要提供一个 `id` 作为参数，它可以简写成 `{_id: id}` 。
 
-在路线的 `data` 方法里面，`this` 对应于当前匹配的路线，我们可以使用 `this.params` 去访问某部分的路线（这里访问我们可以通过 `: ` 前缀 `path`）
+在路线的 `data` 方法里面，`this` 对应于当前匹配的路线，我们可以使用 `this.params` 去访问某部分的路线（可以通过在 `path` 里面加上 `: ` 前缀去表示他们）
 
 ~~~html
 {{#each widgets}}
