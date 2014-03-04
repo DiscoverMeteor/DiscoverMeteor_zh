@@ -123,23 +123,23 @@ Template.posts.helpers({
 
 现在我们应该明白订阅发布机制了， 让我们在深入了解一些常见的应用模式。
 
-### Autopublish
+### 自动发布（Autopublish）
 
-////
+如果你从头开始建立一个 Meteor 项目 （比如，使用 'meteor create' 命令)，系统会自动包含并启用一个叫做 'autopublish' 的包。我们可以显示说说这个包是干什么的。
 
-////
+'autopublish' 的目的是让 Meteor 的初学者很容易地起步，所以它简单地直接把服务器上的全部数据镜像到客户端。这样你就不用管发布和订阅了。
 
-<%= diagram "autopublish", "Autopublish", "pull-center"%>
+<%= diagram "autopublish", "自动发布", "pull-center"%>
 
-////
+那么这究竟是如何工作的呢？假设我们有一个集合叫做 ‘posts’ 在服务器端。 自动发布包就会自动地把 Mongo 数据库中这个集合中找到的所有的数据（帖子）放到客户端，也叫做 ‘posts’的集合中（假设客户端的确有这样一个集合）
 
-////
+因此，如果你使用自动发布，你就不需要管发布了。数据一致，而且事情变得十分简单。当然，这样的话会有一个明显的问题，就是你的所有数据都被缓存到所有用户的电脑中。
 
-////
+基于这个原因，自动发布只用来让你起步还来不及考虑发布的时候。
 
-### Publishing Full Collections
+### 发布全部集合
 
-////
+一旦你删除掉 ‘自动发布’ 这个包，你马上就会发现在浏览器上没有数据了。一个简单的解决方法就是重复自动发布所做的工作， 那就是发布所有数据。比如：
 
 ~~~js 
 Meteor.publish('allPosts', function(){
@@ -147,13 +147,13 @@ Meteor.publish('allPosts', function(){
 });
 ~~~
 
-<%= diagram "fullcollection", "Publishing a full collection", "pull-center" %>
+<%= diagram "fullcollection", "发布所有集合", "pull-center" %>
 
-////
+我们还是发布了所有集合，但是至少我们现在可以自己控制哪个集合我们发布哪个不发布。比如现在这个例子，我们发布了 ‘Posts’ 但是并没有发布 ‘Comments’
 
-### Publishing Partial Collections
+### 发布部分集合
 
-////
+下一步我们要做的是发布集合中的部分记录。比如我们只发布来自于某个作者的帖子：
 
 ~~~js 
 Meteor.publish('somePosts', function(){
@@ -161,25 +161,25 @@ Meteor.publish('somePosts', function(){
 });
 ~~~
 
-<%= diagram "partialcollection", "Publishing a partial collection", "pull-center" %>
+<%= diagram "partialcollection", "发布集合的一部分", "pull-center" %>
 
 <% note do %>
 
-### Behind The Scenes
+### 隐藏的真相
 
-////
+如果你已经阅读了 [Meteor 发布文档](http://docs.meteor.com/#publishandsubscribe)，你可能被诸如 `added()` and `ready()` 之类的用来设置客户端记录属性的函数搞晕了，而且还纠结于似乎我们从来没有使用过这些方法。
 
-////
+原因在于 Meteor 提供了十分重要的简化： `_publishCursor()‘ 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标]（章节/词汇表）(比如 `Posts.find({'author':'Tom'})`)，那个就是 Meteor 使用这个方法的时候。
 
-////
+当 Meteor 看到 ‘部分帖子’ 发布函数返回了一个游标，它会调用 `_publishCursor()` 去 - 你猜猜看 - 自动发布这个游标。
 
-////
+下面就是 `_publishCursor()` 做的工作
 
-- ////
-- ////
-- ////
+- 它检查服务器端的集合的名称
+- 它从游标中找到所有的符合要求的文档，然后发送到客户端的*同名*集合中。（它使用了`.added()` 函数来完成的）
+- 当新的文档加入集合了，或者删除或者改变了，它会把这些改动发送到客户端的集合。（它使用 `.observe()` 来监控游标，使用 `.added()`, `.changed()` 和 `removed()` 来增删改）。
 
-////
+所以在上述的例子中，我们可以保证用户只会在客户端缓存中得到他们感兴趣的帖子（在这里例子中是 Tom 发的帖子）。
 
 <% end %>
 
