@@ -183,11 +183,11 @@ Meteor.publish('somePosts', function(){
 
 <% end %>
 
-### Publishing Partial Properties
+### 发布部分字段
 
-////
+我们已经看到如何发布部分帖子，但是我们还需要再精简！让我们看看如何只发布指定的部分*字段*。
 
-////
+如同以前我们使用 `find()` 返回一个游标，现在我们来去掉一些字段。
 
 ~~~js
 Meteor.publish('allPosts', function(){
@@ -197,7 +197,7 @@ Meteor.publish('allPosts', function(){
 });
 ~~~
 
-<%= diagram "partialproperties", "Publishing partial properties", "pull-center" %>
+<%= diagram "partialproperties", "发布部分字段", "pull-center" %>
 
 ////
 
@@ -209,10 +209,16 @@ Meteor.publish('allPosts', function(){
 });
 ~~~
 
-### Summing Up
+### 总结
 
-////
+我们已经从发布所有集合的所有文档的所有字段，到发布个别集合的个别文档的个别字段。
 
-////
+这已经覆盖了 Meteor 的发布的基本内容，而且这些基本技巧已经足够阀盖大部分的用例了。
 
-////
+有时你需要通过组合，连接和融合发做到更复杂的发布。我们在以后的章节会降到更多这些内容。
+
+
+
+
+
+
