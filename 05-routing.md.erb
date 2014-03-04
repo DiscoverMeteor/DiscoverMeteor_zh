@@ -140,7 +140,7 @@ Router.map(function() {
 <%= caption "client/views/application/layout.html"%>
 <%= highlight "3" %>
 
-<%= commit "5-1", "Very basic routing." %>
+<%= commit "5-1", "非常基本的路由。" %>
 
 ### 等待数据
 
@@ -185,7 +185,7 @@ Router.map(function() {
 
 注意 `{{>spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
 
-<%= commit "5-2", "Wait on the post subscription." %>
+<%= commit "5-2", "等待帖子的订阅。" %>
 
 <% note do %>
 
@@ -309,7 +309,7 @@ Router.map(function() {
 ~~~
 <%= caption "client/views/posts/post_item.html"%>
 <%= highlight "6" %>
-<%= commit "5-3", "Routing to a single post page." %>
+<%= commit "5-3", "路由到一个单独的帖子页面。" %>
 
 不过等等，路由器到底如何准确地知道从 `/posts/xyz` 中的哪个位置去获得 `xyz` 路径？毕竟，我们没有传递任何的 `_id` 给它。
 
@@ -321,7 +321,7 @@ Router.map(function() {
 
 为了看看它是否已经正常运作，我们去浏览帖子列表页面并点击其中一个“ Discuss ”的链接。你应该看到类似这样的：
 
-<%= screenshot "5-2", "A single post page." %>
+<%= screenshot "5-2", "一个单独的帖子页面。" %>
 
 <% note do %>
 
