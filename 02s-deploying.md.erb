@@ -1,124 +1,127 @@
 ---
-title: Deployment
+title: 部署
 slug: deploying
 date: 0002/01/02
 number: 2.5
+points: 10
 sidebar: true
-contents: Learn how to deploy on Meteor.com.|Learn how to deploy on Modulus.|Learn how to deploy on your own server using Meteor Up.
+photoUrl: http://www.flickr.com/photos/monomaniacgarage/10703829133/
+photoAuthor: Monomaniacgarage
+contents: 学习如何部署在 Meteor.com 。|学习如何部署在 Modulus 。|学习如何使用 Meteor Up 部署在自己的服务器上。
 paragraphs: 46
 ---
 
-////
+有些人喜欢默默耕耘，直到他的项目足够完美，而有些人则急不及待的要向人们展示他的项目。
 
-////
+如果你是第一种人，现在宁愿在本地开发，那么可以果断跳过这一章。相反，如果你更愿意花时间去学习如何把 Meteor App 部署到线上，我们将提供你一些方法。
 
-////
+我们将学习几种不同的方法去部署一个 Meteor App 。无论你是在开发 Microscope 或任何其他的 Meteor App ，在你开发过程的任何阶段，随意地从它们当中挑选一个。让我们马上开始吧!
 
 <% note do %>
 
-### Introducing Sidebars
+### 引入附录
 
-////
+这是一个**附录**章节。 不同于其他书的是，本书的附录会让我们深入去了解更多关于 Meteor 的知识。
 
-////
+所以如果你更愿意去继续构建 Microscope ，你现在可以安全地忽略它，等稍后再回来去看。
 
 <% end %>
 
-### Deploying On Meteor
+### 部署在 Meteor
 
-////
+部署到 Meteor 的子域名上（例如： `http://myapp.meteor.com` ）是最简单的选择，这是我们首先要去尝试的。在早期，这对于展示你的 App 和快速设置一个测试服务器是很有用的。
 
-////
+部署在 Meteor 非常简单。打开终端，定位到你 Meteor App 的目录，并输入：
 
 ~~~bash
 $ meteor deploy myapp.meteor.com
 ~~~
 
-////
+当然，你要把“ myapp ”替换成你想要的名称，最好是命名一个没有正在被使用的。如果你的名称已经被使用，Meteor 会提示你去输入密码。如果真的发生这样的情况，只需通过 `ctrl+c` 来取消当前操作，然后用另一个不同的名称再试一次。
 
-////
+如果顺利地部署成功了，几秒钟后你就能够在 `http://myapp.meteor.com` 上访问到你的 App 了。
 
-### Password Protection
+### 密码保护
 
-////
+默认情况下，Meteor 的子域名是没有限制的。所有人都可以选择任何的子域名去使用，甚至覆盖任何现有的 App 。所以你可能会想到为你的域名进行密码保护，这可以通过 `-p` 选项来设置： 
 
 ~~~~bash
 $ meteor deploy myapp.meteor.com -p
 ~~~~
 
-////
+Meteor 会让你设置一个密码，然后每次你想部署这个 App 的时候都会请求输入密码。
 
-////
+你可以参考[官方文档](http://docs.meteor.com/#deploying)去了解更多关于如何直接访问你域名下的数据库，或者为你的 App 设置一个自定义域名等等的相关信息。
 
-### Deploying On Modulus
+### 部署在 Modulus
 
-////
+[Modulus](https://modulus.io/) 是一个部署 NodeJS Apps 很好的选择。这是为数不多的 PaaS （ platform-as-a-service ）的提供商，并且已经正式支持 Meteor ，已经有不少人在它上面去搭建 Meteor Apps了。
 
 <% note do %>
 
 ### Demeteorizer
 
-////
+一个开源的 Modulus 工具 [demeteorizer](https://github.com/onmodulus/demeteorizer) ，它可以将你的 Meteor App 转换成标准的 NodeJS App 。
 
 <% end %>
 
-////
+首先去[创建一个账户](https://modulus.io/register)。为了把我们的 App 部署到 Modulus ，我们需要安装 Modulus 通过输入以下命令：
 
 ~~~bash
 $ npm install -g modulus
 ~~~
 
-////
+然后进行身份验证：
 
 ~~~bash
 $ modulus login
 ~~~
 
-////
+我们现在创建了一个 Modulus 项目（注意，你也可以通过 Modulus 的在线仪表盘去完成它）：
 
 ~~~bash
 $ modulus project create
 ~~~
 
-////
+下一步将是为我们的 App 创建 MongoDB 数据库。我们可以通过 [Modulus](https://modulus.io/codex/database/getting_started) ，[MongoHQ](https://www.mongohq.com/) 或者其他任何 MongoDB 的提供商去创建一个MongoDB数据库。
 
-////
+一旦我们创建了 MongoDB 数据库，我们可以从 Modulus 的网站中得到我们数据库的 `MONGO_URL` （通过 Dashboard > Databases > Select your database > Administration ），然后用它来配置我们的 App ：
 
 ~~~bash
 $ modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
 ~~~
 
-////
+现在该去部署我们的 App 了，简单地输入： 
 
 ~~~bash
 $ modulus deploy
 ~~~
 
-////
+我们已经成功地把我们的 App 部署在 Modulus 。从 [Modulus 说明文档](https://modulus.io/codex/projects) 中可以了解更多关于访问日志文件，自定义域名的设置以及 SSL 。
 
 ### Meteor Up
 
-////
+虽然每天都有新的云端解决方案出来，但是它们通常都有自己的一些问题和限制。所以目前，把 Meteor App 部署在自己的服务器仍然是一个最好的方式。然而麻烦的是，部署到自己的服务器并不是那么简单，尤其如果你注重产品部署的质量。
 
-////
+[Meteor Up](https://github.com/arunoda/meteor-up) （简称 `mup` ）是另一个尝试通过命令行的操作去帮助你解决安装和部署问题。所以让我们看看如何通过 Meteor Up 来部署 Microscope 。
 
-////
+在此之前，我们需要一个服务器来发布。我们建议使用 [Digital Ocean](http://digitalocean.com)（每月最低5美元），或者  [AWS](http://aws.amazon.com/)（它为小型实例提供免费，如果你只是想试玩玩 Meteor Up 就已经足够了）。
 
-////
+无论选择哪种服务，你应该要解决这三样东西：你服务器的 IP 地址，登录账号（通常是 `root` 或者 `ubuntu` ）和登录密码。为了保证安全性问题，我们很快就会使用它们。
 
-### Initializing Meteor Up
+### Meteor Up 的初始化
 
-////
+首先，我们需要通过 `npm` 去安装 Meteor Up ：
 
 ~~~bash
 $ npm install -g mup
 ~~~
 
-////
+然后我们将创建一个单独的目录，为我们的 Meteor Up 提供一个特定的部署环境。我们使用单独的目录出于两个原因：第一，这可以很好的避免里面包含任何你 Git 存储库的隐藏文件，尤其如果你是在公共代码库去操作。
 
-////
+第二，通过使用多个单独的目录，我们能够并行地进行多个 Meteor Up 管理和配置。这将会用在实际产品的部署以及分段实例的部署。
 
-////
+所以我们来创建这个新目录，并使用它来初始化一个新的 Meteor Up 项目：
 
 ~~~bash
 $ mkdir ~/microscope-deploy
@@ -128,19 +131,19 @@ $ mup init
 
 <% note do %>
 
-### Sharing with Dropbox
+### 通过 Dropbox 分享
 
-////
+为了确保你和你的团队都使用相同的部署设置，一个很好的方法就是去创建你的 Meteor Up 配置文件夹放在你的 Dropbox上，或者任何类似的服务上。
 
 <% end %>
 
-### Meteor Up Configuration
+### Meteor Up 的配置
 
-////
+当初始化一个新项目的时候，Meteor Up 会为了创建两个文件： `mup.json` 和 `settings.json` 。
 
-////
+`mup.json` 会保存所有我们部署的相关设置，而 `settings.json` 会保存所有 App 的相关设置( OAuth 设置， analytics tokens 设置，等等)。
 
-////
+下一步就是去配置你的 `mup.json` 文件。 `mup.json` 会默认在执行 `mup init` 的时候生成，而你要做的就是把空白的填上：
 
 ~~~js
 {
@@ -167,52 +170,52 @@ $ mup init
 ~~~
 <%= caption "mup.json" %>
 
-////
+让我们了解一下这些设置。
 
-**Server Authentication**
+**服务器身份验证**
 
-////
+你会注意到 Meteor Up 提供了基于密码和基于私钥( PEM )的身份验证，所以它几乎可以用于任何的云提供商。
 
-////
+**重要提示**：如果你选择使用基于密码的身份验证，确保你在这之前已经安装了 `sshpass` （[使用指南](https://gist.github.com/arunoda/7790979)）。
 
-**MongoDB Configuration**
+**MongoDB 配置**
 
-////
+下一步是为你的 App 配置 MongoDB 数据库。我们建议使用 [MongoHQ](https://www.mongohq.com/home) 或者其他提供云端 MongoDB 的提供商，因为它们提供专业支持和更好的管理工具。
 
-////
+如果你决定使用 MongoHQ ，把 `setupMongo` 设置为 `false` ，并添加 `MONGO_URL` 环境变量到 `mup.json` 中的 `env` 模块。如果你决定通过 Meteor Up 去访问 MongoDB ，只需要设置 `setupMongo` 为 `true` ，然后 Meteor Up 会完成剩下的工作。
 
-**Meteor App Path**
+**Meteor App 路径**
 
-////
+因为 Meteor Up 的配置作用在不同的目录，我们需要通过  `app` 属性去把 Meteor Up 指回到 App 。只需要设置你完整的本地路径，当你位于你的 App 目录里面的时候，你可以使用 `pwd` 命令去获取它。
 
-**Environment Variables**
+**环境变量**
 
-////
+你可以在 `env` 模块中指定 App 的所有环境变量（比如： `ROOT_URL` ， `MAIL_URL` ， `MONGO_URL` 等等）
 
-### Setting Up and Deploying
+### 设置和部署
 
-////
+在我们可以部署之前，我们还需要设置服务器去为 Meteor App 准备主机。Meteor Up 把这个复杂的过程封装在一个简单的命令！
 
 ~~~bash
 $ mup setup
 ~~~
 
-////
+可能需要几分钟，这取决于服务器的性能和网络连接速度。设置成功后，终于可以部署我们的 App ：
 
 ~~~bash
 $ mup deploy
 ~~~
 
-////
+这将会打包我们的 Meteor App 并部署到我们刚刚设置好的服务器上。
 
-### Displaying Logs
+### 显示日志信息
 
-////
+日志是非常重要的， Meteor Up 提供非常简单的方法去处理他们，通过模仿 `tail -f` 命令，输入：
 
 ~~~bash
 $ mup logs -f
 ~~~
 
-////
+这一小节概述了 Meteor Up 能做什么。更多的信息，我们建议看看 [Meteor Up 在 GitHub 上详细介绍](https://github.com/arunoda/meteor-up)
 
-////
+这些三种部署 Meteor App 的方式应该足够满足大多数的案例了。当然，我们知道一些人会喜欢从头开始完全控制和设置他们的 Meteor 服务器。然而这将会是另一个主题，或者另一本书！
