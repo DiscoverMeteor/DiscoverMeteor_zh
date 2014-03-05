@@ -12,15 +12,15 @@ paragraphs: 72
 
 现在，我们已经创建了一个帖子列表页面（最终是由用户提交的），我们还需要添加一个单独的帖子页面，提供给用户评论对应的帖子。
 
-我们希望可以通过**固定链接**访问到每个单独的帖子页面，URL 形式是 `http://myapp.com/posts/xyz` （这里的 `xyz` 是 MongoDB 的`_id` 标识符）。
+我们希望可以通过**固定链接**访问到每个单独的帖子页面，URL 形式是 `http://myapp.com/posts/xyz` （这里的 `xyz` 是 MongoDB 的 `_id` 标识符）。
 
-这意味着我们需要某些**路由**来看看浏览器的地址栏里面的路径是什么,并相应地显示正确的内容。
+这意味着我们需要某些**路由**来看看浏览器的地址栏里面的路径是什么，并相应地显示正确的内容。
 
 ### 添加 Iron Router 包
 
-[Iron Router](https://github.com/EventedMind/iron-router) 是特别为 Meteor Apps 开发的路由包。
+[Iron Router](https://github.com/EventedMind/iron-router) 是特别为了 Meteor Apps 开发的路由包。
 
-它不仅能帮助路由（设置路径），还能帮助过滤（为这些路径分配跳转），甚至能控制订阅（控制路径可以访问哪些数据）。（注意：Iron Router 是由  **Discover Meteor** 的其中一名作者 Tom Coleman 开发的。)
+它不仅能帮助路由（设置路径），还能帮助过滤（为这些路径分配跳转），甚至能控制订阅（控制路径可以访问哪些数据）。（注意：Iron Router 是由  **Discover Meteor** 的其中一名作者 Tom Coleman 开发的)
 
 首先，让我们从 Atmosphere 中安装这个包：
 
@@ -48,6 +48,7 @@ $ mrt add iron-router
 - **布局**：你可以想象成一个数码相框的布局。它们包含所有的 HTML 代码放置在当前的模板中，即使模板发生改变它们也不会变。
 - **控制器**：有时候，你会发现很多你的模板都在重复使用一些参数。为了不重复你的代码，你可以让这些路线继承一个 **routing controller** 去包含所有的路由逻辑。
 
+
 关于更多 Iron Router 的信息，请查看  [GitHub上面的完整文档](https://github.com/EventedMind/iron-router). 
 
 <% end %>
@@ -60,7 +61,7 @@ Iron Router 负责处理在 HTML `<body>` 标签里面该呈现什么，让我�
 
 这个 `{{yield}}` 标签将会定义一个动态区域，它会自动呈现对应于当前线路的相应模板（从现在起，我们将指定这个特殊的模板叫 “route templates” ）：
 
-<%= diagram "router-diagram", "Layouts and templates.", "pull-center" %>
+<%= diagram "router-diagram", "布局和模板。", "pull-center" %>
 
 我们将开始构建我们的布局和添加 `{{yield}}` 标签。首先，我们先从 `main.html` 文件里面删除 `<body>` 标签，并把它的内容放到它们共同的模板 `layout.html` 里面。
 
