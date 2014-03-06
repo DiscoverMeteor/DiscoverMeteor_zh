@@ -1,25 +1,28 @@
 ---
-title: Adding Users
+title: 添加用户
 slug: adding-users
-date: 0006/01/01
+date: 2014/03/06
 number: 6
-contents: Learn about user accounts in Meteor.|Add all the authentication we'll need for Microscope.|Use the built-in accounts-ui package to get an instant user interface.
+points: 10
+photoUrl: http://www.flickr.com/photos/kroqert/9687074783/
+photoAuthor: Bård Harald Krogen
+contents: 学习 Meteor 的用户帐户。|在 Microscope 中添加所有必要的用户验证。|使用内置的 accounts-ui 包实现实时性的用户界面。
 paragraphs: 27
 ---
 
-////
+到目前为止，我们已经以较合理的方式去创建并显示一些静态数据，并将其连接到成一个简单的数据原型。
 
-////
+尽管我们的界面是根据变化的数据进行即时响应的，并且数据的实时插入或更改的都会在界面上得到体现。然而，我们的网站似乎还没有提供用户去修改数据的页面。实际上，我们甚至连用户都还没有！
 
-////
+下面让我们看看如何去解决这个问题吧。
 
-### Accounts: users made simple
+### 账户：让用户变得简单
 
-////
+在大多数的 web 框架，添加用户帐户是一个熟悉而又麻烦的工作。然而，你所做的每一个项目几乎都要用到，但它都不曾让我们觉得简单过。甚至如果当你要处理开放授权（ OAuth ）或其他第三方身份验证的时候，这些工作往往会变得更加恶心和复杂。
 
-////
+幸运的是， Meteor 可以帮你轻松解决。由于 Meteor 包的代码可以同时运行在服务器（ JavaScript ）和客户端（ JavaScript、HTML 和 CSS ），这样我们就可以很轻松地得到一个账户系统。
 
-////
+我们可以使用 Meteor 内置的账户界面（通过 `mrt add accounts-ui` ），但是由于我们已经在构建 App 的时候用了 Bootstrap 包，所以我们将使用 `accounts-ui-bootstrap-dropdown` 包去代替（别担心，唯一的区别只是里面的样式不同）。我们在终端输入：
 
 ~~~bash
 $ mrt add accounts-ui-bootstrap-dropdown
@@ -27,9 +30,9 @@ $ mrt add accounts-password
 ~~~
 <%= caption "Terminal" %>
 
-////
+这两个命令的作用是把一些特别的账户模板提供到我们的项目，然后就可以通过 `{{loginButtons}}` 标签在我们的网站中使用。温馨提示：你可以去控制登录框下拉的显示方向，通过添加其 `align` 属性（例如： `{{loginButtons  align="right"}}` ）。
 
-////
+我们将按钮添加到我们的头部（ header ）模板。这样头部包含的内容将会越来越多了，下面我们为它腾出更多的空间吧（我们将把它放在 `client/views/includes/` ）。同时我们使用一些额外的标记和 Bootstrap 类来使界面更好看：
 
 ~~~html
 <template name="layout">
@@ -65,13 +68,13 @@ $ mrt add accounts-password
 ~~~
 <%= caption "client/views/includes/header.html" %>
 
-////
+现在，去浏览我们的 App，我们会看到账户登录的按钮出现在网站的右上角。
 
 <%= screenshot "6-1", "Meteor's built-in accounts UI" %>
 
-////
+这样我们就可以用它来注册，登录，改变密码，它拥有和其他所有网站一样的账户系统功能。
 
-////
+如何告诉我们的账户系统要求用户需要通过用户名密码来登录？只需配置一个 Accounts.ui 模块到一个名叫 `config.js` 的文件里面，并把文件放在 `client/helpers/` 中：
 
 ~~~js
 Accounts.ui.config({
@@ -80,22 +83,22 @@ Accounts.ui.config({
 ~~~
 <%= caption "client/helpers/config.js" %>
 
-<%= commit "6-1", "Added accounts and added template to the header" %>
+<%= commit "6-1", "添加账户和它的模板到头（ header ）模板" %>
 
-### Creating Our First User
+### 创建我们的第一个用户
 
-////
+接下来去注册一个帐户：然后“登录”按钮会变成显示你的用户名。这说明了一个用户帐户已经创建成功。但是，用户帐户的数据来自哪里呢？
 
-////
+在添加 `accounts` 包以后， Meteor 已经创造了一个新的集合，它可以通过 `Meteor.users` 去访问。为了验证它，打开你的浏览器控制台并输入：
 
 ~~~js
 ❯ Meteor.users.findOne();
 ~~~
 <%= caption "Browser console" %>
 
-////
+控制台应该会返回一个用户对象，如果你仔细看看，可以找到你的用户名，以及唯一标识你账号的 `_id` 。注意，你还可以通过 `Meteor.user()` 获得当前登录的用户。
 
-////
+现在我们注销并再次注册一个不同的用户名。 `Meteor.user()` 现在应该返回第二个注册的用户。但是等一等，我们看看先运行：
 
 ~~~js
 ❯ Meteor.users.find().count();
@@ -103,9 +106,9 @@ Accounts.ui.config({
 ~~~
 <%= caption "Browser console" %>
 
-////
+控制台返回的是1？难道不是2吗？第一个用户被删除了吗？如果你再次登录第一个用户，你会发现并没有被删除。
 
-////
+让我们去 Mongo 数据库里面查查看吧。进入 Mongo 数据库（在终端输入 `meteor mongo` ）输入以下代码：
 
 ~~~bash
 > db.users.count()
@@ -113,21 +116,21 @@ Accounts.ui.config({
 ~~~
 <%= caption "Mongo console" %>
 
-////
+确定是存在两个用户。可是刚刚为什么我们在浏览器中只看到一个呢？
 
-### A Mystery Publication!
+### 发布的谜团!
 
-////
+如果你回想起第4章，可能还记得我们移除了 `autopublish` 包，我们阻止了集合从服务器自动发送所有数据到每个访问的客户端。然后我们创建了发布和订阅方法来实现数据的传输。
 
-////
+但我们并没有设置过任何用户的发布方法。那为什么我们还可以看到用户的数据呢？
 
-////
+答案就是账户包确实“自动发布”了当前登录用户的基本账户信息。如果没有的话，该用户是无法登录到网站的！
 
-////
+不过账户包只发布了**当前**登录的用户。这就解释了为什么一个用户看不到另一个帐户的详细信息了。
 
-////
+所以发布的只是当前登录用户的用户对象（而且当你注销之后就没有了）。
 
-////
+更重要的是，我们用户的集合似乎在服务器和客户端中并不是包含完全相同的字段。在 Mongo 数据库中，用户拥有大量的数据。为了检验一下，回到你的 Mongo 终端并输入：
 
 ~~~bash
 > db.users.findOne()
@@ -156,7 +159,7 @@ Accounts.ui.config({
 ~~~
 <%= caption "Mongo console" %>
 
-////
+但是在浏览器中，用户对象的字段就比较少了，可以通过输入这样的命令看到：
 
 ~~~js
 ❯ Meteor.users.findOne();
@@ -164,7 +167,7 @@ Object {_id: "kYdBd9hr3fWPGPcii", username: "tmeasday"}
 ~~~
 <%= caption "Browser console" %>
 
-////
+这个例子向我们展示了本地集合是如何成为一个**安全的**数据库**数据子集**。登录用户只能看到那些足够去配合客户端工作（例如：登陆）的集合属性。以后你会知道这是一个非常值得学习的模式。
 
-////
+但这并不意味着你就不能把更多的用户数据发布出来。你可以参考[ Meteor 说明文档](http://docs.meteor.com/#meteor_users)，看看 `Meteor.users` 集合是如何选择性地发布更多的字段。
 
