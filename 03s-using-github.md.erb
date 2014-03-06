@@ -1,106 +1,110 @@
 ---
-title: Using Git & GitHub
+title: 使用 Git 和 GitHub
 slug: github
 date: 0003/01/02
 number: 3.5
 sidebar: true
-contents: Learn how to use GitHub to follow along with the book.
+contents: 学习 GitHub 并应用到本书的学习中。
 paragraphs: 32
 ---
 
-////
+[GitHub](https://github.com/) 是一个开源项目的社交化代码存储空间，基于 [Git](http://git-scm.com/) 作为版本控制系统。它的首要功能就是代码共享和项目协作。在本章你可以快速找到用 GitHub 学习本书的一些方法。
 
-////
+本章节假设你不太了解 Git 和 GitHub。如果你已经熟悉他们了，你可以直接跳到下一章！
 
-### Being Committed
 
-////
+### 代码提交
 
-////
+Git 最基本的工作的工作单元是*提交*。你可以把提交设想为你的代码库在某个特定时间的一个快照。
 
-////
+与其简单地给你一个 Microsocope 项目的最终代码版本，我们更愿意把开发过程中每一步的快照都提供出来，这样你在 Github 上在线看到。
 
-<%= screenshot "s3-1", "A Git commit as shown on GitHub." %>
+比如，这个就是我们上一章最后一次提交 (https://github.com/DiscoverMeteor/Microscope/commit/chapter3-2) 
+看起来是这样的
 
-////
+<%= screenshot "s3-1", "GitHub 上的一次代码提交" %>
 
-////
+你可以看到‘post_item.js' 这个文件的 ‘diff’ （差异），话句话说就是这次提交改动了这个文件的什么地方。因为我们这个文件是新建的，所以你可以看到所有内容都是绿色高亮。
 
-<%= screenshot "s3-2", "Modifying code." %>
+让我们对比一下另外一个例子（本书中以后会用到的文件）(https://github.com/DiscoverMeteor/Microscope/commit/chapter13-1):
 
-////
+<%= screenshot "s3-2", "修改代码" %>
 
-////
+这次，只有修改的代码行被高亮为绿色了。
 
-<%= screenshot "s3-3", "Deleting code." %>
+当然，有时候我们并不增加和修改代码，而是直接【删除】某些行。(https://github.com/DiscoverMeteor/Microscope/commit/chapter12-2):
 
-////
 
-### Browsing A Commit's Code
+<%= screenshot "s3-3", "删除代码" %>
 
-////
+好了，我们现在看到 GitHub 的第一个好处：一览代码的改动。
 
-////
+### 浏览提交的代码
 
-<%= screenshot "s3-5", "The Browse code button." %>
+Git 的提交视图给我们显示了本次提交的代码改动，但是有时候我们还是需要看看*没有修改*的
+那些代码，从而确认他们的代码看起来合理。
 
-////
+好，让 GitHub 再次来解决这个问题。在提交页面上点击 *浏览代码 Browse code*按钮：
 
-<%= screenshot "s3-6", "The repository at commit 3-2." %>
+<%= screenshot "s3-5", "浏览代码按钮" %>
 
-////
+你现在可以看到某次提交的时候代码库的样子了。
 
-<%= screenshot "s3-7", "The repository at commit 14-2." %>
+<%= screenshot "s3-6", "提交编号3-2 的代码库。" %>
 
-### Accessing A Commit Locally
+GitHub 没有给我们足够的视觉提示让我们知道我么正在看一个提交，不过你可以通过与 “正常” 的主视图进行比较，就会发现文件结构的不同了。
 
-////
+<%= screenshot "s3-7", "提交编号 14-2 的代码库。" %>
 
-////
+### 访问本地提交
+
+我们刚刚看到在 Github 上如何在线浏览某个提交的整个代码。但是你是否想在本地也看到呢？比如你也许想退回到某次提交的代码状态测试一下那时候运行的样子。
+
+想做到这个你需要首次（也许你早已经不是首次了，但是至少在本书中是第一次用命令行）用 ‘git’ 命令行。对于新手首先要确定 Git 已经安装了make sure you have Git installed]。然后 **克隆 Clone**（或者叫下载一份本地拷贝）一份 Microscope 的代码库。命令如下：
 
 ~~~bash
 $ git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
 ~~~
 
-////
+命令行最后的 `github_microscope` 实际上就是将会存代码库的本地目录名。假设你已有了 ‘microscope’这个名字，那就随便起一个新名字（不是必须用和 GitHub 代码库相同的名字）。
 
-////
+让我们 'cd' 这个代码库，然后就可以使用 'git' 命令了。
 
 ~~~bash
 $ cd github_microscope
 ~~~
 
-////
+现在我们已经从 GitHub 克隆了代码库，我们已经下载了这个应用的 *全部* 代码，也就是说我们正在看的是最后一次提交。
 
-////
+值得感激的是我们有办法*签出*代码回退到某一个特定的提交，而不会影响到其他用户。让我们试一下：
 
 ~~~bash
 $ git checkout chapter3-1
-Note: checking out 'chapter3-1'.
+注意：签出 'chapter3-1'.
 
-You are in 'detached HEAD' state. You can look around, make experimental
-changes and commit them, and you can discard any commits you make in this
+你现在是在 'detached HEAD' 状态. 你可以随便看看做点实验性的修改并提交。你只需再次签出代码即可放弃你的提交，而不会影响的任何其他分支。
 state without impacting any branches by performing another checkout.
 
-If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
+如果你想建立新的分支来保留你的提交，你可以这样做（现在或者以后也行），迁出代码的时候使用 -b 参数。
+
+举例：
 
   git checkout -b new_branch_name
 
 HEAD is now at a004b56... Added basic posts list template and static data.
 ~~~
 
-////
+Git 通知你现在在 ‘分离头’ “detached HEAD” 状态，也就是说就 Git 而言， 你可以发现过去的历史提交但是不能修改。你可以想象一个巫婆用水晶球回顾历史。
 
-////
+（注意 Git 还有让你 *改变* 历史提交的命令。这更像是时间旅行，不过那些不是我们本书需要讨论的范畴了。）
 
-////
+你能够简单地输入 `chapter3-1` 是因为我们实现已经把所有的 Microscope 的提交都打了标签了。 如果你的提交没有标签，那么你需要先找到你的提交的 **哈希码 hash**，或者ID。
 
-////
+再一次 GitHub 让我们可以轻松地在提交的右下角看到蓝色提交框中提交哈希码。如图所示：
 
-<%= screenshot "s3-4", "Finding a commit hash." %>
+<%= screenshot "s3-4", "找到提交的哈希码" %>
 
-////
+这一次让我们试试哈希码而不是标签：
 
 ~~~bash
 $ git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
@@ -108,7 +112,7 @@ Previous HEAD position was a004b56... Added basic posts list template and static
 HEAD is now at c7af59e... Augmented the postsList route to take a limit
 ~~~
 
-////
+好了，别再用水晶球看历史提交了，让我们想看看最新的代码状态，我们可以让 Git 签出主分支**master**
 
 ~~~bash
 $ git checkout master
@@ -116,24 +120,24 @@ $ git checkout master
 
 ### Historical Perspective
 
-////
+这里还有一种常见的情形：你看代码文件的时候发现有一些你以前没有见到过的改动。大多数情况是你不记得**什么时候**你改了这个文件。你可以逐个检查每个提交直到你发现某个提交造成了这个改动，不过还有一种更好的方法，那就是 GitHub 的 **历史** 功能。
 
-////
+首先，在 GitHub 上找一个代码库里的文件，然后找到 “历史” 按钮：
 
-<%= screenshot "s3-8", "GitHub's History button." %>
+<%= screenshot "s3-8", "GitHub 的历史按钮" %>
 
-////
+你现在可以看到所有影响这个文件的提交历史：
 
-<%= screenshot "s3-9", "Displaying a file's history." %>
+<%= screenshot "s3-9", "显示一个文件的历史" %>
 
-### The Blame Game
+### 争辩游戏
 
-////
+让我们看看**争辩**
 
-<%= screenshot "s3-10", "GitHub's Blame button." %>
+<%= screenshot "s3-10", "GitHub 的问责按钮 %>
 
-////
+这个简介的试图给我们逐行显示了谁修改过这个文件，以及在哪次提交中修改的。（换句话说，知道软件搞坏了该找谁算账）：
 
-<%= screenshot "s3-11", "GitHub's Blame view." %>
+<%= screenshot "s3-11", "GitHub 问责视图" %>
 
-////
+现在的 Git 已经是一个相当复杂的工具了 - GitHub 也一样 - ，所以你不可能在这里覆盖所有功能。事实上，我们只是学习了一点皮毛。尽管如此，这点皮毛已经够我们在本书的学习中用了。
