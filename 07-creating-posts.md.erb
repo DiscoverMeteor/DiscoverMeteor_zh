@@ -1,19 +1,22 @@
 ---
-title: Creating Posts
+title: 创建帖子
 slug: creating-posts
-date: 0007/01/01
+date: 2014/03/07
 number: 7
-contents: Learn how to submit a post client-side.|Implement a simple security check.|Restrict access to the post submit form.|Learn to use a server-side Method for added security.
+points: 10
+photoUrl: http://www.flickr.com/photos/markezell/9688179085
+photoAuthor: Mark Ezell
+contents: 学习如何在客户端提交一个帖子。|实现一个简单的安全性检查。|对帖子提交页面进行限制访问。|学习在服务端中添加安全性检查的方法。
 paragraphs: 60
 ---
 
-////
+我们曾经轻松地通过控制台去使用 `Posts.insert` 来创建帖子并插入到数据库。但我们不可能指望用户去打开控制台来创建一个新的帖子吧？
 
-////
+所以我们需要在用户界面上创建一些表单控件，让用户在我们的 App 上发布一些新的帖子。
 
-### Building The New Post Page
+### 构建新帖子的提交页面
 
-////
+我们首先为新帖子的提交页面定义一个路线：
 
 ~~~js
 Router.configure({
@@ -38,11 +41,11 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "13~15" %>
 
-////
+我们使用路由器的 `data` 方法去设置 `postPage` 模板的数据源。需要记住的是，无论我们要添加什么属性，在模板 Helper 里面使用  `this` 就可以直接访问当前的数据源。
 
-### Adding A Link To The Header
+### 在头部（ Header ）添加一个链接
 
-////
+定义了这条路线后，现在我们可以在头部模板（ Header ）中添加一个访问我们提交页面的链接：
 
 ~~~html
 <template name="header">
@@ -69,7 +72,7 @@ Router.map(function() {
 <%= caption "client/views/includes/header.html" %>
 <%= highlight "11~16" %>
 
-////
+设置了这个路线就意味着如果用户浏览 `/submit` 的 URL 路径， Meteor 会显示 `postSubmit` 模板。 下面让我们来写这个模板吧：
 
 ~~~html
 <template name="postSubmit">
@@ -106,15 +109,15 @@ Router.map(function() {
 ~~~
 <%= caption "client/views/posts/post_submit.html" %>
 
-////
+注意：这里大量的 class 名称是用来调用 Bootstrap 的样式。只有表单元素是必不可少的，类的设置只是让我们的 App 更好看一点。在浏览器中显示：
 
-<%= screenshot "7-1", "The post submit form" %>
+<%= screenshot "7-1", "帖子提交页面" %>
 
-////
+这是一个简单的表单页面，不需要担心它的提交事件，因为我们会通过 JavaScript 拦截表单的提交事件并更新数据。（但如果你考虑到一旦禁用了 JavaScript 的话， Meteor App 就会完全失效）。
 
-### Creating Posts
+### 创建帖子
 
-////
+让我们将一个事件处理绑定到表单的 `submit` 事件。最好使用 `submit` 事件（而不是按钮的 `click` 事件），因为这会覆盖所有可能的提交方式（如输入对应的 URL 字段）。
 
 ~~~js
 Template.postSubmit.events({
@@ -134,13 +137,13 @@ Template.postSubmit.events({
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
 
-<%= commit "7-1", "Added a submit post page and linked to it in the header." %>
+<%= commit "7-1", "添加一个帖子提交页面并把链接放到头部（ Header ）" %>
 
-////
+这个函数使用 [jQuery](http://jquery.com) 去获取我们表单字段的值，并填充到一个新的帖子对象。我们需要调用 `event` 的 `preventDefault` 方法来确保浏览器不会再继续尝试提交表单。
 
-////
+最后，我们要跳转到新的帖子页面。 `insert()` 方法把这个对象插入到数据库并返回插入对象的 `id` 值，路由器的 `go()` 方法将构建一个帖子页面的 URL 提供我们访问。
 
-////
+最终的结果是用户点击提交时，创建一个帖子，然后用户浏览器将立即跳到新创建的帖子的页面。
 
 ### Adding Some Security
 
