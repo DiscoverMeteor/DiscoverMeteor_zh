@@ -1,20 +1,23 @@
 ---
-title: Reactivity
+title: 响应式
 slug: reactivity
-date: 0006/01/02
+date: 2014/03/07
 number: 6.5
+points: 10
 sidebar: true
-contents: Learn about Meteor's reactive code dependency system.|Understand the motivations and how it makes code declarative.|Learn to use advanced code that uses reactive data.
+photoUrl: http://www.flickr.com/photos/ikewinski/9632550278/
+photoAuthor: Mike Lewinski
+contents: 学习 Meteor 响应式代码依赖系统。|理解它的原理以及它如何声明代码。|学习使用高级代码来调用响应式数据。
 paragraphs: 20
 ---
 
-////
+如果说集合是 Meteor 的核心功能，那么**响应式**可以能让这个核心功能更强大。
 
-////
+集合从根本上改变你的应用程序的数据处理方式。从而不必手动检查数据更改（例如，通过一个 AJAX 调用），再根据这些变化去修改 HTML 页面，Meteor 可以随时检测到数据的更改，并将它无缝地应用到你的用户界面上。
 
-////
+让我们思考一下：在后台，当底层的数据集合被更新以后， Meteor 能够马上修改用户界面的**任何**部分。
 
-////
+这个实时性的方法是通过使用 `.observe()` ，当指向数据的指针发生改变时就会触发回调。我们可以通过这些回调去更改 DOM （我们的网页呈现的 HTML ）。就像这样的代码：
 
 ~~~js
 Posts.find().observe({
@@ -33,25 +36,25 @@ Posts.find().observe({
 });
 ~~~
 
-////
+可能你已经知道这样的代码是如何把复杂的事情快速地进行处理。想象一下如果我们去修改帖子的**任何一个属性**，就会伴随着页面中帖子 `<li>` 标签的更改。当我们开始依赖于更多个数据信息的时候，甚至还可以进行更为复杂的处理，这些都能实时地进行。
 
 <% note do %>
 
-### When *Should* We Use `observe()`?
+### 我们应该什么时候去使用 `observe()` ?
 
-////
+使用上述的模式有时候很有必要的，尤其是在处理第三方小部件的时候。比如，假设我们想要基于集合数据去实时添加或删除在地图上的位置（也就是说显示当前登录用户的位置）。
 
-////
+在这种情况下，为了让地图能跟 Meteor 的集合进行“交谈”，你就需要使用 `observe()` 的回调方法去应对数据变化。例如，你需要依赖其中 `added` 和 `removed` 的回调方法去调用地图 API 中的 `dropPin()` 或 `removePin()` 方法。
 
 <% end %>
 
-### A Declarative Approach
+### 声明式方法
 
-////
+Meteor 为我们提供了一个更好的办法：声明式方法，它的核心就是响应式。这种声明让我们定义了对象之间的关系，并让他们保持同步，而我们就不必为每个的可能发生的修改去指定相应的行为。
 
-////
+这是一个强大的概念，因为有许多实时性的输入，都可能发生在我们不可预测的时间中。通过声明式方法去声明我们该如何基于响应式数据去呈现 HTML ，这样 Meteor 就可以完成对这些数据的监控工作，并且把用户界面直接与数据进行绑定。
 
-////
+总的来说，去代替 `observe` 的回调，Meteor 可以让我们这些写：
 
 ~~~html
 <template name="postsList">
@@ -63,7 +66,7 @@ Posts.find().observe({
 </template>
 ~~~
 
-////
+然后获取我们的帖子列表：
 
 ~~~js
 Template.postsList.helpers({
@@ -73,23 +76,23 @@ Template.postsList.helpers({
 });
 ~~~
 
-////
+在后台，其实 Meteor 替我们使用了 `observe()` 的回调方法，并当响应式数据被更改的时候，对相关页面进行重新的渲染。
 
-### Dependency Tracking in Meteor: Computations
+### Meteor 的依赖跟踪：Computations
 
-////
+Meteor 是一个实时性、响应式的框架，但并不是**所有**的代码在 Meteor App 里面都是响应式的。如果是这样，当有任何数据发生改变时，你的 App 都会自动进行重新运行。相反，响应式只是在特定区域的代码中发生，我们称这些区域为 **Computations** 。
 
-////
+换句话说， Computations 代码块是根据响应式数据的变化去运行。如果你有一个响应式数据源（例如，一个 Session 变量）并且希望及时去响应它，你需要建立一个 Computations 。
 
-////
+请注意，你一般不需要显式地做到这一点，因为 Meteor 已经让每个模板去呈现它自己的 Computation （意思就是模板 Helper 中的代码和回调函数默认都是响应式的）。
 
-////
+Computations 用到的响应式数据源都会被它跟踪，这样就可以知道响应式数据什么时候发生变化。这是通过 Computations 中的 `invalidate()` 方法实现的。
 
-////
+Computations 一般只是简单地用来判断页面上的无效内容，这通常是发生在模板的 Computations（尽管模板 Computations 可能也会去做一些让页面更有效的工作）。当然如果你需要，你也可以使用更多 Computations 的功能，不过在实际中可能比较少用到。
 
-### Setting Up a Computation
+### 建立一个 Computations
 
-////
+现在我们去理解一下 Computations 背后的工作原理，实际上要设置一个Computations 是出乎意料的简单。我们只需要在 `Deps.autorun` 方法中加上需要的代码块，让它变成响应式的 Computations ：
 
 ~~~js
 Deps.autorun(function() {
@@ -97,11 +100,11 @@ Deps.autorun(function() {
 });
 ~~~
 
-////
+在后台， `autorun` 会创建一个 Computation ，当数据源发生变化的时候就会自动重新运行。这样我们就建立了一个非常简单的  Computation ，去把帖子的数量输出到控制台上。因为 `Posts.find()`是一个响应式数据源，它将负责告诉 Computation 每次帖子数量发生变化的时候去重新运行。
 
 ~~~js
 > Posts.insert({title: 'New Post'});
 There are 4 posts.
 ~~~
 
-////
+综上所述，我们可以把响应式数据通过一种很自然的方式与代码进行绑定，这样后台的依赖系统将会在合适的时间去重新运行这段代码。
