@@ -143,26 +143,26 @@ Template.postSubmit.events({
 
 最后，我们要跳转到新的帖子页面。 `insert()` 方法把这个对象插入到数据库并返回插入对象的 `id` 值，路由器的 `go()` 方法将构建一个帖子页面的 URL 提供我们访问。
 
-最终的结果是用户点击提交时，创建一个帖子，然后用户浏览器将立即跳到新创建的帖子的页面。
+最终的结果是用户点击提交时，创建一个帖子，然后用户浏览器将立即跳到帖子创建页面。
 
-### Adding Some Security
+### 添加一些安全检查
 
-////
+创建帖子这功能看起来都很好，但我们不想让随机浏览的游客都可以这样做：我们希望他们必须登录。首先可以对登出的用户隐藏帖子创建页面的链接。不过，没有登录的用户仍然可以在浏览器控制台中创建一个帖子，这是我们不能允许的。
 
-////
+值得庆幸的是数据安全已经集成在 Meteor 的集合中，只是在默认情况下它是关闭的。这样的设置可以使你在刚开始构建 App 的时候更加轻松。
 
-////
+我们的 App 不再需要这些辅助了，果断扔掉吧！我们去删除 `insecure` 包（恢复数据安全）：
 
 ~~~bash
 $ meteor remove insecure
 ~~~
 <%= caption "Terminal" %>
 
-////
+执行以后你会注意到，帖子的提交页面不可用了。这是因为没有了 `insecure` 包，从客户端插入帖子集合已经不再被允许了。我们需要给出一些明确的规则告诉 Meteor ，什么时候才能允许客户插入帖子，否则我们只能从服务端插入。
 
-### Allowing Post Inserts
+### 允许帖子插入
 
-////
+首先，为了让我们的提交页面再次可用，我们先展示如何允许从客户端插入数据。事实上，我们最终还会用不同的技术去解决这个问题，但是现在，先做一些简单的处理吧：
 
 ~~~js
 Posts = new Meteor.Collection('posts');
@@ -177,31 +177,31 @@ Posts.allow({
 <%= caption "collections/posts.js" %>
 <%= highlight "3~8" %>
 
-<%= commit "7-2", "Removed insecure, and allowed certain writes to posts." %>
+<%= commit "7-2", "移除 insecure 包并允许插入帖子" %>
 
-////
+`Posts.allow` 是告诉 Meteor ：这是一些允许客户端去修改帖子集合的条件。上面的代码，等于说“只要客户拥有 `userId` 就允许去插入帖子”。
 
-////
+这个拥有 `userId` 用户的修改会传递到 `allow` 和 `deny` 的方法（如果没有用户登录就返回 null ），这个判断通常都是准确。因为用户帐户是绑定到 Meteor 里面的，我们可以依靠 `userId` 去判断。
 
-////
+我们可以去验证一下，注销登录并创建一个帖子，你在控制台看到的应该是这样：
 
-<%= screenshot "7-2", "Insert failed: Access denied " %>
+<%= screenshot "7-2", "（ Insert failed: Access denied ）插入失败：拒绝访问" %>
 
-////
+然而，我们仍然需要处理一些问题：
 
- - ////
- - ////
- - ////
+ - 登出后的用户仍然可以访问帖子创建页面。
+ - 帖子并没有以任何方式与用户进行绑定（没有在服务器上的代码去执行这个）。
+ - 允许创建指向相同的 URL 的多个帖子。
 
-////
+让我们来解决这些问题吧！
 
-### Securing Access To The New Post Form
+### 帖子创建页面的可访问性
 
-////
+让我们首先阻止已登出的用户看到帖子创建页面。我们会在路由器中，通过定义一个 **路由 Hook** 。
 
-////
+Hook 在路由过程中进行拦截并可能改变路由器的跳转。你可以把它当作一个保安，检查你的凭据才能让你通过（ 或者把你带走 ）。
 
-////
+我们需要做的是检查用户是否登录，如果他们没有登录，呈现出来的是 `accessDenied` 模板而不是 `postSubmit` 模板。 让我们去修改 router.js 文件：
 
 ~~~js
 Router.configure({
@@ -233,7 +233,7 @@ Router.before(requireLogin, {only: 'postSubmit'});
 <%= caption "lib/router.js" %>
 <%= highlight "18~25" %>
 
-////
+我们还要创建拒绝访问模板：
 
 ~~~html
 <template name="accessDenied">
@@ -242,21 +242,21 @@ Router.before(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "client/views/includes/access_denied.html" %>
 
-<%= commit "7-3", "Denied access to new posts page when not logged in." %>
+<%= commit "7-3", "当没有登录的时候拒绝访问帖子创建页面" %>
 
-////
+如果你不登录去访问 http://localhost:3000/submit/ ，你将会看到：
 
-<%= screenshot "7-3", "The access denied template" %>
+<%= screenshot "7-3", "拒绝访问模板" %>
 
-////
+路由器 Hooks 的好处是**响应式**。这意味着当用户登录的时候，我们不需要考虑回调或者其他类似的方法，它就可以马上知道。当用户状态变为已登录的时候，路由器的页面模板立即从 `accessDenied` 变为 `postSubmit` ，而我们无需编写任何代码来去控制它。
 
-////
+登录，然后尝试刷新页面。你可能注意到，拒绝访问的页面会短暂地出现在帖子创建页面。这是因为在服务器去检测当前用户之前， Meteor 会尽可能快的去渲染模板。
 
-////
+为了避免这个问题（这是一种常见的问题，你将会看到更多去处理客户端和服务器之间错综复杂的延迟），我们将短暂显示一个加载的画面，腾出足够时间让我们去判断用户是否有权访问。
 
-////
+毕竟在这之前，我们不知道用户是否有正确的登录凭证，而我们也不能直接显示 `accessDenied` 或 `postSubmit` 模板。
 
-////
+所以修改 Hook 去使用我们的加载模板，同时判断 `Meteor.loggingIn()` 是否为真：
 
 ~~~js
 Router.map(function() {
@@ -288,11 +288,11 @@ Router.before(requireLogin, {only: 'postSubmit'});
 <%= caption "lib/router.js" %>
 <%= highlight "16~19" %>
 
-<%= commit "7-4", "Show a loading screen while waiting to login." %>
+<%= commit "7-4", "在等待登录的时候显示一个加载画面" %>
 
-### Hiding the Link
+### 隐藏链接
 
-////
+当他们注销登录之后就隐藏这个链接，这是最简单的方法去防止用户试图访问不被授权的页面。我们做到这一点很简单：
 
 ~~~html
 <ul class="nav">
@@ -301,29 +301,29 @@ Router.before(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "client/views/includes/header.html" %>
 
-<%= commit "7-5", "Only show submit post link if logged in." %>
+<%= commit "7-5", "只在登录后才显示创建帖子链接" %>
 
-////
+`currentUser` 的 Helper 是通过 `accounts` 包提供给我们的，它相当于是 `Meteor.user()` 的调用。 因为它是响应式的，链接将会在你登入或者登出的的时候出现或者消失。
 
-### Meteor Method: Better Abstraction and Security
+### Meteor 内置方法：更好的抽象和安全
 
-////
+我们让没有登录的用户无法访问帖子创建页面，并且不允许这样的用户通过使用控制台去创建帖子。然而，仍有一些更多的事情我们需要考虑：
 
-- ////
-- ////
-- ////
+- 帖子的时间戳。
+- 确保拥有相同 URL 的帖子不能再次创建。
+- 添加帖子的作者的详细信息（ ID 、用户名等）。
 
-////
+你可能会想我们可以把这些事情放到我们的 `submit` 事件中去处理。但是实际上，我们很快就会遇到一系列的问题。
 
-- ////
-- ////
-- ////
+- 对于时间戳，我们并不是总需要依赖用户计算机的时间是否正确。
+- 客户并不知道所有发布到该网站的帖子的 URL 。他们只能知道目前看到的帖子（稍后我们将看看这是如何工作），所以没有办法在每个客户端中确保 URL 是否唯一的。
+- 最后，虽然我们可以在客户端添加用户的详细信息，但是我们不能确保其准确性，因为可能有人会使用浏览器控制台去进行编辑更改。
 
-////
+因为这些问题，最好是保持我们的事件处理方法里面足够简单，如果我们所做的事情超过最基本的插入或更新数据集合，那么可以使用 Meteor 的内置方法 。
 
-////
+Meteor 内置方法是一种服务器端方法提供给客户端调用。其实我们对它并不陌生--事实上在后台， `Collection` 的 `insert` ， `update` 和 `remove` 都属于 Meteor 内置方法。 下面看看我们如何自己来创建。
 
-////
+让我们回到 `post_submit.js` 文件，不再是直接插入到 `Posts` 集合，我们将调用一个带 `post` 参数的 Meteor 内置方法：
 
 ~~~js
 Template.postSubmit.events({
@@ -347,9 +347,9 @@ Template.postSubmit.events({
 ~~~
 <%= caption "client/views/posts/post_submit.js" %>
 
-////
+`Meteor.call` 方法通过第一个参数来命名其方法。你可以为调用方法提供参数（在这种情况下， `post` 对象由表单数据来构建），最后加上一个回调，它将在服务器的方法完成后执行。如果出现错误，在这里我们通过 alert 来告诉用户出错了，否则将用户重定向到新创建的帖子的讨论页面。
 
-////
+然后在我们的 `collections/posts.js` 文件中定义这个方法。我们将在 `posts.js` 中删掉 `allow()` 模块，由于 Meteor 内置方法会绕过它们。需要记住内置方法是在服务器上执行的，所以 Meteor 都会认为它们是可信任的。
 
 ~~~js
 Posts = new Meteor.Collection('posts');
@@ -389,25 +389,25 @@ Meteor.methods({
 ~~~
 <%= caption "collections/posts.js" %>
 
-<%= commit "7-6", "Use a method to submit the post." %>
+<%= commit "7-6", "使用一个内置方法来提交帖子。" %>
 
-////
+这种方法有点复杂，希望大家能跟得上。
 
-////
+首先，我们定义 `user` 变量并检查是否已经存在相同链接的帖子。然后，我们查看用户是否登录，如果没有就抛出一个错误（最终将由浏览器 `alert` ）。我们也要做一些提交对象的简单验证，以确保提交的帖子必须要有标题。
 
-////
+接下来，如果有另一个帖子拥有相同的 URL ，我们抛出一个 `302` 错误（意思是重定向）来告诉用户，他们就应该去看看那个以前创建的帖子。
 
-////
+Meteor 的 `Error` 对象有三个参数。第一个（ `error` ）是 `302` 这种类型数字代码，第二个（ `reason` ）是一个短的人们可读的错误解释，最后一个（ `details` ）是可以添加任何有用的附加信息。
 
-////
+在我们的例子中，我们将使用这第三个参数去验证我们传入的带有 ID 的帖子。提示：我们以后还会使用这个来把用户重定向到之前存在的帖子页面。
 
-////
+如果所有这些检查都通过，只需要把我们想要的字段插入（防止用户在浏览器控制台中调用该方法去把虚假的数据插入我们的数据库），包括一些关于用户信息的提交--比如当前时间。
 
-////
+最后，我们插入一个帖子，并返回新帖子的 `id` 给用户。
 
-### Sorting Posts
+### 帖子排序
 
-////
+现在我们已经在所有的帖子中添加了日期，确保可以使用这个属性去进行帖子的分类。这样，我们就可以使用 mongo 数据库的运算方法，根据这个字段去把对象进行排序，并且标识它们是升序还是降序。
 
 ~~~js
 Template.postsList.helpers({
@@ -419,8 +419,8 @@ Template.postsList.helpers({
 <%= caption "client/views/posts/posts_list.js" %>
 <%= highlight "3" %>
 
-<%= commit "7-7", "Sort posts by submitted timestamp." %>
+<%= commit "7-7", "帖子通过时间戳进行排序。" %>
 
-////
+花了一点功夫，我们终于有了一个用户界面，让用户安全地在我们的 App 中输入内容！
 
-////
+但每个 App ，如果允许用户去创建内容，同时也需要给他们一个方式来编辑或删除它。这就是下一章将会说到的。
