@@ -1,49 +1,52 @@
 ---
-title: Latency Compensation
+title: 延迟补偿
 slug: latency-compensation
 date: 0007/01/02
 number: 7.5
+points: 10
 sidebar: true
-contents: Understand latency compensation.|Slow your app down and see what's going on.|Learn how Meteor Methods call each other.
+photoUrl: http://www.flickr.com/photos/ikewinski/9473352049/
+photoAuthor: Mike Lewinski
+contents: 理解延迟补偿。|延缓你的 App 看看发生了什么。|学习 Meteor 的内置方法如何互相调用。
 paragraphs: 28
 ---
 
-////
+在上一章，我们介绍了 Meteor 的一个新概念：内置方法。
 
-<%= diagram "latency1", "Without latency compensation", "pull-right" %>
+<%= diagram "latency1", "没有延迟补偿的情况", "pull-right" %>
 
-////
+Meteor 的内置方法是一种在服务器上执行一系列命令的结构化方法。在示例中，我们使用内置方法是为了确保新帖子是通过作者的姓名和 ID ，以及当前服务器时间去标记。
 
-////
+然而，如果 Meteor 用最基本的方式去执行内置方法，我们会注意到一些问题。想一想下面事件的序列（注：为演示方便，时间戳值是随机的生成的）：
 
-- *+0ms:* ////
-- *+200ms:* ////
-- *+500ms:* ////
+- *+0ms:* 用户单击提交按钮，浏览器触发内置方法的调用。
+- *+200ms:* 服务器更改 Mongo 数据库。
+- *+500ms:* 客户端接收到这些变化，并更新页面反映更改结果。
 
-If this were the way Meteor operated, then there'd be a short lag between performing such actions and seeing the results (that lag being more or less noticeable depending on how close you were to the server). We can't have that in a modern web application!
+如果这是 Meteor 的操作方式，它会有一个很短的时间差去看到这样的执行操作的结果（延时的多少会取决于你的服务器性能）。但我们不可能让这些情况出现在 Web 应用程序中！
 
-### Latency Compensation
+### 延迟补偿
 
-<%= diagram "latency2", "With latency compensation", "pull-right" %>
+<%= diagram "latency2", "延迟补偿的情况", "pull-right" %>
 
-////
+为了避免这个问题，Meteor 引入了一个叫做**延迟补偿**的概念。如果我们把 `post` 方法的定义放在 `collections/` 目录下。这意味着它在服务端和客户端上都存在，而且是同时运行！
 
-////
+当你使用内置方法的时候，客户端会发送请求到服务器去调用，同时还模仿服务器内置方法去操作本地数据库集合。所以现在我们的工作流程是：
 
-- *+0ms:* ////
-- *+0ms:* ////
-- *+200ms:* ////
-- *+500ms:* ////
+- *+0ms:* 用户单击提交按钮，浏览器触发内置方法的调用。
+- *+0ms:* 客户端模仿内置方法操作本地的数据集合和以及通过更改页面来反映这一变化。
+- *+200ms:* 服务器更改 Mongo 数据库。
+- *+500ms:* 客户端接收这些更改并取消刚刚的模仿操作，根据服务器的更改覆盖它们（通常是相同的）。页面的变化反映了这一过程。
 
-////
+这样用户就会立刻看到变化。服务器的响应返回一段时间后，根据服务器数据库发送过来的更改请求，本地数据库可能会或可能不会有明显的改变。因此，我们应该学会确保本地数据尽可能地与服务器数据库保持一致。
 
-### Observing Latency Compensation
+### 观察延迟补偿
 
-////
+我们可以对 `post` 内置方法的调用稍作改动。为此，我们将会通过 npm 包 `futures` ，使用一些高级的编程方式去把延迟对象放到我们的内置方法调用里面。
 
-////
+我们将使用 `isSimulation` 去问 Meteor 现在所调用的内置方法是否作为一个存根（ Stub ）。这个存根[ stub ](http://docs.meteor.com/#methods_header)是模仿内置方法运行在客户端的模拟方法，而“真正的”内置方法是在服务器上运行的。
 
-////
+所以我们会询问 Meteor 这部分代码是否允许在客户端上执行。如果是，我们会在帖子的标题后面添加 `(client)` 字符串。如果不是，我们将添加 `(server)` 字符串：
 
 ~~~js
 Meteor.methods({
@@ -77,11 +80,11 @@ Meteor.methods({
 <%= caption "collections/posts.js" %>
 <%= highlight "6, 7, 13~22" %>
 
-////
+注意：这个例子中 `this.isSimulation` 的 `this` 是[ Method 调用对象](http://docs.meteor.com/#meteor_methods) ，它提供很多有用的变量去访问。
 
-////
+尽管这些知识（ [Futures](https://npmjs.org/package/future) ）已经远远超出这本书的范围，但是我们还是要学会最基本的去告诉 Meteor 等待5秒后再插入到服务器上的集合。
 
-////
+我们还要在提交数据后直接重定向到帖子列表页面：
 
 ~~~js
 Template.postSubmit.events({
@@ -107,15 +110,15 @@ Template.postSubmit.events({
 
 <%= scommit "7-5-1", "Demonstrate the order that posts appear using a sleep." %>
 
-////
+如果我们现在创建一个帖子，我们可以清楚地看到延迟补偿。首先，插入一个标题带 `(client)` 的帖子（列表的第一个帖子是链接到 GitHub ）：
 
-<%= screenshot "s5-1", "Our post as first stored in the client collection" %>
+<%= screenshot "s5-1", "我们的帖子首先储存在本地数据集合" %>
 
-////
+五秒之后，它就会通过服务器真正地插入到服务器数据库：
 
-<%= screenshot "s5-2", "Our post once the client receives the update from the server collection" %>
+<%= screenshot "s5-2", "当客户端接收到来自服务器的更新，我们的帖子就会立刻更新。" %>
 
-### Client Collection Methods
+### 客户端数据集合方法
 
 ////
 
