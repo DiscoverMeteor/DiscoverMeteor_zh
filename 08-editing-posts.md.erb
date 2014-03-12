@@ -3,13 +3,16 @@ title: Editing Posts
 slug: editing-posts
 date: 0008/01/01
 number: 8
-contents: Add a form for editing your posts.|Set up edit permissions.|Restrict which properties can be edited.
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/9473337133/
+photoAuthor: Mike Lewinski
+contents: 添加一个帖子编辑页面。|设置可编辑权限。|限制哪些属性可以编辑。
 paragraphs: 29
 ---
 
-////
+上一章，我们已经学会了创建帖子，下面来学习编辑和删除它们。页面的代码非常简单，让我们在这个时候来谈论一下 Meteor 是如何管理用户权限。
 
-////
+让我们先设置我们的路由器，添加一个可以访问帖子编辑页的路径，并设置它的数据上下文：
 
 ~~~js
 Router.configure({
@@ -50,9 +53,9 @@ Router.before(requireLogin, {only: 'postSubmit'});
 <%= caption "lib/router.js" %>
 <%= highlight "12~15" %>
 
-### The Post Edit Template
+### 帖子编辑模板
 
-////
+创建一个帖子编辑模板， `postEdit` 模板里是一个表单：
 
 ~~~html
 <template name="postEdit">
@@ -87,7 +90,7 @@ Router.before(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "client/views/posts/post_edit.html" %>
 
-////
+用 `post_edit.js` 来控制这个的模板：
 
 ~~~js
 Template.postEdit.events({
@@ -124,19 +127,19 @@ Template.postEdit.events({
 ~~~
 <%= caption "client/views/posts/post_edit.js" %>
 
-////
+相信你现在已经对这些代码都相当的熟悉了。首先，我们的模板 Helper 获取当前帖子并将其传递到模板中。
 
-////
+然后，我们有两个事件回调函数：一个用于表单的 `submit` 事件，一个用于删除链接的 `click` 事件。
 
-////
+删除链接的回调函数是非常简单的：先防止默认点击事件，然后提示确认窗口。如果确认删除，它将从模板的数据上下文中获得当前帖子的 ID ，然后删除它，最后把用户重定向到主页。
 
-////
+更新的回调函数需要长一点时间，但并不复杂。在防止默认提交事件然后获取了当前帖子之后，我们将从表单中获取相关字段的值，并将它们存储在一个 `postProperties` 的对象中。
 
-////
+然后，我们把该对象传递给 Meteor 的 `Collection.update()` 方法，并通过回调函数去判断如果更新失败就显示错误信息，如果更新成功了，将自动返回到该帖子的页面。
 
-### Adding Links
+### 添加链接
 
-////
+我们还应该添加一个编辑帖子的链接，以便用户可以访问到帖子编辑页面：
 
 ~~~html
 <template name="postItem">
@@ -155,7 +158,7 @@ Template.postEdit.events({
 <%= caption "client/views/posts/post_item.html" %>
 <%= highlight "5~8" %>
 
-////
+当然，我们不能让你的帖子提供给其他用户去编辑。这就要通过 `ownPost` 方法来帮忙：
 
 ~~~js
 Template.postItem.helpers({
@@ -172,17 +175,17 @@ Template.postItem.helpers({
 <%= caption "client/views/posts/post_item.js" %>
 <%= highlight "2~4" %>
 
-<%= screenshot "8-1", "Post edit form." %>
+<%= screenshot "8-1", "帖子编辑页面。" %>
 
-<%= commit "8-1", "Added edit posts form." %>
+<%= commit "8-1", "添加帖子编辑页面。" %>
 
-////
+我们的帖子编辑页面看起来很好，但是目前还不能够进行任何的编辑，这是为什么？
 
-### Setting Up Permissions
+### 设置权限
 
-////
+自从我们移除了 `insecure` 包，现在所有客户端的修改都会被拒绝。
 
-////
+为了解决这个问题，我们需要建立一些许可规则。首先，创建一个新的 `permissions.js` 文件在 `lib` 目录下。这样做将会首先加载我们权限文件（它在服务端和客户端都可以被加载到）：
 
 ~~~js
 // check that the userId specified owns the documents
@@ -192,9 +195,9 @@ ownsDocument = function(userId, doc) {
 ~~~
 <%= caption "lib/permissions.js" %>
 
-////
+在[创建帖子](/chapter/creating-posts)这个章节，我们抛弃了 `allow()` 方法，因为我们只允许通过服务端去插入新的帖子。（绕过了 `allow()` 方法）
 
-////
+但是现在我们要在客户端编辑和删除帖子！我们回到 `posts.js` 文件并添加 `allow()` ：
 
 ~~~js
 Posts = new Meteor.Collection('posts');
@@ -210,13 +213,13 @@ Meteor.methods({
 <%= caption "collections/posts.js" %>
 <%= highlight "3~6" %>
 
-<%= commit "8-2", "Added basic permission to check the post's owner." %>
+<%= commit "8-2", "添加基本权限来检查帖子的拥有者。" %>
 
-### Limiting Edits
+### 编辑限制
 
-////
+尽管你可以编辑自己的帖子，但并不意味着你可以允许去编辑帖子的**每个**属性。例如，用户创建一个帖子之后，我们不允许他能将其分配给其他用户。
 
-////
+我们用 Meteor 的 `deny()` 方法，以确保用户只能编辑特定的字段：
 
 ~~~js
 Posts = new Meteor.Collection('posts');
@@ -236,31 +239,31 @@ Posts.deny({
 <%= caption "collections/posts.js" %>
 <%= highlight "8~13" %>
 
-<%= commit "8-3", "Only allow changing certain fields of posts." %>
+<%= commit "8-3", "只允许更改某些帖子属性。" %>
 
-////
+代码中的 `fieldNames` 数组，它包含了需要被修改的字段，并使用  [Underscore](http://underscorejs.org/) 的 `without()` 方法返回一个不包含 `url` 和 `title` 字段的子数组。
 
-////
+正常情况下，这个数组应该是空的，它的长度应该是0。如果有人采取其他操作，这个数组的长度将变为1或更多，回调函数将返回 `true` （因此禁止更新）。
 
 <% note do %>
 
-### Method Calls vs Client-side Data Manipulation
+### 内置方法的回调 vs 客户端数据操作
 
-////
+创建帖子，我们使用的是 `post` 的内置方法，包括编辑和删除，我们直接在客户端调用 `update` 和 `remove` ，并通过 `allow` 和 `deny` 去限制使用权限。
 
-////
+我们该何时去用它呢？
 
-////
+当操作相对比较简单的时候，你可以通过 `allow` 和 `deny` 去设置你的规则，通常是直接在客户端进行简单的操作。
 
-////
+因为在客户端直接操作数据库会立刻触发相关的响应，只要你记得去进行一些错误处理，这样的用户体验会更好。
 
-////
+然而，一旦你需要做一些用户不能被允许的事情（比如设置一个新帖子的时间戳，或者把帖子分配到正确的用户），这种情况使用内置方法会更好。
 
-////
+内置方法也适用在其他的一些情景：
 
-- ////
-- ////
-- ////
+- 当你需要通过内置方法的回调函数去获得返回值的时候，比起慢慢地等待响应和同步才传递数据过来要更好。
+- 对于一些繁重的数据库操作，比如要提取大量的数据集合。
+- 计算或者合并数据的时候。（比如： count ， average ， sum ）
 
 <% end %>
 
