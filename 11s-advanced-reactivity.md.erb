@@ -8,13 +8,13 @@ contents: 学习如何在 Meteor 建立响应数据源.|建立一个简单的响
 paragraphs: 29
 ---
 
-////
+虽然需要你自己写代码来跟踪依赖变量的情况十分罕见，了解依赖变量的工作流程还是十分必要的。
 
-////
+设想我们现在需要跟踪一下 Microscope上，当前用户的 Facebook 朋友在‘喜欢’某一篇帖子的数量。 让我们假设我们已经解决了 Facebook 用户认证的问题，运用了正确的 API 调用，而且也解析了相关数据。 我们现在有一个异步的客户端函数返回‘喜欢’的数量，`getFacebookLikeCount(user, url, callback)`.
 
-////
+需要特别强调的是要记住这个函数是十分 ’非响应式‘ 而且非实时的。它发起一个 HTTP 请求到 Facebook， 得到一些数据， 然后作为回调函数参数返回给我们的应用程序。 但是如果‘喜欢’数改变了而这个函数不会重新运行，那么我们的界面上就无法得到当前最新数据了。
 
-////
+要解决这个问题，我们首先使用 `setInterval` 来每隔几秒钟调用一次这个函数。
 
 ~~~js
 currentLikeCount = 0;
@@ -30,7 +30,7 @@ Meteor.setInterval(function() {
 }, 5 * 1000);
 ~~~
 
-////
+任何时候当我们检查 `currentLikeCount` 变量， 我们期望可以得到一个5秒钟之内准确的数据。我们现在在帮助方法使用这个变量。代码如下：
 
 ~~~js
 Template.postItem.likeCount = function() {
@@ -38,15 +38,15 @@ Template.postItem.likeCount = function() {
 }
 ~~~
 
-////
+然而，仍然我们无法每次当`currentLikeCount` 改变的时候重绘模板。尽管变量自己现在可以伪实时了，但是它无法 ’被动性‘ 所以无法正确地和 Meteor 生态环境中的其他部分进行沟通。
 
-### Tracking Reactivity: Computations
+### 被动型跟踪: Computations
 
-////
+Meteor 的被动性是靠 *依赖性* 来控制的， 就是一个跟踪 Computation 的数据结构。
 
-////
+正如我们此前在被动性章节看到的， 一个 computation 是一段代码用来处理响应式数据。我们的例子中有一个 computation 专门建立给 ‘postItem’ 这个模板用。 这个模板中的每个帮助方法都在这个 computation 下工作。
 
-////
+你可以想象这个 computation 就是一段专门关注响应式数据的代码。 当数据改变了， 这个 computation 就会通知 （通过 `invalidate()`) ， 而且也正是 computation 来决定是否有什么工作需要做。
 
 ### Turning a Variable Into a Reactive Function
 
