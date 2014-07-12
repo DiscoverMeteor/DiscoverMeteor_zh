@@ -1,25 +1,25 @@
 ---
-title: Errors
-slug: errors
-date: 0009/01/01
+title: 错误
+slug: 错误
+date: 2014/07/10
 number: 9
-contents: Create a better mechanism for displaying errors and messages.|Learn how to use `Template.rendered` to know when a user has seen an error.|Use a router filter to make sure errors are only seen once.
+contents: 创建一个更好的显示错误和信息的机制。|学习怎样使用 `Template.rendered`，以便提示用户报错。|应用路径删选机制来允许一次性报错。
 paragraphs: 31
 ---
 
-////
+仅使用浏览器标准的alert() 对话窗去警告用户输入的错误数据，特别从用户体验的角度来讲，是不合适的。我们可以做得更好。
 
-////
+换一句话说，我们可以建立一个更灵活的错误报告机制来提醒用户在哪个工作流程上系统出现错误。
 
-### Introducing Local Collections
+### 及时性集合的介绍
 
-////
+我们要实现一个简单的报错系统：这个系统记录下用户已看到的错误信息，对于新的错误信息，该系统会把它显示在 "flash"的模版里。这样的用户体验能够在不影响用户工作流程的情况下提醒用户某些错误发生。
 
-////
+我们要建立一个类似于Ruby on Rails应用程序里的闪现信息，相比之下Meteor的实现方式更吊丝，因为它只在客户端实现，而且能够知道用户什么时候看到信息。
 
-////
+一开始，我们应该建立一个可以储存错误的集合。介于错误只是对于当前的会话，我们将采用及时性集合。这就意味着错误集合只存在于当前的浏览器，该集合不会与服务端同步。
 
-////
+我们需要在客户端创建错误来实现它，把集合名字设为null。我们建立一个 throwError函数去把一个错误加入到集合中：
 
 ~~~js
 // Local (client-only) collection
@@ -27,7 +27,7 @@ Errors = new Meteor.Collection(null);
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
-////
+集合已经建立了，我们可以建立一个 throwError 函数来加入新的错误。我们不需要担心允许和拒绝机制，因为及时性集合不会被储存到Mongo数据库端。
 
 ~~~js
 throwError = function(message) {
@@ -36,11 +36,11 @@ throwError = function(message) {
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
-////
+及时性集合的一大优势在于，就像所有的集合， 它是可回应性的 － 这意味着就像显示任何集合的数据，我们可以及时显示任何错误。
 
-### Displaying errors
+### 显示错误
 
-////
+我们将在我们的主显示模块的顶部显示信息：
 
 ~~~html
 <template name="layout">
@@ -56,7 +56,7 @@ throwError = function(message) {
 <%= caption "client/views/application/layout.html" %>
 <%= highlight "7" %>
 
-////
+在errors.html里面创建错误和错误模版：
 
 ~~~html
 <template name="errors">
@@ -78,15 +78,15 @@ throwError = function(message) {
 
 <% note do %>
 
-### Twin Templates
+### 复制性模版
 
-////
+你可能注意到我们在一个文档里面建立了两个模版。直到现在我们一直在遵循“一个文档， 一个模块”的标准。 在Meteor的世界里， 我们所有的模版可以在一个文档里面应用自如（但是这会让main.html的代码变得更加难懂!）。
 
-////
+在当前情况下，因为这两个错误模版都比较小， 我们可以将两个模块放在一个文档里面。
 
 <% end %>
 
-////
+我们需要合成我们的模块助手，大功告成！
 
 ~~~js
 Template.errors.helpers({
@@ -99,11 +99,11 @@ Template.errors.helpers({
 
 <%= commit "9-1", "Basic error reporting." %>
 
-### Creating errors
+### 创建错误
 
-////
+我们知道怎样显示错误，但我们还需要学习怎样创建错误。 错误往往来自于用户输入新内容，所以我们要在帖子建立的回调函数里检测错误， 并且显示错误信息。
 
-////
+另外， 如果我们得到一个302错误（意味着一个帖子已存在），我们将用户导入已存在的帖子。我们可以从error.details获取帖子的id。 （见第7章）
 
 ~~~js
 Template.postSubmit.events({
@@ -135,22 +135,19 @@ Template.postSubmit.events({
 
 <%= commit "9-2", "Actually use the error reporting." %>
 
-////
+试一试： 尝试建立一个帖子并输入URL http://meteor.com。因为这个URL已经和一个已存在的帖子链接， 你可以看到：
 
 <%= screenshot "9-1", "Triggering an error" %>
 
-### Clearing Errors
+### 清理错误
 
-////
+当你点击关闭键的时候，错误会被Twitter Bootstrap的内置JavasScript关闭消失。
 
-////
+但当Bootstrap在从DOM里面清除错误<div>， 错误没有被从Meteor的集合里面清除。所以当错误信息已被显示，我们要彻底清除及时集合。
 
-////
+首先，我们要修改throwError函数去包含一个显示特性。该特性能够检测一个错误是否已经显示给用户。
 
-////
-
-////
-
+修改函数完成以后，我们可以写一个简单的 clearErrors函数来清除这些已显示的错误：
 ~~~js
 // Local (client-only) collection
 Errors = new Meteor.Collection(null);
@@ -177,16 +174,16 @@ Router.before(function() { clearErrors() });
 <%= caption "lib/router.js" %>
 <%= highlight "4" %>
 
-////
+当正常运行clearErrors()时，错误需要被标注为已显示。在这里我们需要处理一个特别案例： 当一个错误出现，用户被导入到其他路径， 该导入是当场发生的。这意味着用户没有在错误被清理之前看到错误显示。
 
-////
+This is where our seen property will come in handy. We need to ensure that it's only set to true if the user has actually seen the error.
+这时我们的显示特性就有用武之地了，我们需要确保显示特性只有在用户真正看到错误之后才为真。
 
-////
+我们可以用到Meteor.defer().该函数让Meteor刚好在一切错误发生之后执行回调函数。 这就好比defer()告诉浏览器在执行命令之前等待一微秒。
 
-////
+在错误模版显示的一微秒以后Meteor会把显示特性设为真。但因为重导入是瞬间发生的，重导入会在defer的回调函数之前发生。 
 
-////
-
+这正是我们想要的： 如果重导入没有被执行，那么错误的显示特性就不会为真。
 ~~~js
 Template.errors.helpers({
   errors: function() {
@@ -206,16 +203,7 @@ Template.error.rendered = function() {
 
 <%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
 
-////
+导入回调函数会在导入浏览器后执行。在回调函数里，它会链接到当前的模版个体， this.data会载入当前的信息载体。
 
-////
+哇呀！ 好多活啊，用户可能会觉得很苦逼吧!
 
-<% note do %>
-
-### The `rendered` callback
-
-////
-
-////
-
-<% end %>
