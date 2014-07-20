@@ -205,20 +205,20 @@ $ meteor reset
 ~~~js
 if (Posts.find().count() === 0) {
   Posts.insert({
-    title: 'Introducing Telescope'，
-    author: 'Sacha Greif'，
+    title: 'Introducing Telescope',
+    author: 'Sacha Greif',
     url: 'http://sachagreif.com/introducing-telescope/'
   });
   
   Posts.insert({
-    title: 'Meteor'，
-    author: 'Tom Coleman'，
+    title: 'Meteor',
+    author: 'Tom Coleman',
     url: 'http://meteor.com'
   });
   
   Posts.insert({
-    title: 'The Meteor Book'，
-    author: 'Tom Coleman'，
+    title: 'The Meteor Book',
+    author: 'Tom Coleman',
     url: 'http://themeteorbook.com'
   });
 }
@@ -275,9 +275,9 @@ Meteor 十分智能地在应用中保持游标状态而避免动不动就把游�
 现在我们只需要再走一步；让我们通过控制台增加另一个帖子：
 
 ~~~js
-❯ Posts.insert({
-  title: 'Meteor Docs'， 
-  author: 'Tom Coleman'， 
+Posts.insert({
+  title: 'Meteor Docs',
+  author: 'Tom Coleman', 
   url: 'http://docs.meteor.com'
 });
 ~~~
