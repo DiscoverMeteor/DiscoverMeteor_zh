@@ -20,7 +20,7 @@ paragraphs: 52
 
 App 的第一个任务就是搞清楚这个客户请求什么数据。这个可能是搜索结果的第12页，玛丽的用户信息，鲍勃的最新20条微博，等等等等。 你可以想想成为一个书店的伙计在书架之间帮你寻找你要的书。
 
-当正确的数据被找到，这个 App 的下一个任务就是把数据转换成伟好看的，人类可读的 HTML 格式（对于 API 而言是 JSON 串）。
+当正确的数据被找到，这个 App 的下一个任务就是把数据转换成好看的，人类可读的 HTML 格式（对于 API 而言是 JSON 串）。
 
 用书店来举例，那就相当于是把你刚买的书包好，然后装入一个漂亮的袋子。这就是注明的 MVC（模型-视图-控制器）模式中的视图部分。
 
@@ -34,9 +34,9 @@ App 的第一个任务就是搞清楚这个客户请求什么数据。这个可�
 
 这就相当于书店的伙计不仅仅在书店里帮你找书，还跟你回家，每天晚上读给你听 （这听起来怪怪的）。
 
-这种架构可以让 Meteor 多更多很酷的事情，其中一件主要的就是 Metoer 成为 [数据库无处不在] ([database everywhere])(http://docs.meteor.com/#sevenprinciples)。简单说，Meteor 把你的数据拿出一部分子集*复制到客户端*。
+这种架构可以让 Meteor 多更多很酷的事情，其中一件主要的就是 Metoer 成为 [数据库无处不在] ([database everywhere](http://docs.meteor.com/#sevenprinciples))。简单说，Meteor 把你的数据拿出一部分子集*复制到客户端*。
 
-这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送*真实的生数据*，让客户端绝对如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问**。[延迟补偿]([latency compensation](http://docs.meteor.com/#sevenprinciples))。
+这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送*真实的生数据*，让客户端决定如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问**。[延迟补偿]([latency compensation](http://docs.meteor.com/#sevenprinciples))。
 
 ### 发布
 
@@ -71,7 +71,7 @@ Meteor.publish('posts', function() {
 
 基本上我们可以把发布/订阅模式想象成为一个漏斗，从服务器端（数据源）过滤数据传送到客户端（目标）。
 
-这个漏洞的创术协议叫做**DDP**（Distributed Data Protocol的缩写）。如果想了解 DDP 的更多细节可以通过看 Matt DeBergalis ( Meteor 的创始人之一) 的 【实时讲演视频】(http://2012.realtimeconf.com/video/matt-debergalis)，或者来自 Chris Mather 的这个【屏幕录像】(http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp)，来学习关于这个概念更多的细节。
+这个漏斗的专属协议叫做**DDP**（Distributed Data Protocol的缩写）。如果想了解 DDP 的更多细节可以通过看 Matt DeBergalis ( Meteor 的创始人之一) 的 [实时讲演视频](http://2012.realtimeconf.com/video/matt-debergalis)，或者来自 Chris Mather 的这个[屏幕录像](http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp)，来学习关于这个概念更多的细节。
 
 <% end %>
 
@@ -157,7 +157,7 @@ Meteor.publish('allPosts', function(){
 
 ~~~js 
 Meteor.publish('somePosts', function(){
-  return Posts.find({'author':'Tom'});
+  return Posts.find({'author': 'Tom'});
 });
 ~~~
 
@@ -169,7 +169,7 @@ Meteor.publish('somePosts', function(){
 
 如果你已经阅读了 [Meteor 发布文档](http://docs.meteor.com/#publishandsubscribe)，你可能被诸如 `added()` and `ready()` 之类的用来设置客户端记录属性的函数搞晕了，而且还纠结于似乎我们从来没有使用过这些方法。
 
-原因在于 Meteor 提供了十分重要的简化： `_publishCursor()‘ 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标]（章节/词汇表）(比如 `Posts.find({'author':'Tom'})`)，那个就是 Meteor 使用这个方法的时候。
+原因在于 Meteor 提供了十分重要的简化： `_publishCursor()` 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标]（章节/词汇表）(比如 `Posts.find({'author':'Tom'})`)，那个就是 Meteor 使用这个方法的时候。
 
 当 Meteor 看到 ‘部分帖子’ 发布函数返回了一个游标，它会调用 `_publishCursor()` 去 - 你猜猜看 - 自动发布这个游标。
 
@@ -203,7 +203,7 @@ Meteor.publish('allPosts', function(){
 
 ~~~js
 Meteor.publish('allPosts', function(){
-  return Posts.find({'author':'Tom'}, {fields: {
+  return Posts.find({'author': 'Tom'}, {fields: {
     date: false
   }});
 });
