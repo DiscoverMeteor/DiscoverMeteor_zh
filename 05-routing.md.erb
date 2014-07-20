@@ -161,9 +161,11 @@ Router.configure({
 Router.map(function() {
   this.route('postsList', {path: '/'});
 });
+
+Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "3,4" %>
+<%= highlight "3,4,11" %>
 
 我们先停一下。首先，我们修改了 `Router.configure()` 模块，当我们的 App 正在等待数据的时候，通过加载模板（我们将会马上创建） 去告诉路由器重定向。
 
@@ -179,12 +181,12 @@ Router.map(function() {
 
 ~~~html
 <template name="loading">
-  {{>spinner}}
+  {{> spinner}}
 </template>
 ~~~
 <%= caption "client/views/includes/loading.html" %>
 
-注意 `{{>spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
+注意 `{{> spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
 
 <%= commit "5-2", "等待帖子的订阅。" %>
 
