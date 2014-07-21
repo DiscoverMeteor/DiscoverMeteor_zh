@@ -199,7 +199,7 @@ Meteor.publish('allPosts', function(){
 
 <%= diagram "partialproperties", "发布部分字段", "pull-center" %>
 
-////
+实际上，我们可以同时使用上述两种技术，只发布作者是 Tom 的帖子，并且隐藏 date 字段:
 
 ~~~js
 Meteor.publish('allPosts', function(){
