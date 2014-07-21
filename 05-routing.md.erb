@@ -85,7 +85,7 @@ Iron Router 负责处理在 HTML `<body>` 标签里面该呈现什么，让我�
     </div>
   </header>
   <div id="main" class="row-fluid">
-    {{yield}}
+    {{> yield}}
   </div>
   </div>
 </template>
@@ -161,9 +161,11 @@ Router.configure({
 Router.map(function() {
   this.route('postsList', {path: '/'});
 });
+
+Router.onBeforeAction('loading');
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "3,4" %>
+<%= highlight "3,4,11" %>
 
 我们先停一下。首先，我们修改了 `Router.configure()` 模块，当我们的 App 正在等待数据的时候，通过加载模板（我们将会马上创建） 去告诉路由器重定向。
 
@@ -179,12 +181,12 @@ Router.map(function() {
 
 ~~~html
 <template name="loading">
-  {{>spinner}}
+  {{> spinner}}
 </template>
 ~~~
 <%= caption "client/views/includes/loading.html" %>
 
-注意 `{{>spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
+注意 `{{> spinner}}` 是 `spin` 包中的一个模板标签。尽管这部分是来自我们的 App 之外，不过我们就像其他模板一样去使用它就可以了。
 
 <%= commit "5-2", "等待帖子的订阅。" %>
 
@@ -232,7 +234,7 @@ Router.map(function() {
 <%= caption "lib/router.js" %>
 <%= highlight "4~6" %>
 
-这个特殊的 `:_id` 标记告诉路由器两件事：第一，去匹配任何符合 `/posts/xyz/`（“ xyz ”可以是任意字符） 格式的路线。第二，无论“ xyz ”里面是什么，都会把它放到路由器的 `params` 数组中的 `_id` 属性里面去。
+这个特殊的 `:_id` 标记告诉路由器两件事：第一，去匹配任何符合 `/posts/xyz/`（“xyz”可以是任意字符） 格式的路线。第二，无论“xyz”里面是什么，都会把它放到路由器的 `params` 数组中的 `_id` 属性里面去。
 
 请注意，我们这里只使用 `_id` 只是为了方便起见。路由器是没有办法知道你是通过一个实际的 `_id` ，还是仅仅通过一些随机的字符去访问。
 
@@ -320,7 +322,7 @@ Router.map(function() {
 
 又或者，你可以明确告诉路由器你需要找的 `_id` 属性在哪里，通过传递 Helper 的第二个参数（例如： `{{pathFor 'postPage' someOtherPost}}` ）。这种模式通常会在实际应用中去获取列表中前一个或者后一个的帖子的链接。
 
-为了看看它是否已经正常运作，我们去浏览帖子列表页面并点击其中一个“ Discuss ”的链接。你应该看到类似这样的：
+为了看看它是否已经正常运作，我们去浏览帖子列表页面并点击其中一个“Discuss”的链接。你应该看到类似这样的：
 
 <%= screenshot "5-2", "一个单独的帖子页面。" %>
 
