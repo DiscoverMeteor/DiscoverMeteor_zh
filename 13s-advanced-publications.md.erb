@@ -1,183 +1,150 @@
 ---
-title: Advanced Publications
+title: 高级发布机制
 slug: advanced-publications
 date: 0013/01/02
 number: 13.5
+points: 10
 sidebar: true
-contents: Learn more advanced patterns for manipulating publications.|See just how flexible publications and subscriptions can get. 
+photoUrl: http://www.flickr.com/photos/ikewinski/8390558986/
+photoAuthor: Mike Lewinski
+contents: 学习更多处理发布机制的高级方法。| 了解发布/订阅模型可以得到怎样的弹性机制。
 paragraphs: 36
 ---
+目前你应该对发布/订阅交互模式有一个不错的掌握了。
 
-////
- 
-### Publishing a Collection Multiple Times
 
-////
- 
-////
- 
-////
- 
-////
- 
-////
- 
-<%= diagram "doublecollection", "Publishing a collection twice", "pull-center" %>
+### 多次发布一个集合
 
+在[我们关于发布机制首次侧栏中](/章节/发布与订阅机制)，我看看到一些非常类同的发布和订阅模板，同时我们学习了'_publishCursor'函数，让它们非常容易地是现在我们的站点上。
+首先，让我们再次调用'_publishCursor'以明确它能做什么：它将整理所有的文档以匹配一个给定的游标(cursor)，并将它们推送至同名的客户端集合中。注意与_publication_的名字是不关联的。
+这意味着我们可以用 _more 而不是仅仅一个 publicaton_ 连接客户端与服务端的任何版本的集合。
+
+Another similar use case is to publish an *overview* of a large set of documents, as well as the full details of a single item:
+另一个类似的使用案例是发布一个文档的大子集的*预览*，包括一个单项目的全部细节。
+
+<%= diagram "doublecollection", "两次发布一个集合", "pull-center" %>
 ~~~js
 Meteor.publish('allPosts', function() {
-  return Posts.find({}, {fields: {title: true, author: true}});
+return Posts.find({}, {fields: {title: true, author: true}});
 });
-
 Meteor.publish('postDetail', function(postId) {
-  return Posts.find(postId);
+return Posts.find(postId);
 });
 ~~~
 
-////
- 
-////
- 
-////
- 
-////
- 
+现在当客户端订阅这两个发布，这些`'posts'`从两个源渠道添加集合：一个从 渠道一 订阅来的title和author's names列表，以及从 渠道二 来的post的全部内容。
+你将意识到'postDetail'发布的post内容也被'allPosts'发布（尽管只有它们属性的子集）。无论怎样，Meteor使用合并字段及确认没有重复的post来处理数据重叠的问题。
+这是很棒的，因为现在当我们渲染post摘要列表时，我们拥有所有需要显示的一切。当然，在这个例子中, 不能指望在所有Posts中可以取到所有字段, 因此我们需要对客户端格外小心。 -- 这是一个常见的麻烦。
+注意你并没有改变文档属性的任何限制。你可以方便地在这两个发布中发布同样的属性，但是请求的是不同单项。
+
 ~~~js
 Meteor.publish('newPosts', function(limit) {
-  return Posts.find({}, {sort: {submitted: -1}, limit: limit});
+return Posts.find({}, {sort: {submitted: -1}, limit: limit});
 });
-
 Meteor.publish('bestPosts', function(limit) {
-  return Posts.find({}, {sort: {votes: -1, submitted: -1}, limit: limit});
+return Posts.find({}, {sort: {votes: -1, submitted: -1}, limit: limit});
 });
 ~~~
 <%= caption "server/publications.js" %>
+### 多次从一个发布中订阅
+我们已经能看到你如何不止一次的发布一个单一的集合。它能够让你用其它模板完成一个非常类似的结果：建立一个单一发布，却多次*订阅*到它。
+在Microscope中，我们多次重复订阅'posts'发布，但Iron Router为我们设置并消除每次的订阅。我们也当然可以毫无顾忌的*同时*多次重复订阅。
 
-### Subscribing to a Publication Multiple Times
+举个例子，比如，我们想要将newest和best的posts同时加载入内存：
 
-////
- 
-////
- 
-////
- 
-<%= diagram "subscribetwice", "Subscribing twice to one publication", "pull-center" %>
-
-////
- 
+<%= diagram "subscribetwice", "对一个发布订阅两次", "pull-center" %>
+我们设定单一发布：
 ~~~js
 Meteor.publish('posts', function(options) {
-  return Posts.find({}, options);
+return Posts.find({}, options);
 });
 ~~~
-
-////
- 
+并且我们多次订阅这个发布。事实上或多或少的都在Microscope里这样做了：
 ~~~js
 Meteor.subscribe('posts', {submitted: -1, limit: 10});
 Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 ~~~
+接下来到底发生什么了？每个浏览器开启了*两个*不同的订阅，每个订阅连接到*同个*服务端的发布。每个订阅提供了不同的发布参数，但从根本上，每次从一个'posts'子集提取一个文档的一个（或不同）的子集，并通过连接机制发送到客户端集合。
 
-////
- 
-////
- 
-### Multiple Collections in a Single Subscription
+你甚至可以用*同样的参数*订阅相同的发布两次。这个对很多处场景来说很难说有用，但这种弹性机制总有一天会有用的。
 
-////
- 
-////
- 
-////
- 
-////
- 
-////
- 
-////
- 
-////
- 
-<%= diagram "multiplecollections", "Two collections in one subscription", "pull-center" %>
+### 单一订阅中的多个集合
+不像如MySQL的传统关系型数据库中使用*joins*，类似Mongo的NoSQL数据库拥有的是*去规范化*和*嵌入*。让我们了解它们是怎样在Meteor的环境下工作的。
+让我们看一个具体的例子，我们已经对我们的帖子(posts)增加了回复(comments)，到目前为止，我们已经愉快地让用户看到可以在一个帖子(post)上发布多个回复(comments)。
+无论怎样，假设我们希望在前端页面中显示*全部*帖子的回复（记着这些帖子会在分页时被改变）。这个用于展示在posts中使用嵌入式的comments的一个好的理由，以及事实上什么促使我们处理非规范的回复数*counts*。
+当然我们可以只在posts中嵌入comments，并完全删除`Comments`集合。但如同我们前面在*去规范化*章节看到的，我们将在分离的集合的操作中也会失去一些额外的好处。
+但是它证明有一个发起订阅的技巧，在保持分离的集合时能够嵌入我们的comments。
+让我们假定操作我们的前端页面中的posts列表，我们希望对每个post订阅最前面的2个comments列表。
+使用独立的comments发布会很难完成这个要求，尤其在posts列表受到某些限制时（比如说，最近的10个）。我们将写一个发布像下面的代码：
 
+<%= diagram "multiplecollections", "一个订阅中的两个集合", "pull-center" %>
 ~~~js
 Meteor.publish('topComments', function(topPostIds) {
-  return Comments.find({postId: topPostIds});
+return Comments.find({postId: topPostIds});
 });
 ~~~
+从性能角度看这样是个麻烦，这个发布将需要在`topPostIds`每次改变时消除及重新建立。
 
-////
- 
-////
- 
+
+有一个途径来解决这个问题。我们可以应用这个事实：就是我们在每个*集合*上不只可以使用一个*发布*，而且我们也可以在每个*发布*上拥有多个*集合*。
+
 ~~~js
 Meteor.publish('topPosts', function(limit) {
-  var sub = this, commentHandles = [], postHandle = null;
-  
-  // send over the top two comments attached to a single post
-  function publishPostComments(postId) {
-    var commentsCursor = Comments.find({postId: postId}, {limit: 2});
-    commentHandles[post._id] = 
-      Meteor.Collection._publishCursor(commentsCursor, sub, 'comments');
-  }
-    
-  postHandle = Posts.find({}, {limit: limit}).observeChanges({
-    added: function(id, post) {
-      publishPostComments(post._id);
-      sub.added('posts', id, post);
-    },
-    changed: function(id, fields) {
-      sub.changed('posts', id, fields);
-    },
-    removed: function(id) {
-      // stop observing changes on the post's comments
-      commentHandles[id] && commentHandles[id].stop();
-      // delete the post
-      sub.removed('posts', id);
-    }
-  });
-  
-  sub.ready();
-  
-  // make sure we clean everything up (note `_publishCursor`
-  //   does this for us with the comment observers)
-  sub.onStop(function() { postsHandle.stop(); });
+var sub = this, commentHandles = [], postHandle = null;
+// send over the top two comments attached to a single post
+function publishPostComments(postId) {
+var commentsCursor = Comments.find({postId: postId}, {limit: 2});
+commentHandles[post._id] =
+Mongo.Collection._publishCursor(commentsCursor, sub, 'comments');
+}
+postHandle = Posts.find({}, {limit: limit}).observeChanges({
+added: function(id, post) {
+publishPostComments(post._id);
+sub.added('posts', id, post);
+},
+changed: function(id, fields) {
+sub.changed('posts', id, fields);
+},
+removed: function(id) {
+// stop observing changes on the post's comments
+commentHandles[id] && commentHandles[id].stop();
+// delete the post
+sub.removed('posts', id);
+}
+});
+sub.ready();
+// make sure we clean everything up (note `_publishCursor`
+// does this for us with the comment observers)
+sub.onStop(function() { postsHandle.stop(); });
 });
 ~~~
+注意我们在这个发布中没有返回任何东西，同时我们手动给自己的`sub`发送信息（通过`.added()'等方式）。我们不必通过返回一个游标来请求`_publishCursor`给我们来做这个动作。
 
-////
- 
-////
- 
-////
- 
-### Linking different collections
+现在，每次我们发布一个帖子，我们也自动发布2个顶部的回复并连接到它。且所有的单一订阅请求都是这样！
 
-////
- 
-<%= diagram "linkedcollections", "One collection for two subscriptions", "pull-center" %>
+虽然Meteor还未直接实现这个方法，你也可以参考在Atomsphere里的`关联发布`(`publish-with-relations`)包，它的目标就是让这个方法更容易的使用。
 
-////
- 
-////
- 
-////
- 
-////
- 
+### 连接不同的集合
+这样的订阅弹性机制可以给我们更多新知识么？当然，如果我们不使用`_publishCursor`，我们不必跟着此项约束，就是在服务端的源集合需要与客户端的目标集合由同样的名称。
+
+<%= diagram "linkedcollections", "一个集合对两个订阅", "pull-center" %>
+一个要*单表继承*的理由。
+假设我们需要从我们的帖子中引用多种类型的对象，每一个对象存储在相同字段中但又显然是不同内容。例如，我们监理一个类似Tumblr的博客引擎，每个帖子具有常见的ID，时间戳，以及标题；但是扩展的特性也有如图像、视频、链接，或者只是文字。
+我们可以存储这些对象在一个单独的`'resources'`集合中，使用`type`属性来标记他们是什么序列的对象。（`video`,`image`,`link`,等等）。
+
+同时，虽然我们有一个服务端的单一的`Resources`集合，我们也能够转换单一的集合到多样的`Videos`,`Images'，等等。
+在客户端的集合有一个跟随的魔法标记：
 ~~~js
-  Meteor.publish('videos', function() {
-    var sub = this;
-    
-    var videosCursor = Resources.find({type: 'video'});
-    Meteor.Collection._publishCursor(videosCursor, sub, 'videos');
-    
-    // _publishCursor doesn't call this for us in case we do this more than once.
-    sub.ready();
-  });
+Meteor.publish('videos', function() {
+var sub = this;
+var videosCursor = Resources.find({type: 'video'});
+Mongo.Collection._publishCursor(videosCursor, sub, 'videos');
+// _publishCursor doesn't call this for us in case we do this more than once.
+sub.ready();
+});
 ~~~
+我们告诉`_publishCursor`用游标发布我们的视频(简单的类似returning），但绝非发布到客户端`resources`集合，取而代之的是我们从`resources`发布到`videos`。
+另一个更好的主意是：发布到一个客户端集合，却根本不需要服务端集合！举例，你可以从一个第三方服务中抓取数据，并发布它们到一个客户端集合。
+感谢发布API的弹性机制，拥有无限的可能。
 
-////
- 
-////
- 
+
