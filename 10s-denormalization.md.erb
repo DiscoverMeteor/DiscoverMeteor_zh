@@ -1,50 +1,54 @@
 ---
-title: Denormalization
+title: 非规范化
 slug: denormalization
 date: 0010/01/02
 number: 10.5
+points: 10
 sidebar: true
-contents: Understand what denormalization is.|Compare Mongo with traditional relational databases.|Learn when you should *not* denormalize your data. 
+photoUrl: http://www.flickr.com/photos/ikewinski/9283093547/
+photoAuthor: Mike Lewinski
+contents: 理解非规范化是什么。|Mongo与传统的关系型数据库的比较。|学习什么时候你*不*要非规范化数据。 
 paragraphs: 15
 ---
 
-////
+非规范化数据不存储规范化的数据。换句话说非规范化意味着相同数据的多个拷贝同时存在。
 
-////
+上一章中，我们在帖子中非规范化评论总数，以避免每次都加载所有的评论。在数据建模意义上说这是冗余的，因为我们可以通过计数每个评论，随时计算出该总数（当不考虑运行速度）。
 
-////
+非规范化通常意味着额外的开发工作。在例子中，我们每次添加或删除评论时，还需要同时更新相关的帖子，以确保‘commentsCount’准确。
 
-////
+但是，规范化也有其缺点：没有‘commentsCount’项，就象开始我们做的那样，为了计算评论总数，每次我们都需要传输所有的评论。非规范化使我们能够完全避免这种情况。
 
 <% note do %>
 
-### A Special Publication
+### 一份特殊发布
 
-////
+我们可以创建一个特殊的发布，送出我们有兴趣的的评论数（通过聚合查询服务器，我们目前能看到帖子的评论数）。
 
-////
+如果这样发布代码的复杂性不超过由非规范化造成的难度，它是值得考虑的...
 
 <% end %>
 
-////
+当然这样的考虑是和应用程序相关的：如果你数据的完整性是非常重要的，那么比你的执行性能提升，避免数据的不一致是更为重要的和有更高的优先级。
 
-### Embedding Documents or Using Multiple Collections
 
-////
+### 嵌入文件或使用多个集合
 
-////
+如果您是有Mongo的经验，你可能会感到惊奇，我们给评论单独创建了第二个集：为什么不直接在帖子文件中嵌入评论？
 
-1. ////
-2. ////
-3. ////
-4. ////
+事实证明当进行集操作时，许多Mongo工具给我们更好的结果。例如：
 
-////
+1.‘{{#each}}’助手遍历光标（‘collection.find()’的输出）是非常有效的。但是当它遍历一个较大文件中的对象数组,效率就不高。
+2.‘allow’和‘deny’在文件级别上操作，因此可以很容易地确保每个评论修改的正确性，但是在帖子级别就会变得更复杂。
+3. DDP工作在文档的顶级属性级 -- 这意味着，如果‘评论’是一个‘帖子’的属性，当创建每一个新评论时，服务器就必须发送这个帖子整个更新的评论列表到每个连接的客户端。
+4，在文件的级别更容易操控发布和预订。例如我们想对帖子的评论进行分页，如果评论没有属于一个集，我们会发现很难做到。
+
+Mongo推荐嵌入文档以减少昂贵的查询次数。然而考虑到流星的架构，这是不是一个问题：大多数时候我们在*客户端*要查询的评论，其数据库访问基本上是免费的。
 
 <% note do %>
 
-### The Downsides of Denormalization
+### 非规范化的缺点
 
-////
+很好的理由使你*不要*非规范化的数据。为了更好的理解反对非规范化，我们推荐阅读[为什么你不应该使用MongoDB]（http://www.sarahmei.com/blog/2013/11/11/why-you-should-never-use-mongodb /）Sarah Mei。
 
 <% end %>
