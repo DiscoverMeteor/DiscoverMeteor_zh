@@ -6,7 +6,7 @@ number: 11
 points: 10
 photoUrl: http://www.flickr.com/photos/ikewinski/8719868039/
 photoAuthor: Mike Lewinski
-contents: 添加一个 notifications 集合通知当前用户其他用户的操作。|学习如何只共享相关 notifications 给相关用户。|学习 Meteor 的发布和订阅
+contents: 添加一个 notifications 集合通知当前用户其他用户的操作。|学习如何只共享相关 notifications 给特定用户。|学习 Meteor 的发布和订阅
 paragraphs: 25
 ---
 
@@ -14,7 +14,7 @@ paragraphs: 25
 
 我们将通知帖子的作者已经有用户在他的帖子上添加了评论，并且提供一个链接可以看到评论。
 
-这是 Meteor 真正闪光的特性之一：因为 Meteor 在默认情况下是实时的，我们会瞬时看到这些 notifications。不需要用户去刷新页面或者做其他检查,我们不需要写任何特殊代码就可以得到一个简单的 notifications 弹出框。
+这是 Meteor 真正闪光的特性之一：因为 Meteor 在默认情况下是实时的，我们会_瞬时_看到这些 notifications。不需要用户去刷新页面或者做其他检查,我们不需要写任何特殊代码就可以得到一个简单的 notifications 弹出框。
 
 ### 生成 Notifications
 
@@ -22,11 +22,11 @@ paragraphs: 25
 
 让我们先创建一个 `Notifications` 集合，和一个方法 `createCommentNotification`，当有人在你的帖子下添加评论时该方法会添加一个 notification 到集合。
 
-Since we'll be updating notifications from the client, we need to make sure our `allow` call is bulletproof. So we'll check that:
+因为我们将从客户端更新 notifications, 我们需要确定 `allow` 方法是防弹的。我们检查如下内容：
 
-- The user making the `update` call owns the notification being modified.
-- The user is only trying to update a single field.
-- That single field is the `read` property of our notifications.
+- 用户是文档的创建者才能调用 `update` 方法
+- 用户只更新一个属性
+- 更新的属性名字是 `read`
 
 ~~~js
 Notifications = new Mongo.Collection('notifications');
@@ -53,11 +53,11 @@ createCommentNotification = function(comment) {
 ~~~
 <%= caption "lib/collections/notifications.js" %>
 
-Just like posts or comments, this `Notifications` collection will be shared by both client and server. As we need to update notifications once a user has seen them, we also enable updates, ensuring as usual that we restrict update permissions to a user's own data.
+和帖子和评论一样，`Notifications` 集合也是在服务器端和客户端共享的。用户看完 notifications 后，我们需要更新他们，因此需要允许更新操作。和其他部分一样只有拥有 notification 的用户才允许更新操作。
 
-We've also created a simple function that looks at the post that the user is commenting on, discovers who should be notified from there, and inserts a new notification.
+我们写了个简单的程序用来当用户给帖子添加评论时找到需要通知的用户，并插入一个新的 notification。
 
-We are already creating comments in a server-side Method, so we can just augment that Method to call our function. We'll replace `return Comments.insert(comment);` by `comment._id = Comments.insert(comment)` in order to save the `_id` of the newly created comment in a variable, then call our `createCommentNotification` function:
+我们已经在服务器端方法创建了评论对象，我们用 `comment._id = Comments.insert(comment)` 来替换 `return Comments.insert(comment);`。这样就能在评论对象中保存 `_id`, 然后调用 `createCommentNotification` 方法:
 
 ~~~js
 Comments = new Mongo.Collection('comments');
@@ -89,7 +89,7 @@ Meteor.methods({
 <%= caption "lib/collections/comments.js" %>
 <%= highlight "17~123" %>
 
-Let's also publish the notifications:
+接下来发布 notifications:
 
 ~~~js
 Meteor.publish('posts', function() {
@@ -108,7 +108,7 @@ Meteor.publish('notifications', function() {
 <%= caption "server/publications.js" %>
 <%= highlight "10~12" %>
 
-And subscribe on the client:
+在客户端订阅 notifications:
 
 ~~~js
 Router.configure({
@@ -125,9 +125,9 @@ Router.configure({
 
 <%= commit "11-1", "Added basic notifications collection." %>
 
-### Displaying Notifications
+### 显示 Notifications
 
-Now we can go ahead and add a list of notifications to the header.
+现在我们在 header 中添加一个 notifications 列表。
 
 ~~~html
 <template name="header">
@@ -164,7 +164,7 @@ Now we can go ahead and add a list of notifications to the header.
 <%= caption "client/templates/includes/header.html" %>
 <%= highlight "15~22" %>
 
-And create the `notifications` and `notificationItem` templates (they'll share a single `notifications.html` file):
+接下来创建 `notifications` 和 `notificationItem` 模板 (两个模板都在 `notifications.html` 文件中):
 
 ~~~html
 <template name="notifications">
@@ -197,8 +197,9 @@ And create the `notifications` and `notificationItem` templates (they'll share a
 <%= caption "client/templates/notifications/notifications.html" %>
 
 We can see that the plan is for each notification to contain a link to the post that was commented on, and the name of the user that commented on it.
+我们可以看到每个 notification 有一个指向帖子的链接，而且包含注释作者的名字。
 
-Next, we need to make sure we select the right list of notifications in our helper, and update the notifications as "read" when the user clicks on the link to which they point.
+接下来我们需要确定在 helper 中选择了正确的 notifications 列表，并且在用户点击链接后将 notifications 标记为已读。
 
 ~~~js
 Template.notifications.helpers({
@@ -226,17 +227,17 @@ Template.notificationItem.events({
 
 <%= commit "11-2", "Display notifications in the header." %>
 
-You may think that the notifications are not too different from the errors, and it's true that their structure is very similar. There is one key difference though: we've created a proper client-server synchronised collection. This means that our notifications are *persistent* and, as long as we use the same user account, will exist across browser refreshes and different devices.
+你可能觉得 notifications 和 errors 很像，是的从结构上看他们很相似。但有一点不同: 我们为 notification 创建了一个集合。这意味着 notification 是*持久化*的，他对于同一用户不论浏览器刷新还是跨设备都是存在的。
 
-Give it a try: open up a second browser (let's say Firefox), create a new user account, and comment on a post that you've created with your main account (which you've left open in Chrome). You should see something like this:
+试一下: 打开一个新的浏览器 (比如 Firefox), 然后创建一个新用户, 然后在主用户的帖子下发表一个评论 (在 Chrome 中)。你将看到如下：
 
 <%= screenshot "11-1", "Displaying notifications." %>
 
-### Controlling access to notifications
+### 控制 notifications 的访问权限
 
-Notifications are working well. However there's just a small problem: our notifications are public.
+Notifications 工作的很好。然后这有一个小问题：所有人都能看到我们的 notifications。
 
-If you still have your second browser open, try running the following code in the browser console:
+如果你的浏览器还开着，试一下在浏览器 console 中输入以下 js 代码：
 
 ~~~js
 ❯ Notifications.find().count();
@@ -244,15 +245,15 @@ If you still have your second browser open, try running the following code in th
 ~~~
 <%= caption "Browser console" %>
 
-This new user (the one that *commented*) shouldn't have any notifications. The notification they can see in the `Notifications` collection actually belongs to our *original* user.
+一个新的用户 (当有帖子被评论时) 不该收到任何 notifications. `Notifications` 集合中的内容实际上属于以前的用户。
 
-Aside from potential privacy issues, we simply can't afford to have every user's notifications loaded in every other user's browser. On a big enough site, this could overload the browser's available memory and start causing serious performance problems.
+除了可能的隐私问题外，我们不能让浏览器显示每条 notifications 的原因是. 对于一个足够规模的网站，这么做会很容易耗尽浏览器内存，并带来严重的性能问题。
 
-We solve this issue with **publications**. We can use our publications to specify precisely which part of our collection we want to share with each browser.
+我们通过 **publications** 来解决这个问题。我们可以通过 publications 来精确的指定哪部分集合我们想共享给其他用户。
 
-To accomplish this, we need to return a different cursor in our publication than `Notifications.find()`. Namely, we want to return a cursor that corresponds to the current user's notifications.
+为了实现这个，我们需要在 publication 中返回不同的 cursor 而不是使用 `Notifications.find()`。换句话说，我们返回的 cursor 是和当前用户的 notificatons 相关的。
 
-Doing so is straightforward enough, as a `publish` function has the current user's `_id` available at `this.userId`:
+这么做足够直接，因为 `publish` 函数有当前用户的 `_id`, 它存在于 `this.userId` 中：
 
 ~~~js
 Meteor.publish('notifications', function() {
@@ -263,7 +264,7 @@ Meteor.publish('notifications', function() {
 
 <%= commit "11-3", "Only sync notifications that are relevant to the user." %>
 
-Now if we check in our two browser windows, we should see two different notifications collections:
+现在看一下我们的两个浏览器窗口，我们会看到两个不同的 notifications 集合。
 
 ~~~js
 ❯ Notifications.find().count();
@@ -277,6 +278,6 @@ Now if we check in our two browser windows, we should see two different notifica
 ~~~
 <%= caption "Browser console (user 2)" %>
 
-In fact, the list of Notifications should even change as you log in and out of the app. This is because publications automatically re-publish whenever the user account changes.
+实际上，当你登录和登出时 Notifications 集合都会变化。这是因为当账户变化时 publications 会自动重新发布。
 
-Our app is becoming more and more functional, and as more users join and start posting links we run the risk of ending up with a never-ending homepage. We'll address this in the next chapter by implementing pagination.
+我们的 app 功能越来越完善，当越来用的用户发帖时，我们的首页会无限长。下一章我们通过分页来解决这个问题。
