@@ -3,29 +3,32 @@ title: 高级的响应性
 slug: advanced-reactivity
 date: 0011/01/02
 number: 11.5
+points: 10
 sidebar: true
-contents: 学习如何在 Meteor 建立响应数据源.|建立一个简单的响应式数据源例子 | 看 Deps 和 AngularJS 的对比
+photoUrl: http://www.flickr.com/photos/ikewinski/8676146109/
+photoAuthor: Mike Lewinski
+contents: 学习如何在 Meteor 建立响应数据源。|建立一个简单的响应式数据源例子。|看 Tracker 和 AngularJS 的对比。
 paragraphs: 29
 ---
 
 虽然需要你自己写代码来跟踪依赖变量的情况十分罕见，了解依赖变量的工作流程还是十分必要的。
 
-设想我们现在需要跟踪一下 Microscope上，当前用户的 Facebook 朋友在‘喜欢’某一篇帖子的数量。 让我们假设我们已经解决了 Facebook 用户认证的问题，运用了正确的 API 调用，而且也解析了相关数据。 我们现在有一个异步的客户端函数返回‘喜欢’的数量，`getFacebookLikeCount(user, url, callback)`.
+设想我们现在需要跟踪一下 Microscope上，当前用户的 Facebook 朋友在 “like” 某一篇帖子的数量。 让我们假设我们已经解决了 Facebook 用户认证的问题，运用了正确的 API 调用，而且也解析了相关数据。 我们现在有一个异步的客户端函数返回 like 的数量，`getFacebookLikeCount(user, url, callback)`。
 
-需要特别强调的是要记住这个函数是十分 ’非响应式‘ 而且非实时的。它发起一个 HTTP 请求到 Facebook， 得到一些数据， 然后作为回调函数参数返回给我们的应用程序。 但是如果‘喜欢’数改变了而这个函数不会重新运行，那么我们的界面上就无法得到当前最新数据了。
+需要特别强调的是要记住这个函数是十分 *非响应式* 而且非实时的。它发起一个 HTTP 请求到 Facebook， 得到一些数据， 然后作为回调函数参数返回给我们的应用程序。 但是如果 like 数改变了而这个函数不会重新运行，那么我们的界面上就无法得到当前最新数据了。
 
-要解决这个问题，我们首先使用 `setInterval` 来每隔几秒钟调用一次这个函数。
+要解决这个问题，我们首先使用 `setInterval` 来每隔几秒钟调用一次这个函数:
 
 ~~~js
 currentLikeCount = 0;
 Meteor.setInterval(function() {
   var postId;
   if (Meteor.user() && postId = Session.get('currentPostId')) {
-    getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
-      function(err, count) {
-        if (!err)
-          currentLikeCount = count;
-      });
+    getFacebookLikeCount(Meteor.user(), Posts.find(postId).url,
+    function(err, count) {
+      if (!err)
+      currentLikeCount = count;
+    });
   }
 }, 5 * 1000);
 ~~~
@@ -38,23 +41,23 @@ Template.postItem.likeCount = function() {
 }
 ~~~
 
-然而，仍然我们无法每次当`currentLikeCount` 改变的时候重绘模板。尽管变量自己现在可以伪实时了，但是它无法 ’被动性‘ 所以无法正确地和 Meteor 生态环境中的其他部分进行沟通。
+然而，我们无法每次当`currentLikeCount` 改变的时候重绘模板。尽管变量自己现在可以伪实时了，但是它不是*响应式的*所以无法正确地和 Meteor 生态环境中的其他部分进行沟通。
 
-### 被动型跟踪: Computations
+### Tracking Reactivity: Computations
 
-Meteor 的被动性是靠 *依赖性* 来控制的， 就是一个跟踪 Computation 的数据结构。
+Meteor 的响应性是靠 *依赖* 来控制的， 就是一个跟踪 Computation 的数据结构。
 
-正如我们此前在被动性章节看到的， 一个 computation 是一段代码用来处理响应式数据。我们的例子中有一个 computation 专门建立给 ‘postItem’ 这个模板用。 这个模板中的每个帮助方法都在这个 computation 下工作。
+正如我们此前在响应式章节看到的， 一个 computation 是一段代码用来处理响应式数据。我们的例子中有一个 computation 隐式的建立给 `postItem` 这个模板用。 这个模板中的每个帮助方法都有自己的 computation 。
 
 你可以想象这个 computation 就是一段专门关注响应式数据的代码。 当数据改变了， 这个 computation 就会通知 （通过 `invalidate()`) ， 而且也正是 computation 来决定是否有什么工作需要做。
 
-### Turning a Variable Into a Reactive Function
+### 将变量变为响应式函数
 
-////
+将变量 `currentLikeCount` 放到一个响应式数据源中，我们需要跟踪所有依赖这个变量的 computations.这需要把它从变量变为一个函数 (有返回值的函数):
 
 ~~~js
 var _currentLikeCount = 0;
-var _currentLikeCountListeners = new Deps.Dependency();
+var _currentLikeCountListeners = new Tracker.Dependency();
 
 currentLikeCount = function() {
   _currentLikeCountListeners.depend();
@@ -64,49 +67,62 @@ currentLikeCount = function() {
 Meteor.setInterval(function() {
   var postId;
   if (Meteor.user() && postId = Session.get('currentPostId')) {
-    getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
-      function(err, count) {
-        if (!err && count !== _currentLikeCount) {
-          _currentLikeCount = count;
-          _currentLikeCountListeners.changed();
-        }
-      });
+    getFacebookLikeCount(Meteor.user(), Posts.find(postId),
+    function(err, count) {
+      if (!err && count !== _currentLikeCount) {
+        _currentLikeCount = count;
+        _currentLikeCountListeners.changed();
+      }
+    });
   }
 }, 5 * 1000);
 ~~~
 <%= highlight "1~7,14~17" %>
 
-////
+我们建立了一个叫 `_currentLikeCountListeners` 的依赖，它来跟踪所有用到 `currentLikeCount()` 的 computations. 当 `_currentLikeCount` 值发生变化，我们通过调用依赖的 `changed()` 函数，来通知所有 computations 数据变化了。
 
-////
+这些 computations 可以继续处理下面的数据变化。
 
-### Template Computation and Controlling Redraws
+你可能觉得这像是在响应式数据源上的很多引用，你说对了，Meteor 提供很多工具使这项工作简单 (你不需要直接调用 computations , 他们会自动运行)。有一个叫做 `reactive-var` 的包，它的内容正是函数 `currentLikeCount()` 要做的事。我们加入这个包:
 
-////
+~~~bash
+meteor add reactive-var
+~~~
 
-////
+The we can use it to simplify our code a bit:
 
-////
+~~~js
+var currentLikeCount = new ReactiveVar();
 
-////
+Meteor.setInterval(function() {
+  var postId;
+  if (Meteor.user() && postId = Session.get('currentPostId')) {
+    getFacebookLikeCount(Meteor.user(), Posts.find(postId),
+    function(err, count) {
+      if (!err) {
+        currentLikeCount.set(count);
+      }
+    });
+  }
+}, 5 * 1000);
+~~~
+<%= highlight "1,9" %>
 
-////
+现在使用这个包，我们在帮助方法中调用 `currentLikeCount.get()`，它会像之前一样工作。有另外一个有用的包 `reactive-dict`, 它提供 key-value 存储 (像 `Session` 一样)。
 
-////
+### Comparing Tracker to Angular
 
-### Comparing Deps to Angular
+[Angular](http://angularjs.org/) 是一个客户端响应式库，是 Google 的家伙们开发的。我们来比较 Metor 和 Angular 的依赖跟踪方式。他们的实现方式非常不同。
 
-////
+我们已经知道 Meteor 使用一些被成为 comptations 的代码来实现依赖跟踪的。这些 computations 被特殊的 "响应式" 数据源(函数)跟踪，在数据变化的时候将他们自己标记为 invalidate。当需要调用 `invalidate()` 函数时，响应式数据源_显示的_通知所有依赖。请注意这是数据变化时的一般情况，数据源也可以因为其他原因触发 invalidation。
 
-////
+另外，尽管通常情况下当数据 invalidate 时 computations 只是重新运行，但是你也可以在此时指定任何你想要的行为。这些给了用户很高的响应式控制权。
 
-////
+在 Angular 中，响应式是通过 `scope` 对象来调节的。一个 scope 可以看做是拥有一些特殊方法的普通 js 对象。
 
-////
+当你的响应式数据依赖于 scope 中的一个值，你调用 `scope.$watch` 方法，告诉 expression 你关心的数据（例如： 你关心 scope 中的哪些数据）和一个当 expression 发生变化时每次都运行的监听器。因此你需要显示的提供当 expression 数据变化时你要做的操作。
 
-////
-
-////
+回到之前 Facebook 的例子，我们的代码可以写成如下：
 
 ~~~js
 $rootScope.$watch('currentLikeCount', function(likeCount) {
@@ -114,25 +130,25 @@ $rootScope.$watch('currentLikeCount', function(likeCount) {
 });
 ~~~
 
-////
+当然，就像在 Meteor 中你很少需要去建立 computations, 在 Angular 中你无须经常显示调用 `$watch`, `ng-model` 和 `{{expressions}}` 会自动建立跟踪，之后当数据变化时他们会处理重新展示的事情。
 
-////
+当响应式数据发生变化时， `scope.$apply()` 方法会被调用。他会重新计算 scope 中所有的 watcher, 然后只调用 expression 值发生变化的 watcher 的监听器方法。
 
-////
+因此 `scope.$apply()` 方法和 Meteor 中的 `dependency.changed()` 很相似，除了它是在 scope 级别操作，而不是给你控制权决定哪个 listener 需要重新 evaluate。换句话说，较少的控制使得 Angular 可以通过聪明和高效的方式来决定哪些 listener 需要重新 evaluate。
 
-////
+在 Angular 中，我们的 `getFacebookLikeCount()` 函数看起来如下:
 
 ~~~js
 Meteor.setInterval(function() {
-  getFacebookLikeCount(Meteor.user(), Posts.find(postId), 
-    function(err, count) {
-      if (!err) {
-        $rootScope.currentLikeCount = count;
-        $rootScope.$apply();
-      }
-    });
+  getFacebookLikeCount(Meteor.user(), Posts.find(postId),
+  function(err, count) {
+    if (!err) {
+      $rootScope.currentLikeCount = count;
+      $rootScope.$apply();
+    }
+  });
 }, 5 * 1000);
 ~~~
 <%= highlight "5~6" %>
 
-////
+必须承认，Meteor 替我们完成了响应式的大部分繁重工作，但是希望，通过这些模式的学习，可以对你的深入研究起到帮助。
