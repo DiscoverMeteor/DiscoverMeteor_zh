@@ -64,13 +64,13 @@ if (Posts.find().count() === 0) {
 
 现在需要一个方法告诉服务器端返回给客户端帖子的数量。这些发生在路由订阅`帖子`的过程，我们会利用路由来实现分页。
 
-The easiest way to set this up is simply to make the posts limit parameter part of the path, giving us URLs of the form `http://localhost:3000/25`. An added bonus of using the URL over other methods is that if you are currently displaying 25 posts and happen to reload the browser window by mistake, you'll still be seeing 25 posts once the page loads again.
+最简单的限制返回帖子数量的方式是将返回数量加到 URL 中，如 `http://localhost:3000/25`。使用 URL 记录数量的另一个好处是，如果不小心 reload 的了页面，还会返回 25 条帖子。
 
-In order to do this properly, we'll need to change the way we subscribe to posts. Just like we previously did in the *Comments* chapter, we'll need to move our subscription code from the *router* level to the *route* level.
+为了恰当的实现分页，我们需要修改帖子的订阅方法。就像我们之前在*评论*那章做的，我们需要将订阅部分的代码从 *router* 级变为 *route* 级。
 
-This might all be a lot to take in at once, but it will become clearer with the code.
+这个改变内容会比较多，通过代码可以看的比较清楚。
 
-First, we'll stop subscribing to the `posts` publication in the `Router.configure()` block. Just delete `Meteor.subscribe('posts')`, leaving only the `notifications` subscription:
+首先，停止 `Router.configure()` 代码块中的 `posts` 订阅。即删除 `Meteor.subscribe('posts')`,只留下 `notifications` 订阅:
 
 ~~~js
 Router.configure({
@@ -85,7 +85,7 @@ Router.configure({
 <%= caption "lib/router.js" %>
 <%= highlight "6" %>
 
-We'll then add a `postsLimit` parameter to the route's path. Adding a `?` after the parameter name means that it's optional. So our route will not only match `http://localhost:3000/50`, but also plain old `http://localhost:3000`.
+我们在路由路径中加入参数 `postsLimt`。 参数后面的 `?` 表示参数是可选的。这样路由就能同时匹配 `http://localhost:3000/50` 和 `http://localhost:3000`。
 
 ~~~js
 //...
@@ -99,11 +99,11 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "3" %>
 
-It's important to note that a path of the form `/:parameter?` will match every possible path. Since each route will be parsed successively to see if it matches the current path, we need to make sure we organize our routes in order of decreasing specificity.
+需要注意每个路径都会匹配路由 `/:parameter?`。因为每个路由都会被检查是否匹配当前路径。我们要组织好路由来减少特异性。
 
-In other words, routes that target more specific routes like `/posts/:_id` should come first, and our `postsList` route should be moved **to the bottom** of the routes group since it pretty much matches everything,
+话句话说，更特殊的路由会优先选择，例如:路由 `/posts/:_id` 会在前面，而路由 `postsList` 会放到路由组的最后，因为它太泛泛了可以匹配所有路径。
 
-It's now time to tackle the tough problem of subscribing and finding the right data. We need to deal with the case where the `postsLimit` parameter isn't present, so we'll assign it a default value. We'll use “5” to really give us enough room to play around with pagination.
+是时候处理难题了，处理订阅和找到正确的数据。我么需要处理 `postsLimit` 参数不存在的情况。我们给它一个默认值 5, 这样我们能更好的演示分页。
 
 ~~~js
 //...
@@ -121,7 +121,7 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "5~8" %>
 
-You'll notice we're now passing a JavaScript object ({sort: {submitted: -1}, limit: postsLimit}) along with the name of our `posts` publication. This object will serve as the `options` parameter for the server side `Posts.find()` statement. Let's switch over to our server-side code to implement this:
+你注意到我们在订阅 `posts` 时传了一个 js 对象 ({sort: {submitted: -1}, limit: postsLimit}), 这个 js 对象会作为服务器端查询方法 `Posts.find()` 的可选参数。下面是服务器端的实现代码：
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -148,7 +148,7 @@ Meteor.publish('notifications', function() {
 
 ### Passing Parameters
 
-Our publications code is in effect telling the server it can trust any JavaScript object sent by the client (in our case, `{limit: postsLimit}`) to serve as the `find()` statement's `options`. This makes it possible for users to submit any options they'd like via the browser console.
+我们的订阅代码告诉服务器端，我们信任客户端传来的 js 对象 (在我们的例子中是 `{limit: postsLimit}`) 作为 `find()` 方法的 `options` 参数。这样我们能通过 browser consle 来传 option 对象。 
 
 In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). Although a real-world app would probably need to limit the limit!
 
