@@ -148,13 +148,13 @@ Meteor.publish('notifications', function() {
 
 ### Passing Parameters
 
-我们的订阅代码告诉服务器端，我们信任客户端传来的 js 对象 (在我们的例子中是 `{limit: postsLimit}`) 作为 `find()` 方法的 `options` 参数。这样我们能通过 browser consle 来传 option 对象。 
+我们的订阅代码告诉服务器端，我们信任客户端传来的 js 对象 (在我们的例子中是 `{limit: postsLimit}`) 作为 `find()` 方法的 `options` 参数。这样我们能通过 browser consle 来传 option 对象。
 
-In our case, this is relatively harmless, since all a user could do is reorder posts differently, or change the limit (which is what we want to enable in the first place). Although a real-world app would probably need to limit the limit!
+在我们的例子中,这样没什么害处，因为用户可以做的无非是改变帖子顺序，或者修改 limit 值（这是我们想让用户做的）。但是对于一个 real-world app 我们必须做必要的限制！
 
-Thankfully, by using `check()` we know users can't sneak extra options in (such as `fields`, which in some cases might expose private data on documents).
+幸好通过 `check()` 方法我们知道用户不能偷偷加入额外的 options （例如 `fields`, 在某些情况下需要对外暴露 ducoments 的私有数据）。
 
-Still, a more secure pattern could be passing the individual parameters themselves instead of the whole object, to make sure you stay in control of your data:
+然而，更安全的做法是传递单个参数而不是整个对象，通过这样确保数据安全：
 
 ~~~js
 Meteor.publish('posts', function(sort, limit) {
@@ -164,9 +164,9 @@ Meteor.publish('posts', function(sort, limit) {
 
 <% end %>
 
-Now that we're subscribing at the route level, it would also make sense to set the data context in the same place. We'll deviate a bit from our previous pattern and make the `data` function return a JavaScript object instead of simply returning a cursor. This lets us create a *named* data context, which we'll call `posts`.
+现在我们在 route 级订阅数据，同样的我们可以在这里设置数据的 context。我们要偏离一下之前的模式，我们让 `data` 函数返回一个 js 对象而不是一个 cursor。 这样我们可以创建一个*命名*的数据 context。我们称之为 `posts`。
 
-What this means is simply that instead of being implicitly available as `this` inside the template, our data context will be available at `posts`. Apart from this small element, the code should feel familiar:
+这意味着我们的数据 context 将存在于 `posts` 中，而不是简单的在模板中隐式的存在于 `this` 中。除去这一点，代码看起来很相似:
 
 ~~~js
 //...
@@ -190,11 +190,11 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "9~14" %>
 
-And since we're setting the data context at the route level, we can now safely get rid of the `posts` template helper inside the `posts_list.js` file and just delete the contents of that file.
+因为我们在 route 级设置数据 context, 现在我们可以去掉在 `posts_list.js` 文件中 `posts` 模板的帮助方法。
 
-We named our data context `posts` (the same name as the helper), so we don't even need to touch our `postsList` template!
+我们的数据 context 叫做 `posts` （和 helper 同名），所以我们甚至不需要修改 `postsList` 模板！
 
-Let's recap. Here's what our new and improved `router.js` code should look like:
+下面是我们修改过的 `router.js` 代码：
 
 ~~~js
 Router.configure({
@@ -255,7 +255,7 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 <%= commit "12-2", "Augmented the postsList route to take a limit." %>
 
-Let's give our brand new pagination system a try. We now have the ability to display an arbitrary number of posts on the homepage simply by changing the URL parameter. For example, try accessing `http://localhost:3000/3`. You should now see something like this:
+试一下我们的分页。现在我们可以通过 URL 参数来控制页面显示帖子的数量，试一下 `http://localhost:3000/3`。你可以看到如下:
 
 <%= screenshot "12-2", "Controlling the number of posts on the homepage. " %>
 
@@ -263,13 +263,13 @@ Let's give our brand new pagination system a try. We now have the ability to dis
 
 ### Why Not Pages?
 
-Why are we using an “infinite pagination” approach instead of showing successive pages with 10 posts each, like what Google does for search results? This is actually due to the real-time paradigm embraced by Meteor.
+为什么我们使用“无限分页”而不用每页显示 10 条帖子的连续分页,就像 Google 的搜索结果分页一样？这是由于 Meteor 的 real-time 性决定的。
 
-Let's imagine we are paginating our `Posts` collection using the Google results pagination pattern, and that we're currently on page 2, which shows posts 10 to 20. What happens if another users deletes any of the previous 10 posts?
+让我们想象一下使用类似 Google 搜索结果的连续分页模式，我们在第2页，显示的是 10 到 20 条帖子。这是碰巧有另外一个用户删除了前面 10 条帖子中的帖子。
 
-Since our app is real-time, our dataset would change. Post 10 would now become post 9, and drop out of our view, while post 11 would now be in range. The end result would be that the user would suddenly see their posts change for no apparent reason!
+因为 app 是实时的，我们的数据集会马上变化，这样第 10 条帖子变成了第 9 条，从当前页面消失了，第 21 条帖子会出现在页面中。这样用户会觉得没什么原由的结果集变了!
 
-Even if we tolerated this UX quirk, traditional pagination is also hard to implement for technical reasons.
+即使我们可以容忍这种怪异的 UX, 由于技术的原因传统的分页还是很难实现。
 
 Let's go back to our previous example. We're publishing posts 10 to 20 from the `Posts` collection, but how would you find those posts on the client? You can't pick posts 10 to 20, as there are only ten posts altogether in the client-side data set.
 
