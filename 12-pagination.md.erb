@@ -271,23 +271,23 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 即使我们可以容忍这种怪异的 UX, 由于技术的原因传统的分页还是很难实现。
 
-Let's go back to our previous example. We're publishing posts 10 to 20 from the `Posts` collection, but how would you find those posts on the client? You can't pick posts 10 to 20, as there are only ten posts altogether in the client-side data set.
+让我们回到前一个例子。我们从 `Posts` 集合中发布第 10 到 20 条帖子，但是在客户端我们如何找到这些帖子?我们不能在客户端选择第 10 到 20 条帖子，因为客户端集合只有 10 个帖子。
 
-One solution would simply be to publish those 10 posts on the server, and then do a `Posts.find()` client-side to pick up *all* published posts.
+一个简单的方案是服务器端发布 10 条帖子，在客户端执行一下 `Posts.find()` 找到这 10 条发布的帖子。
 
-This works if you only have a single subscription. But what if you start to have more than one post subscription, as we'll do soon?
+这个方案在只有一个用户订阅的情况下有效，但是如果有多个用户订阅呢，下面我们会看到。
 
-Let's say one subscription asks for posts 10 to 20, and another one for posts 30 to 40. You now have 20 posts loaded client-side in total, with no way of knowing which ones belong to which subscription.
+我们假设一个用户需要第 10 到 20 条帖子，而另一个需要第 30 到 40。这样在客户端我们有两个 20 条帖子，我们不能区分他们属于哪个订阅。
 
-For all these reasons, traditional pagination just doesn't make much sense when working with Meteor.
+基于这些原因，我们在 Meteor 中不能使用传统的分页。
 
 <% end %>
 
 ### Creating a Route Controller
 
-You might have noticed that we're repeating the `var limit = parseInt(this.params.postsLimit) || 5;` line twice. Plus, hard-coding the number “5” isn't exactly ideal. This is not the end of the world, but since it's always better to follow the DRY (Don't Repeat Yourself) principle if you can, let's see how we can refactor things a bit.
+你可能已经注意到了我们代码中重复了 `var limit = parseInt(this.params.postsLimit) || 5;` 两次。而且硬编码数字 5，这不是个理想的做法。虽然这不会导致世界末日，但是我们最好还是遵循 DRY 原则 (Don't Repeat Yourself), 让我们看看如何能把代码重构的更好些。
 
-We'll introduce a new aspect of Iron Router, *Route Controllers*. A route controller is simply a way to group routing features together in a nifty reusable package that any route can inherit from. Right now we'll only use it for a single route, but you'll see in the next chapter how this feature will come in handy.
+我们将介绍 Iron Router 的一个新功能， *Route Controllers*。Route controller 是通过简单的方式将一组路由特性打包，其他的 route 可以继承他们。现在我们只在一个路由中使用它，在下一章我们会看到它如何派上用场。 
 
 ~~~js
 //...
