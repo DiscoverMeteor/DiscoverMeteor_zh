@@ -3,6 +3,7 @@ title: 使用 Git 和 GitHub
 slug: github
 date: 0003/01/02
 number: 3.5
+points: 5
 sidebar: true
 contents: 学习 GitHub 并应用到本书的学习中。
 paragraphs: 32
@@ -20,20 +21,19 @@ Git 最基本的工作单元是*提交*。你可以把提交设想为你的代�
 与其简单地给你一个 Microsocope 项目的最终代码版本，我们更愿意把开发过程中每一步的快照都提供出来，这样你在 Github 上在线看到。
 
 比如，这个就是我们上一章最后一次提交 (https://github.com/DiscoverMeteor/Microscope/commit/chapter3-2) 
-看起来是这样的
+看起来是这样的：
 
 <%= screenshot "s3-1", "GitHub 上的一次代码提交" %>
 
-你可以看到‘post_item.js' 这个文件的 ‘diff’ （差异），换句话说就是这次提交改动了这个文件的什么地方。因为我们这个文件是新建的，所以你可以看到所有内容都是绿色高亮。
+你可以看到 `post_item.js` 这个文件的“diff”（差异），换句话说就是这次提交改动了这个文件的什么地方。因为我们这个文件是新建的，所以你可以看到所有内容都是绿色高亮。
 
-让我们对比一下另外一个例子（本书中以后会用到的文件）(https://github.com/DiscoverMeteor/Microscope/commit/chapter13-1):
+让我们对比一下另外一个例子[本书中以后会用到的文件](https://github.com/DiscoverMeteor/Microscope/commit/chapter13-1)：
 
 <%= screenshot "s3-2", "修改代码" %>
 
 这次，只有修改的代码行被高亮为绿色了。
 
-当然，有时候我们并不增加和修改代码，而是直接【删除】某些行。(https://github.com/DiscoverMeteor/Microscope/commit/chapter12-2):
-
+当然，有时候我们并不增加和修改代码，而是直接[删除](https://github.com/DiscoverMeteor/Microscope/commit/chapter12-2)某些行：
 
 <%= screenshot "s3-3", "删除代码" %>
 
@@ -44,15 +44,15 @@ Git 最基本的工作单元是*提交*。你可以把提交设想为你的代�
 Git 的提交视图给我们显示了本次提交的代码改动，但是有时候我们还是需要看看*没有修改*的
 那些代码，从而确认他们的代码看起来合理。
 
-好，让 GitHub 再次来解决这个问题。在提交页面上点击 *浏览代码 Browse code*按钮：
+好，让 GitHub 再次来解决这个问题。在提交页面上点击 **Browse code（浏览代码）**按钮：
 
 <%= screenshot "s3-5", "浏览代码按钮" %>
 
 你现在可以看到某次提交的时候代码库的样子了。
 
-<%= screenshot "s3-6", "提交编号3-2 的代码库。" %>
+<%= screenshot "s3-6", "提交编号 3-2 的代码库。" %>
 
-GitHub 没有给我们足够的视觉提示让我们知道我们正在看一个提交，不过你可以通过与 “正常” 的主视图进行比较，就会发现文件结构的不同了。
+GitHub 没有给我们足够的视觉提示让我们知道我们正在看一个提交，不过你可以通过与 “正常” 的主视图进行比较，就会发现文件结构的不同了：
 
 <%= screenshot "s3-7", "提交编号 14-2 的代码库。" %>
 
@@ -60,30 +60,29 @@ GitHub 没有给我们足够的视觉提示让我们知道我们正在看一个�
 
 我们刚刚看到在 Github 上如何在线浏览某个提交的整个代码。但是你是否想在本地也看到呢？比如你也许想退回到某次提交的代码状态测试一下那时候运行的样子。
 
-想做到这个你需要首次（也许你早已经不是首次了，但是至少在本书中是第一次用命令行）用 ‘git’ 命令行。对于新手首先要确定你已经安装了 Git。然后 **克隆 Clone**（或者叫下载一份本地拷贝）一份 Microscope 的代码库。命令如下：
+想做到这个你需要首次（也许你早已经不是首次了，但是至少在本书中是第一次用命令行）用 `git` 命令行。对于新手首先要确定你已经[安装](http://git-scm.com/downloads)了 Git。然后 **克隆 Clone**（或者叫下载一份本地拷贝）一份 Microscope 的代码库。命令如下：
 
 ~~~bash
-$ git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
+git clone git@github.com:DiscoverMeteor/Microscope.git github_microscope
 ~~~
 
-命令行最后的 `github_microscope` 实际上就是将会存代码库的本地目录名。假设你已有了 ‘microscope’这个名字，那就随便起一个新名字（不是必须用和 GitHub 代码库相同的名字）。
+命令行最后的 `github_microscope` 实际上就是将会存代码库的本地目录名。假设你已有了 `microscope` 文件夹，那就随便起一个新名字（不是必须用和 GitHub 代码库相同的名字）。
 
-让我们 'cd' 这个代码库，然后就可以使用 'git' 命令了。
+让我们 `cd` 进这个代码库，然后就可以使用 `git` 命令了。
 
 ~~~bash
-$ cd github_microscope
+cd github_microscope
 ~~~
 
 现在我们已经从 GitHub 克隆了代码库，我们已经下载了这个应用的 *全部* 代码，也就是说我们正在看的是最后一次提交。
 
-值得感激的是我们有办法*签出*代码回退到某一个特定的提交，而不会影响到其他用户。让我们试一下：
+值得感激的是我们有办法*check out（签出）*代码回退到某一个特定的提交，而不会影响到其他提交。让我们试一下：
 
 ~~~bash
-$ git checkout chapter3-1
+git checkout chapter3-1
 Node：checking out 'chapter3-1'.
 
 你现在是在 'detached HEAD' 状态. 你可以随便看看做点实验性的修改并提交。你只需再次签出代码即可放弃你的提交，而不会影响的任何其他分支。
-state without impacting any branches by performing another checkout.
 
 如果你想建立新的分支来保留你的提交，你可以这样做（现在或者以后也行），迁出代码的时候使用 -b 参数。
 
@@ -107,16 +106,18 @@ Git 通知你现在在 ‘分离头’ “detached HEAD” 状态，也就是说
 这一次让我们试试哈希码而不是标签：
 
 ~~~bash
-$ git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
+git checkout c7af59e425cd4e17c20cf99e51c8cd78f82c9932
 Previous HEAD position was a004b56... Added basic posts list template and static data.
 HEAD is now at c7af59e... Augmented the postsList route to take a limit
 ~~~
 
-好了，别再用水晶球看历史提交了，让我们想看看最新的代码状态，我们可以让 Git 签出主分支**master**
+好了，别再用水晶球看历史提交了，让我们想看看最新的代码状态，我们可以让 Git 签出主分支**master**：
 
 ~~~bash
-$ git checkout master
+git checkout master
 ~~~
+
+注意，你也可以现在运行 `meteor` 命令，即使是在“detached HEAD”的状态下。你也许首先需要运行一下 `meteor update` 命令，如果 Meteor 提示有丢失的代码包，因为 Microscope 的 Git 代码库没有包括包代码。
 
 ### Historical Perspective
 
@@ -132,7 +133,7 @@ $ git checkout master
 
 ### 问责游戏
 
-让我们看看**问责**
+让我们看看**问责**：
 
 <%= screenshot "s3-10", "GitHub 的问责按钮" %>
 
