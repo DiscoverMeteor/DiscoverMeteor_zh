@@ -377,19 +377,19 @@ PostsListController = RouteController.extend({
 
 换句话说，这和使用 `{{pathFor 'postsList'}}` Spacebars 帮助方法一样， 除了我们用自己的数据上下文替换了隐式的 `this`。
 
-We're taking that path and adding it to the data context for our template, but *only* if there are more posts to display. The way we do that is a bit tricky.
+我们使用这个路径并将它添加到我们模板的数据上下文中，但是*只有*多条帖子时会显示。我们的实现方法有一点小花招。
 
-We know that `this.limit()` returns the current number of posts we'd like to show, which can either be the value in the current URL, or our default value (5) if the URL doesn't contain any parameter.
+我们知道 `this.limit()` 方法会返回当前我们想要显示帖子的数量，它可能是当前 URL 中的值，如果 URL 中没有参数它会是默认值 (5)。
 
-On the other hand, `this.posts` refers to the current cursor, so `this.posts.count()` refers to the number of posts that are actually in the cursor.
+另一方面, `this.posts` 引用当前的 cursor, 因此 `this.posts.count()` 的值是在 cursor 中帖子的数量。
 
-So what we're saying here is that if we ask for `n` posts and we get `n` back, we'll keep showing the “load more” button. But if we ask for `n` and we get *less* than `n` back, then it means we've hit the limit and we should stop showing that button.
+因此我们说当我们要求发挥 `n` 条帖子，实际返回了 `n` 条帖子，我们将继续显示 "load more" 按钮。但是如果我们要求返回 `n` 条帖子，而实际返回的数量比 `n` 少，这样我们就知道记录已经到头了，我们就不再显示加载按钮。
 
-That being said, our system fails in one case: when the number of items in our database is *exactly* `n`. If that happens, the client will ask for `n` posts and get `n` posts back and keep showing the “load more” button, unaware that there are no more items left.
+这就是说，我们的系统在一种情况下会有点问题:当我们的数据库*恰好*有 `n` 条记录时。如果是这样，当客户端要求返回 `n` 条帖子，我们得到了 `n` 条，然后继续显示 "load more" 按钮，这是我们不知道其实已经没有记录可以继续返回了。
 
-Sadly, there are no simple workarounds to this problem, so for now we'll have to settle with this less-than-perfect implementation.
+不幸的是，我们没有好的方法去解决这个问题，因此我们不得不接受这个不算完美的实现方式。
 
-All that's left to do is to add the “load more” link at the bottom of our posts list, making sure to only show it if we actually have more posts to load:
+下面剩下的就是在帖子列表下面加上 "load more" 链接，并且保证在还有帖子时才显示它:
 
 ~~~html
 <template name="postsList">
@@ -407,7 +407,7 @@ All that's left to do is to add the “load more” link at the bottom of our po
 <%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "7~10" %>
 
-Here's what your post list should now look like:
+下面是你帖子列表现在看上去的样子:
 
 <%= screenshot "12-3", "The “load more” button. " %>
 
