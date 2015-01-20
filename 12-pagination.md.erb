@@ -287,7 +287,7 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 你可能已经注意到了我们代码中重复了 `var limit = parseInt(this.params.postsLimit) || 5;` 两次。而且硬编码数字 5，这不是个理想的做法。虽然这不会导致世界末日，但是我们最好还是遵循 DRY 原则 (Don't Repeat Yourself), 让我们看看如何能把代码重构的更好些。
 
-我们将介绍 Iron Router 的一个新功能， *Route Controllers*。Route controller 是通过简单的方式将一组路由特性打包，其他的 route 可以继承他们。现在我们只在一个路由中使用它，在下一章我们会看到它如何派上用场。 
+我们将介绍 Iron Router 的一个新功能， *Route Controllers*。Route controller 是通过简单的方式将一组路由特性打包，其他的 route 可以继承他们。现在我们只在一个路由中使用它，在下一章我们会看到它如何派上用场。
 
 ~~~js
 //...
@@ -320,23 +320,23 @@ Router.route('/:postsLimit?', {
 <%= caption "lib/router.js" %>
 <%= highlight "3~18, 25" %>
 
-Let's go through this step by step. First, we're creating our controller by extending `RouteController`. We then set the `template` property just like we did before, and then a new `increment` property.
+让我们一步接一步的往下看。首先，我们的创建一个继承 `RouteController` 的控制器。然后像之前一样设置 `template` 属性，然后添加一个新的 `increment` 属性。
 
-We then define a new `limit` function which will return the current limit, and a `findOptions` function which will return an options object. This might seem like an extra step, but we'll make use of it later on.
+然后我们定义一个 `limit` 函数用来返回当前限制的数量，然后定义一个 `findOptions` 函数用来返回 options 对象。这看起来像是个对于的步骤，但是我们后面会用到它。
 
-Next, we define our `waitOn` and `data` functions just like before, except they're now making use of our new `findOptions` function.
+接下来我们定义 `waitOn` 和 `data` 函数，除了他们现在会用到新的 `findOptions` 函数外其余和之前相同。
 
-Because our controller is called the `PostsListController` and our route is named `postsList`, Iron Router will automatically use the controller. So we just need to remove the `waitOn` and `data` from our route definition (as the controller is now handling them). If we needed to use a controller with a different name, we could have used to `controller` option (we'll see an example of this in the next chapter).
+因为我们的控制器叫做 `PostsListController` 路由叫做 `postsList`, Iron Router 会自动使用他们。因此我们只需要从路由定义中移除 `waitOn` 和 `data` (因为路由已经会处理他们了)。如果我们需要给路由起别的名字,我们可以使用 `controller` 选项(我们将在下一章看到一个例子)。
 
 <%= commit "12-3", "Refactored postsLists route into a RouteController." %>
 
 ### Adding A Load More Link
 
-We have a working pagination, and our code is looking good. There's just one problem: there's no way to actually *use* that pagination except by changing the URL manually. This definitely doesn't make for great user experience, so let's get to work on fixing this.
+我们现在实现了分页，代码看起来还不错。只有一个问题：我们的分页需要手工修改 URL。这显然不是一个好的用户体验，现在让我们来修改它。
 
-What we want to do is simple enough. We'll add a “load more” button at the bottom of our posts list, which will increment the number of posts currently displayed by 5 every time it's clicked. So if I'm currently on the URL `http://localhost:3000/5`, clicking “load more” should bring me to `http://localhost:3000/10`. If you've made it this far in the book, we trust you can handle a little arithmetic!
+我们要做的很简单。我们将在帖子列表的下面加一个 "load more" 按钮，点击按钮将增加 5 条帖子。如果当前的 URL 是 `http://localhost:3000/5`, 点击 "load more" 按钮 URL 将变成 `http://localhost:3000/10`。如果你之前已经实现过这种功能，我们相信你很强！
 
-As before, we'll add our pagination logic in our route. Remember when we explicitly named our data context rather than just use an anonymous cursor? Well, there's no rule that says the `data` function can only pass cursors, so we'll use the same technique to generate the URL of our “load more” button.
+因为在前面，我们的分页逻辑是在 route 中。记得我们是什么时候显式命名数据上下文，而非使用匿名 cursor 的么? 没有规则说我们的 `data` 函数只能使用 cursors, 因此，我们将用同样的技巧来生成 "load more" 按钮的 URL。
 
 ~~~js
 //...
@@ -371,11 +371,11 @@ PostsListController = RouteController.extend({
 <%= caption "lib/router.js" %>
 <%= highlight "15~25" %>
 
-Let's take a deeper look at this bit of router magic. Remember that the `postsList` route (which will inherit from the `PostsListController` controller we're currently working on) takes a `postsLimit` parameter.
+让我们来深入的看一下 router 带来的魔术。记住 `postsList` route (它将继承 `PostsListController` 控制器) 使用一个 `postsLimit` 参数。
 
-So when we feed `{postsLimit: this.limit() + this.increment}` to `this.route.path()`, we're telling the `postsList` route to build its own path using that JavaScript object as data context.
+因此当我们给 `this.route.path()` 传递参数 `{postsLimit: this.limit() + this.increment}` 时，我们告诉 `postsList` route 使用这个 js 对象做数据上线文建立自己的 path。
 
-In other words, this is exactly the same thing as using the `{{pathFor 'postsList'}}` Spacebars helper, except we're replacing the implicit `this` by our own custom-made data context.
+换句话说，这和使用 `{{pathFor 'postsList'}}` Spacebars 帮助方法一样， 除了我们用自己的数据上下文替换了隐式的 `this`。
 
 We're taking that path and adding it to the data context for our template, but *only* if there are more posts to display. The way we do that is a bit tricky.
 
