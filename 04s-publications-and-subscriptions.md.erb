@@ -3,14 +3,15 @@ title: 发布与订阅
 slug: publications-and-subscriptions
 date: 0004/01/02
 number: 4.5
+points: 5
 sidebar: true
-contents: 理解发布和阅读是如何工作的。| 学习 default Autopublish 的作用 | 更多的发布模式
+contents: 理解发布和阅读是如何工作的。|学习默认的 Autopublish 包的作用。|更多的发布模式。
 paragraphs: 52
 ---
 
-发布和订阅是Meteor的最基本最重要的概念之一，但是如果也是刚刚开始接触 Meteor 的话，也是有些难度的。
+发布（Publication）和订阅（Subscription）是 Meteor 的最基本最重要的概念之一，但是如果你是刚刚开始接触 Meteor 的话，也是有些难度的。
 
-而且容易产生不少误解，比如认为 Meteor 是不安全的， 或者说 Meteor App 无法处理大量数据等等。
+这已经导致不少误解，比如认为 Meteor 是不安全的，或者说 Meteor 应用无法处理大量数据等等。
 
 人们起初会感觉这些概念很迷惑很大程度上是因为 Meteor 像变魔法一样替你做了很多事儿。尽管这些魔法最终看起来很有效，但是它们掩盖了后台真正做的工作（好像魔术一样）。所以让我们剥去魔法的外衣来看看究竟发生了什么。
 
@@ -18,33 +19,33 @@ paragraphs: 52
 
 首先，让我们回顾一下2011年之前，当 Meteor 还没有诞生的时候的老日子。比如说我们要建立一个简单的 Rails app。当用户来我们的站点，客户端（举例说浏览器）向我们的服务器端的 app 发送请求。
 
-App 的第一个任务就是搞清楚这个客户请求什么数据。这个可能是搜索结果的第12页，玛丽的用户信息，鲍勃的最新20条微博，等等等等。 你可以想想成为一个书店的伙计在书架之间帮你寻找你要的书。
+App 的第一个任务就是搞清楚这个客户请求什么数据。这个可能是搜索结果的第12页、玛丽的用户信息、鲍勃的最新20条微博，等等等等。 你可以想想成为一个书店的伙计在书架之间帮你寻找你要的书。
 
 当正确的数据被找到，这个 App 的下一个任务就是把数据转换成好看的，人类可读的 HTML 格式（对于 API 而言是 JSON 串）。
 
-用书店来举例，那就相当于是把你刚买的书包好，然后装入一个漂亮的袋子。这就是注明的 MVC（模型-视图-控制器）模式中的视图部分。
+用书店来举例，那就相当于是把你刚买的书包好，然后装入一个漂亮的袋子。这就是著名的 MVC（模型-视图-控制器）模式中的视图部分。
 
-最终，App 把 HTML 代码送到客户端。这个 App 的任务也就交差了。它可以去卖瓶啤酒然后等着下一个请求来。
+最终，App 把 HTML 代码送到客户端。这个 App 的任务也就交差了。它可以去买瓶啤酒然后等着下一个请求。
 
 ### Meteor 的方式
 
-让我们看看 Meteor 相对之下是多么的特别。正如我们看到的，Meteor 的关键性创新在于 Rails 程序只跑在 **服务器**上，而一个 Meteor App 还包括客户端的组件跑在**客户端**（浏览器）傻瓜。
+让我们看看 Meteor 相对之下是多么的特别。正如我们看到的，Meteor 的关键性创新在于 Rails 程序只跑在**服务器**上，而一个 Meteor App 还包括在**客户端**（浏览器）上运行的客户端组件。
 
-<%= diagram "client-server", "Pushing a subset of the database to the client.", "pull-right" %>
+<%= diagram "client-server", "推送数据库子集到客户端", "pull-right" %>
 
-这就相当于书店的伙计不仅仅在书店里帮你找书，还跟你回家，每天晚上读给你听 （这听起来怪怪的）。
+这就相当于书店的伙计不仅仅在书店里帮你找书，还跟你回家，每天晚上读给你听（这听起来怪怪的）。
 
-这种架构可以让 Meteor 多更多很酷的事情，其中一件主要的就是 Metoer 成为 [数据库无处不在] ([database everywhere](http://docs.meteor.com/#sevenprinciples))。简单说，Meteor 把你的数据拿出一部分子集*复制到客户端*。
+这种架构可以让 Meteor 做更多很酷的事情，其中一件主要的就是 Metoer 变得[数据库无处不在](http://docs.meteor.com/#sevenprinciples)。简单说，Meteor 把你的数据拿出一部分子集*复制到客户端*。
 
-这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送*真实的生数据*，让客户端决定如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问**。[延迟补偿]([latency compensation](http://docs.meteor.com/#sevenprinciples))。
+这样后两个主要结果：第一，服务器不再发送 HTML 代码到客户端，而是发送**真实的原始数据**，让客户端决定如何处理[线传数据](http://docs.meteor.com/#sevenprinciples)。第二，你可以不必等待服务器传回数据，而是**立即访问甚至修改数据**（[延迟补偿 latency compensation](http://docs.meteor.com/#sevenprinciples)）。
 
 ### 发布
 
 一个 App 的数据库可能用上万条数据，其中一些还可能是私用和保密敏感数据。显而易见我们不能简单地把数据库镜像到客户端去，无论是安全原因还是扩展性原因。
 
-所以我们需要告诉 Meteor 那些数据**子集**是需要送到客户端，我们将用 **发布** 功能来做这个事儿。
+所以我们需要告诉 Meteor 那些数据**子集**是需要送到客户端，我们将用**发布**功能来做这个事儿。
 
-让我们来回到 Microscope。这里是我们 App 数据库中的所有帖子
+让我们来回到 Microscope。这里是我们 App 数据库中的所有帖子：
 
 <%= diagram "collections-1", "数据库中的所有帖子数据", "pull-center" %>
 
@@ -57,7 +58,7 @@ App 的第一个任务就是搞清楚这个客户请求什么数据。这个可�
 这里是对应的代码，在服务器端代码中。
 
 ~~~js
-// on the server
+// 在服务器端
 Meteor.publish('posts', function() {
   return Posts.find({flagged: false}); 
 });
@@ -71,7 +72,7 @@ Meteor.publish('posts', function() {
 
 基本上我们可以把发布/订阅模式想象成为一个漏斗，从服务器端（数据源）过滤数据传送到客户端（目标）。
 
-这个漏斗的专属协议叫做**DDP**（Distributed Data Protocol的缩写）。如果想了解 DDP 的更多细节可以通过看 Matt DeBergalis ( Meteor 的创始人之一) 的 [实时讲演视频](http://2012.realtimeconf.com/video/matt-debergalis)，或者来自 Chris Mather 的这个[屏幕录像](http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp)，来学习关于这个概念更多的细节。
+这个漏斗的专属协议叫做 **DDP**（分布式数据协议 Distributed Data Protocol 的缩写）。如果想了解 DDP 的更多细节，可以通过看 Matt DeBergalis（Meteor 创始人之一）[在 Real-time 大会上的讲演视频](http://2012.realtimeconf.com/video/matt-debergalis)，或者来自 Chris Mather 的这个[截屏视频](http://www.eventedmind.com/posts/meteor-subscriptions-and-ddp)，来学习关于这个概念更多的细节。
 
 <% end %>
 
@@ -80,40 +81,40 @@ Meteor.publish('posts', function() {
 就算是我们想把打了标记的帖子也发送给客户端，我们也不能把成千上万的帖子一股脑都发出去。我们需要一个机制让客户端来确定那些子集是他们在某个特别时候特别需要的，这就是**订阅**这个功能的用途。
 
 
-感谢 MiniMongo ，这个的客户端 MongoDB 的，你订阅的数据会 **镜像** 到客户端。 
+通过 MiniMongo，客户端 MongoDB 的应用，你订阅的数据会被**镜像**到客户端。 
 
 举个例子，让我们现在浏览一下 Bob Smith 的个人页面，这里只会显示*他的*帖子。
 
-<%= diagram "collections-3", "Subscribing to Bob's posts will mirror them on the client.", "pull-center" %>
+<%= diagram "collections-3", "订阅 Bob 的帖子镜像到客户端。", "pull-center" %>
 
 首先，我们给发布功能加一个参数：
 
 ~~~js
-// on the server
+// 在服务器端
 Meteor.publish('posts', function(author) {
   return Posts.find({flagged: false, author: author});
 });
 ~~~
 
-然后我们在*订阅*这个发布的时候也加同一个参数。
+然后我们在客户端*订阅*这个发布时定义同一个参数。
 
 ~~~js
-// on the client
+// 在客户端
 Meteor.subscribe('posts', 'bob-smith');
 ~~~
 
-这就是我们让 Meteor 程序在客户端能够具有可伸缩性：不去订阅*全部*数据，而是指选择你现在需要的数据去定阅。这样的话，你就可以避免消耗大量的客户端内存，无论服务器端的总数据量有多大。
+这就是我们让 Meteor 程序在客户端能够具有可伸缩性：不去订阅*全部*数据，而是指选择你现在需要的数据去订阅。这样的话，你就可以避免消耗大量的客户端内存，无论服务器端的总数据量有多大。
 
 ### 查找
 
-现在 Bob 的帖子恰巧涵盖了多个类别（比如：‘JavaScript’， ‘Ruby’，‘Python’）。也许我们仍然需要把 Bob 的所有帖子都装入内存，但是这一会儿只显示属于 ‘JavaScript’ 类别的帖子。 这就是 ‘查找’ 的用途。
+现在 Bob 的帖子恰巧涵盖了多个类别（比如：“JavaScript”、“Ruby”和“Python”）。也许我们仍然需要把 Bob 的所有帖子都装入内存，但是我们现在只想显示属于“JavaScript”类别的帖子。这就是“查找”的用途。
 
-<%= diagram "collections-4", "在客户端选择一个数据子集.", "pull-center" %>
+<%= diagram "collections-4", "在客户端选择一个数据子集。", "pull-center" %>
 
-正如我们在服务器上做的一样，我们用了 'Posts.find()' 函数来选择数据的子集：
+正如我们在服务器上做的一样，我们用了 `Posts.find()` 函数来选择数据的子集：
 
 ~~~js
-// on the client
+// 在客户端
 Template.posts.helpers({
   posts: function(){
     return Posts.find(author: 'bob-smith', category: 'JavaScript');
@@ -121,25 +122,25 @@ Template.posts.helpers({
 });
 ~~~
 
-现在我们应该明白订阅发布机制了， 让我们在深入了解一些常见的应用模式。
+现在我们应该明白订阅和发布机制了，让我们在深入了解一些常见的应用模式。
 
 ### 自动发布（Autopublish）
 
-如果你从头开始建立一个 Meteor 项目 （比如，使用 'meteor create' 命令)，系统会自动包含并启用一个叫做 'autopublish' 的包。我们可以显示说说这个包是干什么的。
+如果你从头开始建立一个 Meteor 项目（比如，使用 `meteor create` 命令)，系统会自动包含并启用一个叫做 `autopublish` 的包。让我们说说这个包是干什么的。
 
-'autopublish' 的目的是让 Meteor 的初学者很容易地起步，所以它简单地直接把服务器上的全部数据镜像到客户端。这样你就不用管发布和订阅了。
+`autopublish` 的目的是让 Meteor 应用有个简单的起步阶段，它简单地直接把服务器上的_全部数据_镜像到客户端，因此你就不用管发布和订阅了。
 
 <%= diagram "autopublish", "自动发布", "pull-center"%>
 
-那么这究竟是如何工作的呢？假设我们有一个集合叫做 ‘posts’ 在服务器端。 自动发布包就会自动地把 Mongo 数据库中这个集合中找到的所有的数据（帖子）放到客户端，也叫做 ‘posts’的集合中（假设客户端的确有这样一个集合）
+那么这究竟是如何工作的呢？假设在服务器端我们有一个集合叫做 `posts`。自动发布包就会自动地把 Mongo 数据库中这个集合的所有的数据（帖子）发送到客户端的名为 `‘posts’` 的集合中（假设客户端的确有这样一个集合）。
 
-因此，如果你使用自动发布，你就不需要管发布了。数据一致，而且事情变得十分简单。当然，这样的话会有一个明显的问题，就是你的所有数据都被缓存到所有用户的电脑中。
+因此，如果你使用自动发布，你就不需要考虑发布。数据一致，而且事情变得十分简单。当然，这样的话会有一个明显的问题，就是你的所有数据都被缓存到所有用户的电脑中。
 
-基于这个原因，自动发布只用来让你起步还来不及考虑发布的时候。
+基于这个原因，自动发布只在你起步阶段且还未考虑发布之前时使用。
 
 ### 发布全部集合
 
-一旦你删除掉 ‘自动发布’ 这个包，你马上就会发现在浏览器上没有数据了。一个简单的解决方法就是重复自动发布所做的工作， 那就是发布所有数据。比如：
+一旦你删除掉 `autopublish` 这个包，你马上就会发现在浏览器上没有数据了。一个简单的解决方法就是重复自动发布所做的工作， 那就是发布所有数据。比如：
 
 ~~~js 
 Meteor.publish('allPosts', function(){
@@ -149,11 +150,11 @@ Meteor.publish('allPosts', function(){
 
 <%= diagram "fullcollection", "发布所有集合", "pull-center" %>
 
-我们还是发布了所有集合，但是至少我们现在可以自己控制哪个集合我们发布哪个不发布。比如现在这个例子，我们发布了 ‘Posts’ 但是并没有发布 ‘Comments’
+我们还是发布了所有集合，但是至少我们现在可以自己控制哪个集合我们发布哪个不发布。比如现在这个例子，我们发布了 `Posts` 集合但是并没有发布 `Comments`。
 
 ### 发布部分集合
 
-下一步我们要做的是发布集合中的部分记录。比如我们只发布来自于某个作者的帖子：
+下一步我们要做的是发布集合中的_部分_记录。比如我们只发布来自于某个作者的帖子：
 
 ~~~js 
 Meteor.publish('somePosts', function(){
@@ -165,15 +166,15 @@ Meteor.publish('somePosts', function(){
 
 <% note do %>
 
-### 隐藏的真相
+### 幕后真相
 
-如果你已经阅读了 [Meteor 发布文档](http://docs.meteor.com/#publishandsubscribe)，你可能被诸如 `added()` and `ready()` 之类的用来设置客户端记录属性的函数搞晕了，而且还纠结于似乎我们从来没有使用过这些方法。
+如果你已经阅读了 [Meteor 发布文档](http://docs.meteor.com/#publishandsubscribe)，你可能被诸如 `added()` 和 `ready()` 之类的用来设置客户端记录属性的函数搞晕了，而且还纠结于似乎我们从来没有使用过这些方法。
 
-原因在于 Meteor 提供了十分重要的简化： `_publishCursor()` 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标]（章节/词汇表）(比如 `Posts.find({'author':'Tom'})`)，那个就是 Meteor 使用这个方法的时候。
+原因在于 Meteor 提供了十分重要的简化：`_publishCursor()` 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标](/chapter/meteor-vocabulary/)（比如，`Posts.find({'author':'Tom'})`），那个就是 Meteor 使用这个方法的时候。
 
-当 Meteor 看到 ‘部分帖子’ 发布函数返回了一个游标，它会调用 `_publishCursor()` 去 - 你猜猜看 - 自动发布这个游标。
+当 Meteor 看到 `somePosts` 发布函数返回了一个游标，它会调用 `_publishCursor()` 去 —— 你猜猜看 —— 自动发布这个游标。
 
-下面就是 `_publishCursor()` 做的工作
+下面就是 `_publishCursor()` 做的工作：
 
 - 它检查服务器端的集合的名称
 - 它从游标中找到所有的符合要求的文档，然后发送到客户端的*同名*集合中。（它使用了`.added()` 函数来完成的）
@@ -199,7 +200,7 @@ Meteor.publish('allPosts', function(){
 
 <%= diagram "partialproperties", "发布部分字段", "pull-center" %>
 
-实际上，我们可以同时使用上述两种技术，只发布作者是 Tom 的帖子，并且隐藏 date 字段:
+实际上，我们可以同时使用上述两种技术，只发布作者是 Tom 的帖子，并且隐藏 date 日期字段:
 
 ~~~js
 Meteor.publish('allPosts', function(){
@@ -211,14 +212,8 @@ Meteor.publish('allPosts', function(){
 
 ### 总结
 
-我们已经从发布所有集合的所有文档的所有字段，到发布个别集合的个别文档的个别字段。
+我们已经从发布所有集合的所有文档的所有字段（通过 `autopublish`），到发布_个别_集合的_个别_文档的_个别_字段。
 
-这已经覆盖了 Meteor 的发布的基本内容，而且这些基本技巧已经足够阀盖大部分的用例了。
+这已经覆盖了 Meteor 的发布的基本内容，而且这些基本技巧已经足够涵盖大部分的用例了。
 
-有时你需要通过组合，连接和融合发做到更复杂的发布。我们在以后的章节会降到更多这些内容。
-
-
-
-
-
-
+有时，你需要进一步来组合、连接或融合发布。我们在以后的章节中讲到这些内容！
