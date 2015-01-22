@@ -415,13 +415,13 @@ PostsListController = RouteController.extend({
 
 ### A Better User Experience
 
-Our pagination is now working properly, but it suffers from an annoying quirk: every time we click “load more” and the router asks for more posts, the Iron Router's `waitOn` feature sends us to the `loading` template while we wait for the new data to come in. The result is that we're sent back to the top of the page every time, and need to scroll all the way back down to resume our browsing.
+现在我们的分页可以工作了，但是有个烦人小问题: 每次我们点击 "load more" 按钮向 router 加载更多的帖子时，Iron Router 的 `waitOn` 特性会在我们等待时显示 `loading` 模板。当结果到来时我们又会回到页面的顶端，我们每次都要滚动页面回到之前看的位置。
 
-So first, we'll have to tell Iron Router not to `waitOn` the subscription after all. Instead, we'll define our subscriptions in a `subscriptions` hook.
+因此，首先我们要告诉 Iron Router 不要 `waintOn` 订阅，我们将定义自己的订阅在一个 `subscriptions` hook 中。
 
-Note that we're not *returning* this subscriptions in the hook. Returning it (which is how the `subscriptions` hook is usually employed) would trigger the global loading hook, and that's exactly what we want to avoid in the first place. Instead we're simply using the `subscriptions` hook as a convenient place to define our subscription, similar to using an `onBeforeAction` hook.
+注意我们我们不是在 hook 中*返回*这个订阅。返回它（这是一般 `订阅` hook 常做的工作）将触发一个全局的 loading hook, 这正是我们想要避免的。我们只是想在 `subscriptions` hook 中定义我们的订阅，就像使用一个 `onBeforeAction` hook。
 
-We're also passing a `ready` variable referring to `this.postsSub.ready` as part of our data context. This will let us tell the template when the post subscription is done loading.
+我们还要在我们的数据上下文中传入一个 `ready` 变量，它指向 `this.postsSub.ready`。它会告诉我们帖子订阅何时加载完毕。
 
 ~~~js
 //...
@@ -457,7 +457,7 @@ PostsListController = RouteController.extend({
 <%= caption "lib/router.js" %>
 <%= highlight "12~14, 23" %>
 
-We'll then check this `ready` variable in the template to show a spinner at the bottom of the post list while we are loading a new set of posts:
+我们将在模板中检查 `ready` 变量的状态，并在加载帖子时在帖子列表的下面显示一个加载图标(spinner):
 
 ~~~html
 <template name="postsList">
@@ -483,15 +483,15 @@ We'll then check this `ready` variable in the template to show a spinner at the 
 
 ### Accessing Any Post
 
-We're currently loading the five newest post by default, but what happens once someone browses to a post's individual page?
+现在我们默认每次加载 5 条新帖子，但是当用户访问某个帖子的单独页面时会发生什么?
 
 <%= screenshot "12-4", "An empty template." %>
 
-If you try it, you'll be faced with a “not found” error. This makes sense: we've told the router to subscribe to the `posts` publication when loading the `postsList` route, but we haven't told it what to do about the `postPage` route.
+试一下，我们会得到一个 "not found" 错误。这是有原因的: 我们告诉 router 当我们加载 `postList` route 时订阅 `帖子` 发布。但是我们没有说访问 `postPage` route 时该做什么。
 
-But so far, all we know how to do is subscribe to a list of the `n` latest posts. How do we ask the server for a single specific post? We'll let you in on a little secret here: you can have more than one publication for each collection!
+但是到目前，我们知道如何订阅一个 `n` 个最新帖子的列表。我们如何向服务器端要求单个具体帖子的内容? 我们将告诉你一个小秘密: 对于一个 collection 你可以有多个 publication！
 
-So to get our missing posts back, we'll make a new, separate `singlePost` publication that only publishes one post, identified by `_id`.
+让我们找回丢失的帖子，我们定义一个新的 publication `singlePost`,它只发布一个帖子，用 `_id` 鉴别。
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -508,7 +508,7 @@ Meteor.publish('singlePost', function(id) {
 <%= caption "server/publications.js" %>
 <%= highlight "5~7" %>
 
-Now, let's subscribe to the right posts client-side. We were already subscribing to the `comments` publication on the `postPage` route's `waitOn` function, so we can simply add the subscription to `singlePost` in there. And let's not forget to also add our subscription to the `postEdit` route, since it also needs the same data:
+现在，让我们在客户端订阅正确的帖子。我们已经在 `postPage` route 的 `wainOn` 函数中订阅了 `comments` 发布，因此我们可以也在这里加入 `singlePost` 订阅。让后别忘了在 `postEdit` route 中加入我们的订阅, 因为那里也需要相同的数据:
 
 ~~~js
 //...
@@ -539,4 +539,4 @@ Router.route('/posts/:_id/edit', {
 
 <%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
 
-With pagination done, our app no longer suffers from scaling problems, and users are sure to contribute even more links than before. So wouldn't it be nice to have a way to somehow rank those links? Wouldn't you know it, this is precisely the topic of the next chapter!
+有了分页，我们的程序将不再受规模问题的困扰了，用户可以加入更多的帖子。如果有某种方法可以给帖子链接加上等级 (rank) 不是更好么?我们将在下一章去实现它！
