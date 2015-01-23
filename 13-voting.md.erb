@@ -24,13 +24,13 @@ paragraphs: 49
 
 ### Data Privacy & Publications
 
-We'll be publishing these lists of upvoters to all users, which will also automatically make that data publicly accessible via the browser console.
+我们将向所有用户发布投票信息，这样我们在浏览器 console 中也可以访问这些数据。
 
-This is the kind of data privacy problem that can arise from the way collections work. For example, do we want people to be able to find out who has voted for their posts? In our case making that information publicly available won't really have any consequences, but it's important to at least acknowledge the issue.
+这是一类数据隐私相关问题。对于我们的例子，我们是否希望用户能看到谁为他的帖子投了票。在我们的例子中，这些信息的是否公开无关紧要，但重要的是知道这是个问题。
 
 <% end %>
 
-We'll also denormalize the total number of upvoters on a post to make it easier to retrieve that figure. So we'll be adding two attributes to our posts, `upvoters` and `votes`. Let's start by adding them to our fixtures file:
+为了让帖子上点赞（upvoter）的数量用户获得。我们在 posts 上增加连个属性，`upvoters` 和 `votes`。让我们先在 fixtures 文件中添加他们:
 
 ~~~js
 // Fixture data
