@@ -6,19 +6,19 @@ number: 13
 points: 10
 photoUrl: http://www.flickr.com/photos/ikewinski/8561920811/
 photoAuthor: Mike Lewinski
-contents: Build a system where users can vote on posts.|Rank our posts by vote on a "best" post page.|Learn how to write a general Spacebars helper.|Learn a little more about data security in Meteor.|Cover some interesting performance considerations in MongoDB.
+contents: 完善系统让用户可以为帖子投票。|在"最佳"帖子排名页面将帖子按投票排序。|学习开发一个通用的 Spacebars helper。|学习一些关于 Meteor 数据安全的知识。|了解一些关于提高 MongoDB 性能的内容。
 paragraphs: 49
 ---
 
-Now that our site is getting more popular, finding the best links is quickly going to get tricky. What we need is some kind of ranking system to order our posts by.
+现在我们的系统更完善了，但是想要找到最受欢迎的帖子有点难。我们需要一个排名系统来给我们的帖子排个序。
 
-We could build a complex ranking system with karma, time-based decay of points, and many other things (most of which are implemented in [Telescope](http://telesc.pe), Microscope's big brother). But for our app, we'll keep things simple and just rate posts by the number of votes they've received.
+我们可以建立一个基于 karma 的复杂排名系统，权值随着时间衰减，和许多其他因素(很多功能都在 [Telescope](http://telesc.pe) 中实现了， 他是 Microscope 的大哥)。但是对于我们的例子 app, 我们尽量保持简单，我们只按照帖子收到的投票给他们排序。
 
-Let's start by giving users a way to vote on posts.
+让我们实现一个给用户为帖子投票的方法。
 
 ### Data Model
 
-We'll store a list of upvoters on each post so we can know whether to show the upvote button to users, as well as to prevent people from voting twice.
+我们将在帖子中保存投票信息，这样我们能判断是否给用户显示投票按钮，并阻止用户给一个帖子投票两次。
 
 <% note do %>
 
