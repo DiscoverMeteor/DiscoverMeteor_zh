@@ -113,7 +113,7 @@ if (Posts.find().count() === 0) {
 <%= caption "server/fixtures.js" %>
 <%= highlight "22,23,49,50,60,61,72,73" %>
 
-As usual, stop your app, run `meteor reset`, restart your app, and create a new user account. Let's then also make sure these two properties are initialized when posts are created:
+和之前一样，停止你的 app, 执行 `meteor rset`, 重启 app,创建一个新的用户。让我们确认一下用户创建帖子时，这两个新的属性也被初始化了:
 
 ~~~js
 //...
@@ -149,7 +149,7 @@ return {
 
 ### Voting Templates
 
-First off, we'll add an upvote button to our post partial and show the upvote count in the post's metadata:
+开始时，我们在帖子部分添加一个点赞(upvote)按钮，并在帖子的 metadata 数据中显示被点赞次数:
 
 ~~~html
 <template name="postItem">
@@ -173,7 +173,7 @@ First off, we'll add an upvote button to our post partial and show the upvote co
 
 <%= screenshot "13-1", "The upvote button" %>
 
-Next, we'll call a server upvote Method when the user clicks on the button:
+接下来，当用户点击按钮时调用服务器端的 upvote 方法:
 
 ~~~js
 //...
@@ -189,6 +189,7 @@ Template.postItem.events({
 <%= highlight "3~8" %>
 
 Finally, we'll go back to our `lib/collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
+最后，我们回到 `lib/collections/posts.js` 文件，在其中加入一个服务器端方法来 upvote posts:
 
 ~~~js
 //...
