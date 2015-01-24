@@ -1,41 +1,42 @@
 ---
-title: Voting
+title: 投票(Voting)
 slug: voting
 date: 0013/01/01
 number: 13
-contents: Build a system where users can vote on posts.|Rank our posts by vote on a "best" post page.|Learn how to write a general handlebars helper.|Learn a little more about data security in Meteor.|Cover some interesting performance considerations in MongoDB.
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/8561920811/
+photoAuthor: Mike Lewinski
+contents: 完善系统让用户可以为帖子投票。|在"最佳"帖子排名页面将帖子按投票排序。|学习开发一个通用的 Spacebars helper。|学习一些关于 Meteor 数据安全的知识。|了解一些关于提高 MongoDB 性能的内容。
 paragraphs: 49
 ---
 
-////
+现在我们的系统更完善了，但是想要找到最受欢迎的帖子有点难。我们需要一个排名系统来给我们的帖子排个序。
 
-////
+我们可以建立一个基于 karma 的复杂排名系统，权值随着时间衰减，和许多其他因素(很多功能都在 [Telescope](http://telesc.pe) 中实现了， 他是 Microscope 的大哥)。但是对于我们的例子 app, 我们尽量保持简单，我们只按照帖子收到的投票给他们排序。
 
-////
+让我们实现一个给用户为帖子投票的方法。
 
 ### Data Model
 
-////
+我们将在帖子中保存投票信息，这样我们能判断是否给用户显示投票按钮，并阻止用户给一个帖子投票两次。
 
 <% note do %>
 
 ### Data Privacy & Publications
 
-////
+我们将向所有用户发布投票信息，这样我们在浏览器 console 中也可以访问这些数据。
 
-////
-
-////
+这是一类数据隐私相关问题。对于我们的例子，我们是否希望用户能看到谁为他的帖子投了票。在我们的例子中，这些信息的是否公开无关紧要，但重要的是知道这是个问题。
 
 <% end %>
 
-////
+为了让帖子上点赞（upvoter）的数量用户获得。我们在 posts 上增加连个属性，`upvoters` 和 `votes`。让我们先在 fixtures 文件中添加他们:
 
 ~~~js
-// Fixture data 
+// Fixture data
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
-  
+
   // create two users
   var tomId = Meteor.users.insert({
     profile: { name: 'Tom Coleman' }
@@ -45,108 +46,115 @@ if (Posts.find().count() === 0) {
     profile: { name: 'Sacha Greif' }
   });
   var sacha = Meteor.users.findOne(sachaId);
-  
+
   var telescopeId = Posts.insert({
     title: 'Introducing Telescope',
     userId: sacha._id,
     author: sacha.profile.name,
     url: 'http://sachagreif.com/introducing-telescope/',
-    submitted: now - 7 * 3600 * 1000,
+    submitted: new Date(now - 7 * 3600 * 1000),
     commentsCount: 2,
-    upvoters: [], votes: 0
+    upvoters: [],
+    votes: 0
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: tom._id,
     author: tom.profile.name,
-    submitted: now - 5 * 3600 * 1000,
+    submitted: new Date(now - 5 * 3600 * 1000),
     body: 'Interesting project Sacha, can I get involved?'
   });
-  
+
   Comments.insert({
     postId: telescopeId,
     userId: sacha._id,
     author: sacha.profile.name,
-    submitted: now - 3 * 3600 * 1000,
+    submitted: new Date(now - 3 * 3600 * 1000),
     body: 'You sure can Tom!'
   });
-  
+
   Posts.insert({
     title: 'Meteor',
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://meteor.com',
-    submitted: now - 10 * 3600 * 1000,
+    submitted: new Date(now - 10 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], votes: 0
+    upvoters: [],
+    votes: 0
   });
-  
+
   Posts.insert({
     title: 'The Meteor Book',
     userId: tom._id,
     author: tom.profile.name,
     url: 'http://themeteorbook.com',
-    submitted: now - 12 * 3600 * 1000,
+    submitted: new Date(now - 12 * 3600 * 1000),
     commentsCount: 0,
-    upvoters: [], votes: 0
+    upvoters: [],
+    votes: 0
   });
-  
+
   for (var i = 0; i < 10; i++) {
     Posts.insert({
       title: 'Test post #' + i,
       author: sacha.profile.name,
       userId: sacha._id,
       url: 'http://google.com/?q=test-' + i,
-      submitted: now - i * 3600 * 1000,
+      submitted: new Date(now - i * 3600 * 1000 + 1),
       commentsCount: 0,
-      upvoters: [], votes: 0
+      upvoters: [],
+      votes: 0
     });
   }
 }
 ~~~
 <%= caption "server/fixtures.js" %>
-<%= highlight "22, 48, 58, 69" %>
+<%= highlight "22,23,49,50,60,61,72,73" %>
 
-////
+和之前一样，停止你的 app, 执行 `meteor rset`, 重启 app,创建一个新的用户。让我们确认一下用户创建帖子时，这两个新的属性也被初始化了:
 
 ~~~js
 //...
 
-// check that there are no previous posts with the same link
-if (postAttributes.url && postWithSameLink) {
-  throw new Meteor.Error(302, 
-    'This link has already been posted', 
-    postWithSameLink._id);
+var postWithSameLink = Posts.findOne({url: postAttributes.url});
+if (postWithSameLink) {
+  return {
+    postExists: true,
+    _id: postWithSameLink._id
+  }
 }
 
-// pick out the whitelisted keys
-var post = _.extend(_.pick(postAttributes, 'url', 'title', 'message'), {
-  userId: user._id, 
-  author: user.username, 
-  submitted: new Date().getTime(),
+var user = Meteor.user();
+var post = _.extend(postAttributes, {
+  userId: user._id,
+  author: user.username,
+  submitted: new Date(),
   commentsCount: 0,
-  upvoters: [], 
+  upvoters: [],
   votes: 0
 });
 
 var postId = Posts.insert(post);
 
-return postId;
+return {
+  _id: postId
+};
 
 //...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "16~17" %>
+<%= highlight "17~18" %>
 
-### Building our Voting Templates
+### Voting Templates
 
-////
+开始时，我们在帖子部分添加一个点赞(upvote)按钮，并在帖子的 metadata 数据中显示被点赞次数:
 
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn">⬆</a>
+    <a href="#" class="upvote btn btn-default">⬆</a>
     <div class="post-content">
       <h3><a href="{{url}}">{{title}}</a><span>{{domain}}</span></h3>
       <p>
@@ -156,16 +164,16 @@ return postId;
         {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
       </p>
     </div>
-    <a href="{{pathFor 'postPage'}}" class="discuss btn">Discuss</a>
+    <a href="{{pathFor 'postPage'}}" class="discuss btn btn-default">Discuss</a>
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3,7" %>
 
 <%= screenshot "13-1", "The upvote button" %>
 
-////
+接下来，当用户点击按钮时调用服务器端的 upvote 方法:
 
 ~~~js
 //...
@@ -177,60 +185,62 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "3~8" %>
 
-////
+最后，我们回到 `lib/collections/posts.js` 文件，在其中加入一个服务器端方法来 upvote posts:
 
 ~~~js
+//...
+
 Meteor.methods({
   post: function(postAttributes) {
     //...
   },
-  
+
   upvote: function(postId) {
-    var user = Meteor.user();
-    // ensure the user is logged in
-    if (!user)
-      throw new Meteor.Error(401, "You need to login to upvote");
-    
+    check(this.userId, String);
+    check(postId, String);
+
     var post = Posts.findOne(postId);
     if (!post)
-      throw new Meteor.Error(422, 'Post not found');
-    
-    if (_.include(post.upvoters, user._id))
-      throw new Meteor.Error(422, 'Already upvoted this post');
-    
+      throw new Meteor.Error('invalid', 'Post not found');
+
+    if (_.include(post.upvoters, this.userId))
+      throw new Meteor.Error('invalid', 'Already upvoted this post');
+
     Posts.update(post._id, {
-      $addToSet: {upvoters: user._id},
+      $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
     });
   }
 });
+
+//...
 ~~~
-<%= caption "collections/posts.js" %>
-<%= highlight "6~23" %>
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "8~25" %>
 
 <%= commit "13-1", "Added basic upvoting algorithm." %>
 
-////
+这个方法很清楚。我们做了些检查确保当前用户已经登录和帖子存在。然后检查用户并没有给帖子投过票，检查如果用户没有增加过帖子的投票分数我们将用户添加到 upvoters 集合中。
 
-////
+最后一步我们使用了一些 Mongo 操作符。有很多操作符需要学习，但是这两个尤其有用: `$addToSet` 将一个 item 加入集合如果它不存在的话，`$inc` 只是简单的增加一个整型属性。
 
 ### User Interface Tweaks
 
-////
+如果用户没有登录或者已经投过票了，他就不能再投票了。我们需要修改 UI, 我们将用一个帮助方法根据条件添加一个 `disabled` CSS class 到 upvote button。
 
 ~~~html
 <template name="postItem">
   <div class="post">
-    <a href="#" class="upvote btn {{upvotedClass}}">⬆</a>
+    <a href="#" class="upvote btn btn-default {{upvotedClass}}">⬆</a>
     <div class="post-content">
       //...
   </div>
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
+<%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "3" %>
 
 ~~~js
@@ -258,19 +268,19 @@ Template.postItem.events({
   }
 });
 ~~~
-<%= caption "client/views/posts/post_item.js" %>
+<%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "8~15, 19" %>
 
-////
+我们将 css class 从 `.upvote` 变成 `.upvotable`，别忘了修改 click 事件处理函数。
 
 <%= screenshot "13-2", "Greying out upvote buttons." %>
 
 <%= commit "13-2", "Grey out upvote link when not logged in / already voted." %>
 
-////
+接下来，你会发现被投过一票的帖子会显示 "1 vote**s**", 下面让我们花点时间来处理单复数形式。处理单复数是个复杂的事，但在这里我们会用一个非常简单的方法。我们建一个通用的 Spacebars helper 方法来处理他们:
 
 ~~~js
-Handlebars.registerHelper('pluralize', function(n, thing) {
+UI.registerHelper('pluralize', function(n, thing) {
   // fairly stupid pluralizer
   if (n === 1) {
     return '1 ' + thing;
@@ -279,185 +289,200 @@ Handlebars.registerHelper('pluralize', function(n, thing) {
   }
 });
 ~~~
-<%= caption "client/helpers/handlebars.js" %>
+<%= caption "client/helpers/spacebars.js" %>
 
-////
+之前我们创建的 helper 方法都是绑定到某个 template 的。但是现在我们用 `UI.registerHelper` 创建一个*全局*的 helper 方法，我们可以在任何 template 中使用它:
 
 ~~~html
 <template name="postItem">
+
 //...
+
 <p>
   {{pluralize votes "Vote"}},
   submitted by {{author}},
   <a href="{{pathFor 'postPage'}}">{{pluralize commentsCount "comment"}}</a>
   {{#if ownPost}}<a href="{{pathFor 'postEdit'}}">Edit</a>{{/if}}
 </p>
+
 //...
+
 </template>
 ~~~
-<%= caption "client/views/posts/post_item.html" %>
-<%= highlight "4, 6" %>
+<%= caption "client/templates/posts/post_item.html" %>
+<%= highlight "6, 8" %>
 
 <%= screenshot "13-3", "Perfecting Proper Pluralization (now say that 10 times)" %>
 
 <%= commit "13-3", "Added pluralize helper to format text better." %>
 
-////
+现在我们看到的是 "1 vote"。
 
 ### Smarter Voting Algorithm
 
-////
+我们的投票代码看起来还行，但是我们能做的更好。在 upvote 方法，我们两次调用 Mongo: 第一次找到帖子，第二次更新它。
 
-////
+这里有两个问题。首先，两次调用数据库效率会有点低。但是更重要的是, 这里引入了一个 race condition。我们的逻辑是这样的:
 
-1. ////
-2. ////
-3. ////
+1. 从数据库中找到帖子。
+2. 检查用户是否已经投票
+3. 如果没有给这个用户投票。
 
-////
+如果同一个用户在 1 和 3 之间两次投票会如何? 我们现在的代码会让用户给同一个帖子投票两次。幸好，Mongo 允许我们将 1-3 步合成一个 Mongo 命令:
 
 ~~~js
+//...
+
 Meteor.methods({
   post: function(postAttributes) {
     //...
   },
-  
+
   upvote: function(postId) {
-    var user = Meteor.user();
-    // ensure the user is logged in
-    if (!user)
-      throw new Meteor.Error(401, "You need to login to upvote");
-    
-    Posts.update({
-      _id: postId, 
-      upvoters: {$ne: user._id}
+    check(this.userId, String);
+    check(postId, String);
+
+    var affected = Posts.update({
+      _id: postId,
+      upvoters: {$ne: this.userId}
     }, {
-      $addToSet: {upvoters: user._id},
+      $addToSet: {upvoters: this.userId},
       $inc: {votes: 1}
     });
+
+    if (! affected)
+      throw new Meteor.Error('invalid', "You weren't able to upvote that post");
   }
 });
+
+//...
 ~~~
 <%= caption "collections/posts.js" %>
-<%= highlight "12~15" %>
+<%= highlight "12~21" %>
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
-////
-
-////
+我们的代码是说 "找到 `id` 是这个并且用户没有投票的帖子，并更新他们为投票"。如果用户还*没有*投票，就会找到这个帖子。如果用户已经投过票了就不会有结果返回。
 
 <% note do %>
 
 ### Latency Compensation
 
-////
+假定你想作弊通过修改帖子投票数量来让一个帖子排到榜单的第一名:
 
 ~~~js
 > Posts.update(postId, {$set: {votes: 10000}});
 ~~~
 <%= caption "Browser console" %>
 
-////
+(`postId` 是你某个帖子的 id)
 
-////
+这个无耻的企图将会被我们系统的 `deny()` 回调函数捕获(`collections/posts.js` 记得么?)并且立刻取消。
 
-////
+但是如果你仔细看，你可能会发现系统的延迟补偿 (latency compensation)。它可能一闪而过, 会看到帖子现在第一位闪了一下，然后回到原来的位置。
 
-////
+发生了什么? 在客户端的 `Posts` 集合，`update` 方法会被执行。这会立刻发生，因此帖子会来到列表第一的位置。同时，在服务器端 `update` 方法会被拒绝。过了一会 (如果你在本地运行 Meteor 这个时间间隔会是毫秒级的), 服务器端返回一个错误，告诉客户端 `Posts` 集合恢复到原来状态。
 
-////
+最终的结果是: 在等待服务器端返回的过程中，UI 只能相信客户端本地集合数据。当服务器端一返回拒绝了修改，UI 就会使用服务器端数据。
 
 <% end %>
 
 ### Ranking the Front Page Posts
 
-////
+现在每个帖子都有一个基于投票的分数，让我们显示一个最佳帖子的列表。这样，我们将看到如何管理对于 post 集合的两个不同的订阅，并将我们的 `postsList` 模板变得更通用一些。
 
-////
+我们需要*两个*订阅，一个用来排序。这里的技巧是两个 subscriptions 订阅*同一个* `posts` 发布，只是参数不同!
 
-////
+我们还需要新建两个路由 `newPosts` 和 `bestPosts`,分别使用 URLS `/new` 和 `/best` （分页使用 `/new/5` 和 `/best/5`）。
 
-////
+我们将继承 `PostsListController` 来生成 `NewPostsListController` 和 `BestPostsListController` 控制器。对于 `home` 和 `newPosts` 路由我们将重用几乎相同的 route options,通过都继承一个 `NewPostsListController`。另外，这是一个很好的例子说明 Iron Router 的灵活性。
+
+让我们用 `NewPostsListController` 和 `BestPostsListController` 提供的 `this.sort` 替换 `PostsListController` 的排序属性 `{submitted: -1}`:
 
 ~~~js
+//...
+
 PostsListController = RouteController.extend({
   template: 'postsList',
-  increment: 5, 
-  limit: function() { 
-    return parseInt(this.params.postsLimit) || this.increment; 
+  increment: 5,
+  postsLimit: function() {
+    return parseInt(this.params.postsLimit) || this.increment;
   },
   findOptions: function() {
-    return {sort: this.sort, limit: this.limit()};
+    return {sort: this.sort, limit: this.postsLimit()};
   },
-  waitOn: function() {
-    return Meteor.subscribe('posts', this.findOptions());
+  subscriptions: function() {
+    this.postsSub = Meteor.subscribe('posts', this.findOptions());
   },
   posts: function() {
     return Posts.find({}, this.findOptions());
   },
   data: function() {
-    var hasMore = this.posts().fetch().length === this.limit();
+    var hasMore = this.posts().count() === this.postsLimit();
     return {
       posts: this.posts(),
+      ready: this.postsSub.ready,
       nextPath: hasMore ? this.nextPath() : null
     };
   }
 });
 
-NewPostsListController = PostsListController.extend({
+NewPostsController = PostsListController.extend({
   sort: {submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.newPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.newPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
-BestPostsListController = PostsListController.extend({
+BestPostsController = PostsListController.extend({
   sort: {votes: -1, submitted: -1, _id: -1},
   nextPath: function() {
-    return Router.routes.bestPosts.path({postsLimit: this.limit() + this.increment})
+    return Router.routes.bestPosts.path({postsLimit: this.postsLimit() + this.increment})
   }
 });
 
-Router.map(function() {
-  this.route('home', {
-    path: '/',
-    controller: NewPostsListController
-  });
-  
-  this.route('newPosts', {
-    path: '/new/:postsLimit?',
-    controller: NewPostsListController
-  });
-  
-  this.route('bestPosts', {
-    path: '/best/:postsLimit?',
-    controller: BestPostsListController
-  });
-  // ..
+Router.route('/', {
+  name: 'home',
+  controller: NewPostsController
 });
+
+Router.route('/new/:postsLimit?', {name: 'newPosts'});
+
+Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "8,16,21~34,36~49" %>
+<%= highlight "10,23,27~55" %>
 
-////
+注意现在我们有多个路由，我们将 `nextPath` 逻辑从 `PostsListController` 移到 `NewPostsController` 和 `BestPostsController`, 因为两个控制器的 path 都不相同。
 
-////
+另外，当我们根据投票数排序时，然后根据发布时间戳和 `_id` 确保顺序。
 
-////
+有了新的控制器，我们可以安全的删除之前的 `postList` 路由。删除下面的代码：
+
+```
+ Router.route('/:postsLimit?', {
+  name: 'postsList'
+ })
+```
+<%= caption "lib/router.js" %>
+
+在 header 中加入链接：
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'home'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           <li>
             <a href="{{pathFor 'newPosts'}}">New</a>
           </li>
@@ -473,18 +498,34 @@ Router.map(function() {
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
-<%= caption "client/views/include/header.html" %>
-<%= highlight "9, 15~21" %>
+<%= caption "client/templates/includes/header.html" %>
+<%= highlight "11, 15~20" %>
 
-////
+最后，我们还需要更新 post deleting 事件处理函数:
+
+~~~html
+  'click .delete': function(e) {
+    e.preventDefault();
+
+    if (confirm("Delete this post?")) {
+      var currentPostId = this._id;
+      Posts.remove(currentPostId);
+      Router.go('home');
+    }
+  }
+~~~
+<%= caption "client/templates/posts_edit.js" %>
+<%= highlight "7" %>
+
+这些都做完了，现在我们得到了一个最佳帖子列表:
 
 <%= screenshot "13-4", "Ranking by points" %>
 
@@ -492,26 +533,29 @@ Router.map(function() {
 
 ### A Better Header
 
-////
+现在我们有两个帖子列表页面，你很难分清你正在看的是哪个列表。现在让我们把页面的 header 变得更明显些。我们将创建一个 `header.js` manager 并创建一个 helper 使用当前的路径和一个或者多个命名路由来给我们的导航条加一个 active class:
 
-////
+支持多个命名路由的原因是 `home` 和 `newPosts` 路由 (分别对应 URL `/` 和 `new`) 使用同一个模板。这意味着我们的 `activeRouteClass` 足够聪明可以处理以上情形将 `<li>` 标签标记为 active。
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'home'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav">
           <li class="{{activeRouteClass 'home' 'newPosts'}}">
             <a href="{{pathFor 'newPosts'}}">New</a>
           </li>
-          <li class="{{activeRouteClass 'bestPosts'}}">
+          <li class="{{activeRouteClass  'bestPosts'}}">
             <a href="{{pathFor 'bestPosts'}}">Best</a>
           </li>
           {{#if currentUser}}
@@ -523,32 +567,32 @@ Router.map(function() {
             </li>
           {{/if}}
         </ul>
-        <ul class="nav pull-right">
-          <li>{{loginButtons}}</li>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
-<%= highlight "9,12,15,19" %>
+<%= caption "client/templates/includes/header.html" %>
+<%= highlight "15,18,22" %>
 
 ~~~js
 Template.header.helpers({
   activeRouteClass: function(/* route names */) {
     var args = Array.prototype.slice.call(arguments, 0);
     args.pop();
-    
+
     var active = _.any(args, function(name) {
-      return Router.current().route.name === name
+      return Router.current() && Router.current().route.getName() === name
     });
-    
+
     return active && 'active';
   }
 });
 ~~~
-<%= caption "client/views/includes/header.js" %>
+<%= caption "client/templates/includes/header.js" %>
 
 <%= screenshot "13-5", "Showing the active page" %>
 
@@ -556,18 +600,18 @@ Template.header.helpers({
 
 ### Helper Arguments
 
-////
+到现在为止我们没有使用特殊的设计模式，但是想其他 Spacebars tags 一样，模板的 helper tags 可以带参数。
 
-////
+你可以给你的函数传递命名的参数，你也可以传入不指定数量的匿名参数并在函数中用 `arguments` 对象访问他们。
 
-////
+在最后一种情况，你可能想将 `arguments` 对象转换成一个一般的 js 数组，然后调用 `pop()` 方法移除末尾的内容。
 
 <% end %>
 
-////
+对于每一个导航 item， `activeRouteClass` helper 可以带一组路由名称，然后使用 Underscore 的 `any()` helper 方法检查哪一个通过测试 (例如: 他们的 URL 等于当前路径)。
 
-////
+如果路由匹配当前路径，`any()` 方法将返回 `true`。最后，我们利用 js 的 `boolean && string` 模式，当 `false && myString` 返回 `false`, 当 `true && myString` 返回 `myString`。
 
 <%= commit "13-6", "Added active classes to the header." %>
 
-////
+现在用户可以给帖子实时投票了，你将看到帖子随着得票多少上下变化。如果有一些动画效果不是更好？
