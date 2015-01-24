@@ -381,23 +381,23 @@ Meteor.methods({
 
 但是如果你仔细看，你可能会发现系统的延迟补偿 (latency compensation)。它可能一闪而过, 会看到帖子现在第一位闪了一下，然后回到原来的位置。
 
-What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself.
+发生了什么? 在客户端的 `Posts` 集合，`update` 方法会被执行。这会立刻发生，因此帖子会来到列表第一的位置。同时，在服务器端 `update` 方法会被拒绝。过了一会 (如果你在本地运行 Meteor 这个时间间隔会是毫秒级的), 服务器端返回一个错误，告诉客户端 `Posts` 集合恢复到原来状态。
 
-The end result: while waiting for the server to respond, the user interface can't help but trust the local collection. As soon as the server comes back and denies the modification, the user interfaces adapts to reflect that.
+最终的结果是: 在等待服务器端返回的过程中，UI 只能相信客户端本地集合数据。当服务器端一返回拒绝了修改，UI 就会使用服务器端数据。
 
 <% end %>
 
 ### Ranking the Front Page Posts
 
-Now that we have a score for each post based on the number of votes, let's display a list of the best posts. To do so, we'll see how to manage two separate subscriptions against the post collection, and make our `postsList` template a bit more general.
+现在每个帖子都有一个基于投票的分数，让我们显示一个最佳帖子的列表。这样，我们将看到如何管理对于 post 集合的两个不同的订阅，并将我们的 `postsList` 模板变得更通用一些。
 
-To start off, we'll want to have *two* subscriptions, one for each sort order. The trick here is that both subscriptions will subscribe to the *same* `posts` publication, only with different arguments!
+我们需要*两个*订阅，一个用来排序。这里的技巧是两个 subscriptions 订阅*同一个* `posts` 发布，只是参数不同!
 
-We'll also create two new routes called `newPosts` and `bestPosts`, accessible at the URLs `/new` and `/best` respectively (along with `/new/5` and `/best/5` for our pagination, of course).
+我们还需要新建两个路由 `newPosts` 和 `bestPosts`,分别使用 URLS `/new` 和 `/best` （分页使用 `/new/5` 和 `/best/5`）。
 
-To do this, we'll *extend* our `PostsListController` into two distinct `NewPostsListController` and `BestPostsListController` controllers. This will let us re-use the exact same route options for both the `home` and `newPosts` routes, by giving us a single `NewPostsListController` to inherit from. And additionally, it's just a nice illustration of how flexible Iron Router can be.
+我们将继承 `PostsListController` 来生成 `NewPostsListController` 和 `BestPostsListController` 控制器。对于 `home` 和 `newPosts` 路由我们将重用几乎相同的 route options,通过都继承一个 `NewPostsListController`。另外，这是一个很好的例子说明 Iron Router 的灵活性。
 
-So let's replace the `{submitted: -1}` sort property in `PostsListController` by `this.sort`, which will be provided by `NewPostsListController` and `BestPostsListController`:
+让我们用 `NewPostsListController` 和 `BestPostsListController` 提供的 `this.sort` 替换 `PostsListController` 的排序属性 `{submitted: -1}`:
 
 ~~~js
 //...
@@ -453,11 +453,11 @@ Router.route('/best/:postsLimit?', {name: 'bestPosts'});
 <%= caption "lib/router.js" %>
 <%= highlight "10,23,27~55" %>
 
-Note that now that we have more than one route, we're taking the `nextPath` logic out of `PostsListController` and into `NewPostsController` and `BestPostsController`, since the path will be different in either case.
+注意现在我们有多个路由，我们将 `nextPath` 逻辑从 `PostsListController` 移到 `NewPostsController` 和 `BestPostsController`, 因为两个控制器的 path 都不相同。
 
-Additionally, when we sort by `votes`, we have a subsequent sorts by submitted timestamp and then `_id` to ensure that the ordering is completely specified.
+另外，当我们根据投票数排序时，然后根据发布时间戳和 `_id` 确保顺序。
 
-With our new controllers in place, we can now safely get rid of the previous `postsList` route. Just delete the following code:
+有了新的控制器，我们可以安全的删除之前的 `postList` 路由。删除下面的代码：
 
 ```
  Router.route('/:postsLimit?', {
@@ -466,7 +466,7 @@ With our new controllers in place, we can now safely get rid of the previous `po
 ```
 <%= caption "lib/router.js" %>
 
-We'll also add links in the header:
+在 header 中加入链接：
 
 ~~~html
 <template name="header">
@@ -509,7 +509,7 @@ We'll also add links in the header:
 <%= caption "client/templates/includes/header.html" %>
 <%= highlight "11, 15~20" %>
 
-And finally, we also need to update our post deleting event handler:
+最后，我们还需要更新 post deleting 事件处理函数:
 
 ~~~html
   'click .delete': function(e) {
@@ -525,7 +525,7 @@ And finally, we also need to update our post deleting event handler:
 <%= caption "client/templates/posts_edit.js" %>
 <%= highlight "7" %>
 
-With all this done, we now gain a best posts list:
+这些都做完了，现在我们得到了一个最佳帖子列表:
 
 <%= screenshot "13-4", "Ranking by points" %>
 
@@ -533,9 +533,9 @@ With all this done, we now gain a best posts list:
 
 ### A Better Header
 
-Now that we have two post list pages, it can be hard to know just which list you're currently viewing. So let's revisit our header to make it more obvious. We'll create a `header.js` manager and create a helper that uses the current path and one or more named routes to set an active class on our navigation items:
+现在我们有两个帖子列表页面，你很难分清你正在看的是哪个列表。现在让我们把页面的 header 变得更明显些。我们将创建一个 `header.js` manager 并创建一个 helper 使用当前的路径和一个或者多个命名路由来给我们的导航条加一个 active class:
 
-The reason why we want to support multiple named routes is that both our `home` and `newPosts` routes (which correspond to the `/` and `/new` URLs respectively) bring up the same template. Meaning that our `activeRouteClass` should be smart enough to make the `<li>` tag active in both cases.
+支持多个命名路由的原因是 `home` 和 `newPosts` 路由 (分别对应 URL `/` 和 `new`) 使用同一个模板。这意味着我们的 `activeRouteClass` 足够聪明可以处理以上情形将 `<li>` 标签标记为 active。
 
 ~~~html
 <template name="header">
@@ -600,18 +600,18 @@ Template.header.helpers({
 
 ### Helper Arguments
 
-We haven't used that specific pattern up to now, but just like any other Spacebars tags, template helper tags can take arguments.
+到现在为止我们没有使用特殊的设计模式，但是想其他 Spacebars tags 一样，模板的 helper tags 可以带参数。
 
-And while you can of course pass specific named arguments to your function, you can also pass an unspecified number of anonymous parameters and retrieve them by calling the `arguments` object inside a function.
+你可以给你的函数传递命名的参数，你也可以传入不指定数量的匿名参数并在函数中用 `arguments` 对象访问他们。
 
-In this last case, you will probably want to convert the `arguments` object to a regular JavaScript array and then call `pop()` on it to get rid of the hash added at the end by Spacebars.
+在最后一种情况，你可能想将 `arguments` 对象转换成一个一般的 js 数组，然后调用 `pop()` 方法移除末尾的内容。
 
 <% end %>
 
-For each navigation item, the `activeRouteClass` helper takes a list of route names, and then uses Underscore's `any()` helper to see if any of the routes pass the test (i.e. their corresponding URL being equal to the current path).
+对于每一个导航 item， `activeRouteClass` helper 可以带一组路由名称，然后使用 Underscore 的 `any()` helper 方法检查哪一个通过测试 (例如: 他们的 URL 等于当前路径)。
 
-If any of the routes do match up with the current path, `any()` will return `true`. Finally, we're taking advantage of the `boolean && string` JavaScript pattern where `false && myString` returns `false`, but `true && myString` returns `myString`.
+如果路由匹配当前路径，`any()` 方法将返回 `true`。最后，我们利用 js 的 `boolean && string` 模式，当 `false && myString` 返回 `false`, 当 `true && myString` 返回 `myString`。
 
 <%= commit "13-6", "Added active classes to the header." %>
 
-Now that users can vote on posts in real-time, you will see items jumping up and down the homepage as their ranking change. but wouldn't it be nice if there was a way to smooth out all this with a few well-timed animations?
+现在用户可以给帖子实时投票了，你将看到帖子随着得票多少上下变化。如果有一些动画效果不是更好？
