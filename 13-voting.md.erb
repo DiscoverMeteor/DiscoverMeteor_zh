@@ -188,7 +188,6 @@ Template.postItem.events({
 <%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "3~8" %>
 
-Finally, we'll go back to our `lib/collections/posts.js` file and add a Meteor server-side Method that will upvote posts:
 最后，我们回到 `lib/collections/posts.js` 文件，在其中加入一个服务器端方法来 upvote posts:
 
 ~~~js
@@ -224,13 +223,13 @@ Meteor.methods({
 
 <%= commit "13-1", "Added basic upvoting algorithm." %>
 
-This method is fairly straightforward. We do some defensive checks to ensure that the user is logged in and that the post really exists. Then we double check that the user hasn't already voted for the post, and if they haven't we increment the vote's total score and add the user to the set of upvoters.
+这个方法很清楚。我们做了些检查确保当前用户已经登录和帖子存在。然后检查用户并没有给帖子投过票，检查如果用户没有增加过帖子的投票分数我们将用户添加到 upvoters 集合中。
 
-This final step is interesting, as we've used a couple of special Mongo operators. There are many more to learn, but these two are extremely helpful: `$addToSet` adds an item to an array property as long as it doesn't already exist, and `$inc` simply increments an integer field.
+最后一步我们使用了一些 Mongo 操作符。有很多操作符需要学习，但是这两个尤其有用: `$addToSet` 将一个 item 加入集合如果它不存在的话，`$inc` 只是简单的增加一个整型属性。
 
 ### User Interface Tweaks
 
-If the user is not logged in, or has already upvoted a post, they won't be able to vote. To reflect this in our UI, we'll use a helper to conditionally add a `disabled` CSS class to the upvote button.
+如果用户没有登录或者已经投过票了，他就不能再投票了。我们需要修改 UI, 我们将用一个帮助方法根据条件添加一个 `disabled` CSS class 到 upvote button。
 
 ~~~html
 <template name="postItem">
@@ -272,13 +271,13 @@ Template.postItem.events({
 <%= caption "client/templates/posts/post_item.js" %>
 <%= highlight "8~15, 19" %>
 
-We're changing our class from `.upvote` to `.upvotable`, so don't forget to change the click event handler too.
+我们将 css class 从 `.upvote` 变成 `.upvotable`，别忘了修改 click 事件处理函数。
 
 <%= screenshot "13-2", "Greying out upvote buttons." %>
 
 <%= commit "13-2", "Grey out upvote link when not logged in / already voted." %>
 
-Next, you may notice that posts with a single vote are labelled "1 vote**s**", so let's take the time to pluralize those labels properly. Pluralization can be a complicated process, but for now we'll do it in a fairly simplistic way. We'll make a general Spacebars helper that we can use anywhere:
+接下来，你会发现被投过一票的帖子会显示 "1 vote**s**", 下面让我们花点时间来处理单复数形式。处理单复数是个复杂的事，但在这里我们会用一个非常简单的方法。我们建一个通用的 Spacebars helper 方法来处理他们:
 
 ~~~js
 UI.registerHelper('pluralize', function(n, thing) {
@@ -292,7 +291,7 @@ UI.registerHelper('pluralize', function(n, thing) {
 ~~~
 <%= caption "client/helpers/spacebars.js" %>
 
-The helpers we've created before have been tied to the template they apply to. But by using `UI.registerHelper`, we've created a *global* helper that can be used within any template:
+之前我们创建的 helper 方法都是绑定到某个 template 的。但是现在我们用 `UI.registerHelper` 创建一个*全局*的 helper 方法，我们可以在任何 template 中使用它:
 
 ~~~html
 <template name="postItem">
@@ -317,19 +316,19 @@ The helpers we've created before have been tied to the template they apply to. B
 
 <%= commit "13-3", "Added pluralize helper to format text better." %>
 
-We should now see "1 vote".
+现在我们看到的是 "1 vote"。
 
 ### Smarter Voting Algorithm
 
-Our upvoting code is looking good, but we can still do better. In the upvote Method, we make two calls to Mongo: one to grab the post, then another to update it.
+我们的投票代码看起来还行，但是我们能做的更好。在 upvote 方法，我们两次调用 Mongo: 第一次找到帖子，第二次更新它。
 
-There are two issues with this. Firstly, it's somewhat inefficient to go to the database twice. But more importantly, it introduces a race condition. We are following the following algorithm:
+这里有两个问题。首先，两次调用数据库效率会有点低。但是更重要的是, 这里引入了一个 race condition。我们的逻辑是这样的:
 
-1. Grab the post from the database.
-2. Check if the user has voted.
-3. If not, do a vote by the user.
+1. 从数据库中找到帖子。
+2. 检查用户是否已经投票
+3. 如果没有给这个用户投票。
 
-What if the same user voted for the post again in between steps 1 and 3? Our current code opens the door to the user being able to vote for the same post twice. Thankfully, Mongo allows us to be smarter and combine steps 1-3 into a single Mongo command:
+如果同一个用户在 1 和 3 之间两次投票会如何? 我们现在的代码会让用户给同一个帖子投票两次。幸好，Mongo 允许我们将 1-3 步合成一个 Mongo 命令:
 
 ~~~js
 //...
@@ -363,7 +362,7 @@ Meteor.methods({
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
-What we are saying is "find all the posts with this `id` that this user hasn't yet voted for, and update them in this way". If the user *hasn't* yet voted, it will of course find the post with that `id`. On the other hand if the user *has* voted, then the query will match no documents, and consequently nothing will happen.
+我们的代码是说 "找到 `id` 是这个并且用户没有投票的帖子，并更新他们为投票"。如果用户还*没有*投票，就会找到这个帖子。如果用户已经投过票了就不会有结果返回。 
 
 <% note do %>
 
