@@ -3,7 +3,7 @@ title: 添加用户
 slug: adding-users
 date: 0006/01/01
 number: 6
-points: 10
+points: 5
 photoUrl: http://www.flickr.com/photos/kroqert/9687074783/
 photoAuthor: Bård Harald Krogen
 contents: 学习 Meteor 的用户帐户。|在 Microscope 中添加所有必要的用户验证。|使用内置的 accounts-ui 包实现实时性的用户界面。
@@ -18,59 +18,62 @@ paragraphs: 27
 
 ### 账户：让用户变得简单
 
-在大多数的 web 框架，添加用户帐户是一个熟悉而又麻烦的工作。然而，你所做的每一个项目几乎都要用到，但它都不曾让我们觉得简单过。甚至如果当你要处理开放授权（ OAuth ）或其他第三方身份验证的时候，这些工作往往会变得更加恶心和复杂。
+在大多数的 web 框架，添加用户帐户是一个熟悉而又麻烦的工作。然而，你所做的每一个项目几乎都要用到，但它都不曾让我们觉得简单过。甚至如果当你要处理开放授权（OAuth）或其他第三方身份验证的时候，这些工作往往会变得更加恶心和复杂。
 
-幸运的是， Meteor 可以帮你轻松解决。由于 Meteor 包的代码可以同时运行在服务器（ JavaScript ）和客户端（ JavaScript、HTML 和 CSS ），这样我们就可以很轻松地得到一个账户系统。
+幸运的是， Meteor 可以帮你轻松解决。由于 Meteor 包的代码可以同时运行在服务器（JavaScript）和客户端（JavaScript、HTML 和 CSS），这样我们就可以很轻松地得到一个账户系统。
 
-我们可以使用 Meteor 内置的账户界面（通过 `mrt add accounts-ui` ），但是由于我们已经在构建 App 的时候用了 Bootstrap 包，所以我们将使用 `accounts-ui-bootstrap-dropdown` 包去代替（别担心，唯一的区别只是里面的样式不同）。我们在终端输入：
+我们可以使用 Meteor 内置的账户界面（通过 `meteor add accounts-ui` ），但是由于我们已经在构建 App 的时候用了 Bootstrap 包，所以我们将使用 `accounts-ui-bootstrap-3` 包去代替（别担心，唯一的区别只是里面的样式不同）。我们在终端输入：
 
 ~~~bash
-$ mrt add accounts-ui-bootstrap-dropdown
-$ mrt add accounts-password
+meteor add ian:accounts-ui-bootstrap-3
+meteor add accounts-password
 ~~~
 <%= caption "Terminal" %>
 
-这两个命令的作用是把一些特别的账户模板提供到我们的项目，然后就可以通过 `{{loginButtons}}` 标签在我们的网站中使用。温馨提示：你可以去控制登录框下拉的显示方向，通过添加其 `align` 属性（例如： `{{loginButtons  align="right"}}` ）。
+这两个命令的作用是把一些特别的账户模板提供到我们的项目，然后就可以通过 `{{loginButtons}}` helper 在我们的网站中使用。温馨提示：你可以去控制登录框下拉菜单的对齐方向，通过添加其 `align` 属性（例如：`{{loginButtons  align="right"}}`）。
 
-我们将按钮添加到我们的头部（ header ）模板。这样头部包含的内容将会越来越多了，下面我们为它腾出更多的空间吧（我们将把它放在 `client/views/includes/` ）。同时我们使用一些额外的标记和 Bootstrap 类来使界面更好看：
+我们将按钮添加到我们的头部（header）模板。这样头部包含的内容将会越来越多了，下面我们为它腾出更多的空间吧（我们将把它放在 `client/templates/includes/` ）。同时我们使用一些额外的标记和 class [请参考 Bootstrap](http://getbootstrap.com/components/#navbar) 来使界面更好看：
 
 ~~~html
 <template name="layout">
   <div class="container">
-    {{>header}}
+    {{> header}}
     <div id="main" class="row-fluid">
-      {{yield}}
+      {{> yield}}
     </div>
   </div>
 </template>
 ~~~
-<%= caption "client/views/application/layout.html" %>
-<%= highlight "6" %>
+<%= caption "client/templates/application/layout.html" %>
+<%= highlight "3~6" %>
 
 ~~~html
 <template name="header">
-  <header class="navbar">
-    <div class="navbar-inner">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{pathFor 'postsList'}}">Microscope</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav pull-right">
-          <li>{{loginButtons}}</li>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navigation">
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
         </ul>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 ~~~
-<%= caption "client/views/includes/header.html" %>
+<%= caption "client/templates/includes/header.html" %>
 
 现在，去浏览我们的 App，我们会看到账户登录的按钮出现在网站的右上角。
 
-<%= screenshot "6-1", "Meteor's built-in accounts UI" %>
+<%= screenshot "6-1", "Meteor 内置的账户界面" %>
 
 这样我们就可以用它来注册，登录，改变密码，它拥有和其他所有网站一样的账户系统功能。
 
@@ -83,7 +86,7 @@ Accounts.ui.config({
 ~~~
 <%= caption "client/helpers/config.js" %>
 
-<%= commit "6-1", "添加账户和它的模板到头（ header ）模板" %>
+<%= commit "6-1", "添加账户和它的模板到头（header）模板" %>
 
 ### 创建我们的第一个用户
 
@@ -94,7 +97,7 @@ Accounts.ui.config({
 ~~~js
 ❯ Meteor.users.findOne();
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 控制台应该会返回一个用户对象，如果你仔细看看，可以找到你的用户名，以及唯一标识你账号的 `_id` 。注意，你还可以通过 `Meteor.user()` 获得当前登录的用户。
 
@@ -104,7 +107,7 @@ Accounts.ui.config({
 ❯ Meteor.users.find().count();
 1
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 控制台返回的是1？难道不是2吗？第一个用户被删除了吗？如果你再次登录第一个用户，你会发现并没有被删除。
 
@@ -165,7 +168,7 @@ Accounts.ui.config({
 ❯ Meteor.users.findOne();
 Object {_id: "kYdBd9hr3fWPGPcii", username: "tmeasday"}
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 这个例子向我们展示了本地集合是如何成为一个**安全的**数据库**数据子集**。登录用户只能看到那些足够去配合客户端工作（例如：登陆）的集合属性。以后你会知道这是一个非常值得学习的模式。
 

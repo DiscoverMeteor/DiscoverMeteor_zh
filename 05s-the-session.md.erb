@@ -3,11 +3,11 @@ title: 会话（Session）
 slug: the-session
 date: 0005/01/02
 number: 5.5
-points: 10
+points: 5
 sidebar: true
 photoUrl: http://www.flickr.com/photos/philmosby/11372421963/
 photoAuthor: Phil Mosby
-contents: 学习关于 Meteor 的会话（Session）|学习自动运行函数|学习动态代码重载
+contents: 学习关于 Meteor 的会话（Session）|学习自动运行函数|学习动态代码重载（Hot Code Reload）
 paragraphs: 33
 ---
 
@@ -32,27 +32,35 @@ Session 是一个全局的响应式数据存储。它全局性的意思是全局
 ~~~js
 ❯ Session.set('pageTitle', 'A different title');
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 通过 `Session.get('mySessionProperty');` 你可以重新读取数据的内容，这是一个响应式的数据源，这意味着如果你把它放在一个 Helper 里面，你会看到 Helper 根据 Session 变量的改变而响应式地改变它的输出。
 
 让我们试一试，将下面的代码添加到布局模板：
 
 ~~~html
-<header class="navbar">
-  <div class="navbar-inner">
-    <a class="brand" href="{{pathFor 'postsList'}}">{{pageTitle}}</a>
+<header class="navbar navbar-default" role="navigation"> 
+  <div class="navbar-header">
+    <a class="navbar-brand" href="{{pathFor 'postsList'}}">{{pageTitle}}</a>
   </div>
 </header>
 ~~~
-<%= caption "client/views/application/layout.html"%>
+<%= caption "client/templates/application/layout.html"%>
 
 ~~~js
 Template.layout.helpers({
   pageTitle: function() { return Session.get('pageTitle'); }
 });
 ~~~
-<%= caption "client/views/application/layout.js"%>
+<%= caption "client/templates/application/layout.js"%>
+
+<% note do %>
+
+### 关于附录（Sidebar）的代码
+
+请注意在附录章节中的代码并不是本书主流程的一部分。所以要么创建一个新分支（如果你使用 Git），要么确保在本章结束后恢复你所做的改动。
+
+<% end %>
 
 Meteor 的自动重载（即使用后面讲到的“动态代码重载技术”（HCR）的页面自动刷新）会保存 Session 的变量，所以我们现在应该看到“不同的标题”显示在导航栏中。如果不是，再次输入之前的 `Session.set()` 命令。
 
@@ -65,15 +73,17 @@ Meteor 的自动重载（即使用后面讲到的“动态代码重载技术”�
 
 由于 Session 的全局可访问性，所以这些变化可以作用到应用程序的任何地方。这给了我们很大的权力，但如果使用太多也可以是一个陷阱。
 
+另外，重点指出的是 Session 对象*不在*用户之间共享，甚至在浏览器标签之间。这就是为什么如果现在你在新浏览器标签打开你的应用，你会看到一个空网站标题。
+
 <% note do %>
 
 ### 相同的变化
 
-如果你通过 `Session.set()` 去修改一个 Session 变量，并将其修改为相同的值，Meteor会非常聪明的绕过繁琐的操作，避免不必要的方法调用。
+如果你通过 `Session.set()` 去修改一个 Session 变量，并将其修改为相同的值，Meteor 会非常聪明的绕过繁琐的操作，避免不必要的方法调用。
 
 <% end %>
 
-### 自动运行
+### 自动运行（Autorun）
 
 我们看到响应式数据源的一个例子，并且看到了它在一个模板 Helper 里面的运作。尽管某些情况下 Meteor（如模板 Helper）是响应式的，但是大部分的 Meteor App 仍然是基于普通的非响应式的 JavaScript 代码。
 
@@ -85,17 +95,17 @@ helloWorld = function() {
 }
 ~~~
 
-尽管我们调用一个响应式变量（Session），但它并不是在响应式的上下文中调用，所以当改变这个 Session 变量的时候，我们也不会自动运行 `alert` 函数。
+尽管我们调用一个响应式会话（Session）变量，但它并不是在响应式的*上下文*中调用，所以当改变这个 Session 变量的时候，我们也不会自动运行 `alert` 函数。
 
-这个时候，就要引入[自动运行](http://docs.meteor.com/#deps_autorun)（Autorun）机制了。顾名思义，每一次 `autorun` 上下文中的响应式数据源发生变化的时候，`autorun` 函数就会自动运行。
+这个时候，就要引入[自动运行（Autorun）](http://docs.meteor.com/#Tracker_autorun)机制了。顾名思义，每一次 `autorun` 上下文中的响应式数据源发生变化的时候，`autorun` 函数就会自动运行。
 
 尝试到浏览器控制台输入：
 
 ~~~js
-❯ Deps.autorun( function() { console.log('Value is: ' + Session.get('pageTitle')); } );
+❯ Tracker.autorun( function() { console.log('Value is: ' + Session.get('pageTitle')); } );
 Value is: A brand new title
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 如你所料，放在 `autorun` 函数里面的代码将会运行一次，把数据输出到控制台。现在，让我们尝试去改变标题：
 
@@ -103,14 +113,14 @@ Value is: A brand new title
 ❯ Session.set('pageTitle', 'Yet another value');
 Value is: Yet another value
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 神奇吧！随着 Session 变量的改变， `autorun` 知道它必须重新运行自己的代码，并把新的值重新输出到控制台。
 
 所以我们回到之前的例子，如果希望每次 Session 变量发生变化的时候引发新的警报（`alert`），我们需要做的就是将我们的代码封装在 `autorun` 函数里面：
 
 ~~~js
-Deps.autorun(function() {
+Tracker.autorun(function() {
   alert(Session.get('message'));
 });
 ~~~
@@ -130,7 +140,7 @@ Deps.autorun(function() {
 ❯ Session.get('pageTitle');
 'A brand new title'
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 如果我们手动去重载浏览器窗口，自然就会丢失我们的 Session 变量（因为这将会创建一个新的会话）。另一方面，如果我们是引发动态代码重载（即，通过修改并保存我们的源文件）去重新加载页面，Session 变量却仍然存在。现在去试一试！
 
@@ -138,7 +148,7 @@ Deps.autorun(function() {
 ❯ Session.get('pageTitle');
 'A brand new title'
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 因此，如果使用 Session 变量来保存用户状态，用户几乎不会察觉到动态代码重载的发生。因为它将保留所有 Session 变量的值。这可以使我们在部署新版本的时候，用户发生中断的机会降到最低。
 
@@ -150,7 +160,7 @@ Deps.autorun(function() {
 ❯ Session.get('pageTitle');
 null
 ~~~
-<%= caption "Browser console" %>
+<%= caption "浏览器控制台（Browser console）" %>
 
 当我们重载页面时，我们丢失了 Session 。在 HCR 中，Meteor 将 Session 保存到浏览器的本地存储并且在重载的之后再一次加载它。然而，在重载页面时发生的丢失行为是有一定道理的：如果用户重新加载页面，就好像他们已经再次浏览相同的 URL ，而且其他用户都会看到他们访问的 URL，所以他们应该重置为初始状态。
 
@@ -158,3 +168,5 @@ null
 
 1. 应该在 Session 或者 URL 中存储用户状态。从而在动态代码重载的时候，让用户发生中断的机会降到最低。
 2. 尽可能使用 **URL** 去存储你想要共享在用户之间的状态。
+
+以上总结了我们对会话（Session）——— Meteor 最有用的功能之一的探索。不要忘了在进行下一章之前，恢复你对代码的改动。
