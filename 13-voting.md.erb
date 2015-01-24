@@ -362,24 +362,24 @@ Meteor.methods({
 
 <%= commit "13-4", "Better upvoting algorithm." %>
 
-我们的代码是说 "找到 `id` 是这个并且用户没有投票的帖子，并更新他们为投票"。如果用户还*没有*投票，就会找到这个帖子。如果用户已经投过票了就不会有结果返回。 
+我们的代码是说 "找到 `id` 是这个并且用户没有投票的帖子，并更新他们为投票"。如果用户还*没有*投票，就会找到这个帖子。如果用户已经投过票了就不会有结果返回。
 
 <% note do %>
 
 ### Latency Compensation
 
-Let's say you tried to cheat and send one of your posts to the top of the list by tweaking its number of votes:
+假定你想作弊通过修改帖子投票数量来让一个帖子排到榜单的第一名:
 
 ~~~js
 > Posts.update(postId, {$set: {votes: 10000}});
 ~~~
 <%= caption "Browser console" %>
 
-(Where `postId` is the id of one of your posts)
+(`postId` 是你某个帖子的 id)
 
-This brazen attempt at gaming the system would be caught by our `deny()` callback (in `collections/posts.js`, remember?) and immediately negated.
+这个无耻的企图将会被我们系统的 `deny()` 回调函数捕获(`collections/posts.js` 记得么?)并且立刻取消。
 
-But if you look carefully, you might be able to see latency compensation in action. It may be quick, but the post will briefly jump to the top of the list before shooting back into position.
+但是如果你仔细看，你可能会发现系统的延迟补偿 (latency compensation)。它可能一闪而过, 会看到帖子现在第一位闪了一下，然后回到原来的位置。
 
 What's happened? In your local `Posts` collection, the `update` was applied without incident. This happens instantly, so the post shot to the top of the list. Meanwhile, on the server, the `update` was being denied. So some time later (measured in the milliseconds if you are running Meteor on your own machine), the server returned an error, telling the local collection to revert itself.
 
