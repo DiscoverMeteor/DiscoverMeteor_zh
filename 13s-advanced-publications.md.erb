@@ -20,11 +20,11 @@ paragraphs: 36
 
 首先，让我们回忆一下 `_publishCursor` 函数为我们做了什么: 它取得满足当前游标(cursor)的所有文档(document),并将它们推送到客户端的*同名*集合中。注意这个名字和_发布(publication)_的名字是不相关的。
 
-This means we can have _more than one publication_ linking the client and server versions of any collection.
+这意味着我们可以有_多个订阅_连接客户端与服务端的任何版本的集合。
 
-We've already encountered this pattern in our [pagination chapter](/chapter/pagination/), when we published a paginated subset of all the posts in addition to the currently displayed post.
+我们已经在之前的章节使用过这种模式[分页](/chapter/pagination/),在我们发布一个除当前显示帖子之外的分页的子集时。
 
-Another similar use case is to publish an *overview* of a large set of documents, as well as the full details of a single item:
+另一个相似的例子是发布一个大文档集合的*概要*,也就是一个项目的全部细节:
 
 <%= diagram "doublecollection", "Publishing a collection twice", "pull-center" %>
 
@@ -38,7 +38,7 @@ Meteor.publish('postDetail', function(postId) {
 });
 ~~~
 
-Now when the client subscribes to those two publications, its `'posts'` collection gets populated from two sources: a list of titles and author's names from the first subscription, and the full details of a post from the second.
+客户端现在订阅这两个发布，`'帖子'`集合从这个两个发布获得数据:从第一个订阅中获得标题和用户名列表，从第二个订阅中获得帖子的具体内容。
 
 You may realize that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
 
