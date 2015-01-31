@@ -40,11 +40,11 @@ Meteor.publish('postDetail', function(postId) {
 
 客户端现在订阅这两个发布，`'帖子'`集合从这个两个发布获得数据:从第一个订阅中获得标题和用户名列表，从第二个订阅中获得帖子的具体内容。
 
-You may realize that the post published by `postDetail` is also being published by `allPosts` (although with only a subset of its properties). However, Meteor takes care of the overlap by merging the fields and ensuring there is no duplicate post.
+你可能已经意识到 `postDetail` 发布的帖子在 `allPosts` 中也发布了(尽管只有它们属性的子集)。无论怎样，Meteor会通过合并字段来保证没有重复的帖子。
 
-This is great, because now when we render the list of post summaries, we are dealing with data objects that have just enough data for us to show what we need. However, when we render out the page for a single post, we have everything we need to show it. Of course, we need to take care on the client to not expect all fields to be available on all posts in this case -- this is a common gotcha!
+这很好，因为当我们显示帖子摘要列表时，数据对象中刚好有需要显示的数据。然而，当我们显示一个单独的帖子，我们有需要显示的所有数据。当然，我们需要注意在这种情况下客户端并没有所有帖子的全部字段 -- 这是个常见问题！
 
-It should be noted that you're not limited to varying document properties. You could very well publish the same properties in both publications, but order items differently.
+注意你并没有改变文档属性的限制。你可以方便地在两个发布中发布同样的属性，但是内容排序不同。
 
 ~~~js
 Meteor.publish('newPosts', function(limit) {
@@ -57,17 +57,17 @@ Meteor.publish('bestPosts', function(limit) {
 ~~~
 <%= caption "server/publications.js" %>
 
-### Subscribing to a Publication Multiple Times
+### 多次订阅同一个发布
 
-We've just seen how you can publish a single collection more than once. It turns out you can accomplish a very similar result with another pattern: creating a single publication, but *subscribing* to it multiple times.
+我们已经看到了如何多次发布统一集合。由此你可以得到另一个相似的模式:创建一个发布，多次*订阅*它。
 
-In Microscope, we subscribe to the `posts` publication multiple times, but Iron Router sets up and tears down each subscription for us. Yet there's no reason why we couldn't subscribe multiple times *simultaneously*.
+在Microscope中，我们多次订阅 `posts` 发布，Iron Router 为我们建立和取消每次订阅。然而我们也可以自己*同时*订阅多次。
 
-For example, let's say we wanted to load both the newest and best posts in memory at the same time:
+例如，我们想要同时载入最新的和最佳的帖子到内存:
 
 <%= diagram "subscribetwice", "Subscribing twice to one publication", "pull-center" %>
 
-We're setting up a single publication:
+我们建立一个发布:
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -75,14 +75,14 @@ Meteor.publish('posts', function(options) {
 });
 ~~~
 
-And we then subscribe to this publication multiple times. In fact this is more or less exactly what we're doing in Microscope:
+并且我们多次订阅这个发布。事实上或多或少的在Microscope里这样做了：
 
 ~~~js
 Meteor.subscribe('posts', {submitted: -1, limit: 10});
 Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 ~~~
 
-So what's happening here exactly? Each browser is opening up *two* different subscriptions, each connecting to the *same* publication on the server.
+这里发生了什么?每个浏览器开启了*两个*不同的订阅，每个订阅连接到*同个*服务端的发布。
 
 Each subscription provides different arguments to that publication, but fundamentally, each time a (different) set of documents is being plucked from the `posts` collection and sent down the wire to the client-side collection.
 
