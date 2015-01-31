@@ -84,9 +84,9 @@ Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 
 这里发生了什么?每个浏览器开启了*两个*不同的订阅，每个订阅连接到*同个*服务端的发布。
 
-Each subscription provides different arguments to that publication, but fundamentally, each time a (different) set of documents is being plucked from the `posts` collection and sent down the wire to the client-side collection.
+每个订阅提供了不同的参数给发布，但从根本上，每次从服务器端`帖子`集合中获得一个(不同的)文档集合放入客户端集合。
 
-You can even subscribe to the same publication twice with *the same arguments!* It's hard to think of many scenarios where that would be useful, but the flexibility might be useful one day!
+你甚至可以用*同样的参数*订阅相同的发布两次。这也许没有什么用处，但这种灵活性也许将来某天会有用!
 
 ### Multiple Collections in a Single Subscription
 
