@@ -96,7 +96,7 @@ Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 
 然而，假设我们希望在前端页面中显示*全部*帖子的回复(记着这些帖子会在分页时被改变)。这个用例也是我们将回复嵌入帖子的好理由，事实上这也促使我们非规范化 (denormalize) 回复数量。
 
-Of course we could always just embed comments in posts, getting rid of the `Comments` collection altogether. But like we previously saw in the *Denormalization* chapter, by doing so we would be losing some of the extra benefits of working with separate collections.
+当然我们可以只在帖子(posts)中嵌入回复(comments)，并完全删除`Comments`集合。但如同我们前面在*去规范化*章节看到的，这样做我们会丢失一些分离集合带来的好处。
 
 But it turns out there's a trick involving subscriptions that makes it possible to embed our comments while preserving separate collections.
 
