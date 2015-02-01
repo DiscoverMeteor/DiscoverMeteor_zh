@@ -1,46 +1,47 @@
 ---
 title: 错误
 slug: errors
-date: 2014/07/10
+date: 0009/01/01
 number: 9
-contents: 创建一个更好的显示错误和信息的机制。|学习怎样使用 `Template.rendered`，以便提示用户报错。|应用路径删选机制来允许一次性报错。
+points: 10
+contents: 创建一个更好的显示错误和信息的机制。|实施更严格的表单验证。|添加行内表单错误报告。
 paragraphs: 31
 ---
 
-仅使用浏览器标准的alert() 对话窗去警告用户输入的错误数据，特别从用户体验的角度来讲，是不合适的。我们可以做得更好。
+仅使用浏览器标准的 `alert()` 对话窗去警告用户他们的提交有错误有那么一点不令人满意，而且显然不是一个良好的用户体验。我们可以做得更好。
 
-换一句话说，我们可以建立一个更灵活的错误报告机制来提醒用户在哪个工作流程上系统出现错误。
+相反，让我们建立一个更加灵活的错误报告机制，来更好地在不打断流程的情况下告诉用户到底发生了什么。
 
-### 及时性集合的介绍
+我们要实现一个简单的系统，在窗口右上角显示新的错误信息，类似于流行的 Mac OS 应用程序 [Growl](http://growl.info/)。
 
-我们要实现一个简单的报错系统：这个系统记录下用户已看到的错误信息，对于新的错误信息，该系统会把它显示在 "flash"的模版里。这样的用户体验能够在不影响用户工作流程的情况下提醒用户某些错误发生。
+### 介绍本地集合（Local collection）
 
-我们要建立一个类似于Ruby on Rails应用程序里的闪现信息，相比之下Meteor的实现方式更吊丝，因为它只在客户端实现，而且能够知道用户什么时候看到信息。
+一开始，我们需要创建一个集合来存储我们的错误。既然错误只与当前会话相关，而且不需要以任何方式长久存在，我们要在这做点新鲜的事儿，创建一个*本地集合（Local collection）*。这意味着，错误 `Errors` 集合将会只存在于*浏览器*中，并且将不作任何尝试去同步回服务器。
+
+为实现它，我们创建在 `client` 文件夹中创建错误（确保这集合只在客户端存在），我们将它的 MongoDB 集合命名为 `null` （因为集合的数据讲不会保存在服务器端的数据库中）：
+
+~~~js
+// 本地（仅客户端）集合
+Errors = new Mongo.Collection(null);
+~~~
+<%= caption "client/helpers/errors.js" %>
 
 一开始，我们应该建立一个可以储存错误的集合。介于错误只是对于当前的会话，我们将采用及时性集合。这就意味着错误集合只存在于当前的浏览器，该集合不会与服务端同步。
 
-我们需要在客户端创建错误来实现它，把集合名字设为null。我们建立一个 throwError函数去把一个错误加入到集合中：
-
-~~~js
-// Local (client-only) collection
-Errors = new Meteor.Collection(null);
-~~~
-<%= caption "client/helpers/errors.js" %>
-
-集合已经建立了，我们可以建立一个 throwError 函数来加入新的错误。我们不需要担心允许和拒绝机制，因为及时性集合不会被储存到Mongo数据库端。
+既然集合已经建立了，我们可以创建一个 `throwError` 函数用来添加新的错误。我们不需要担心 `allow` 和 `deny` 或其他任何的安全考虑，因为这个集合对于当前用户是“本地的”。
 
 ~~~js
 throwError = function(message) {
-  Errors.insert({message: message})
-}
+  Errors.insert({message: message});
+};
 ~~~
 <%= caption "client/helpers/errors.js" %>
 
-及时性集合的一大优势在于，就像所有的集合， 它是可回应性的 － 这意味着就像显示任何集合的数据，我们可以及时显示任何错误。
+使用本地集合去存储错误的优势在于，就像所有集合一样，它是响应性的————意味着我们可以以显示其他任何集合数据的同样的方式，去响应性地显示错误。
 
 ### 显示错误
 
-我们将在我们的主显示模块的顶部显示信息：
+我们将在主布局的顶部插入错误信息：
 
 ~~~html
 <template name="layout">
@@ -48,19 +49,19 @@ throwError = function(message) {
     {{> header}}
     {{> errors}}
     <div id="main" class="row-fluid">
-      {{yield}}
+      {{> yield}}
     </div>
   </div>
 </template>
 ~~~
-<%= caption "client/views/application/layout.html" %>
-<%= highlight "7" %>
+<%= caption "client/templates/application/layout.html" %>
+<%= highlight "4" %>
 
-在errors.html里面创建错误和错误模版：
+让我们现在在 `errors.html` 中创建 `errors` 和 `error` 模版：
 
 ~~~html
 <template name="errors">
-  <div class="errors row-fluid">
+  <div class="errors">
     {{#each errors}}
       {{> error}}
     {{/each}}
@@ -68,25 +69,25 @@ throwError = function(message) {
 </template>
 
 <template name="error">
-  <div class="alert alert-error">
+  <div class="alert alert-danger" role="alert">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     {{message}}
   </div>
 </template>
 ~~~
-<%= caption "client/views/includes/errors.html" %>
+<%= caption "client/templates/includes/errors.html" %>
 
 <% note do %>
 
-### 复制性模版
+### Twin 模版
 
-你可能注意到我们在一个文档里面建立了两个模版。直到现在我们一直在遵循“一个文档， 一个模块”的标准。 在Meteor的世界里， 我们所有的模版可以在一个文档里面应用自如（但是这会让main.html的代码变得更加难懂!）。
+你可能注意到我们在一个文件里面建立了两个模板。直到现在我们一直在遵循“一个文件， 一个模板”的标准，但对于 Meteor 而言，我们把所有模板放在同一个文件里也是一样的（但是这会让 `main.html` 的代码变得非常混乱！）。
 
-在当前情况下，因为这两个错误模版都比较小， 我们可以将两个模块放在一个文档里面。
+在当前情况下，因为这两个错误模板都比较小，我们破例将它们放在一个文件里，使我们的 repo 代码库更干净些。
 
 <% end %>
 
-我们需要合成我们的模块助手，大功告成！
+我们只需要加上我们的模板 helper 就可以大功告成了！
 
 ~~~js
 Template.errors.helpers({
@@ -95,15 +96,33 @@ Template.errors.helpers({
   }
 });
 ~~~
-<%= caption "client/views/includes/errors.js" %>
+<%= caption "client/templates/includes/errors.js" %>
 
-<%= commit "9-1", "Basic error reporting." %>
+你可以尝试手动测试我们的新错误消息了。打开浏览器控制台，并输入：
+
+~~~js
+throwError("我就是一个错误!");
+~~~
+
+<%= screenshot "9-1", "测试错误消息。" %>
+
+<%= commit "9-1", "基本的错误报告。" %>
+
+<% note do %>
+
+### 两种类型的错误
+
+在这一点上，重要的是要把“应用级（app-level）”的错误和“代码级（code-level）”的错误区别开来。
+
+**应用级**错误一般是由用户触发，用户从而能够对症采取行动。这些包括像验证错误、权限错误、“未找到”错误，等等。这是是那种你希望展现给用户，以帮助他们解决他们刚刚遇到的任何问题的错误。
+
+**代码级**错误，作为另一种类型，是实际的代码 bug 非期待情况下触发的，你可能*不希望*将错误直接呈现给用户，而是通过比如第三方错误跟踪服务（比如 [Kadira](http://kadira.io)）去跟踪错误。
+
+在本章中，我们将重点放在处理第一种类型的错误，而不是去抓虫子（bug）。
 
 ### 创建错误
 
-我们知道怎样显示错误，但我们还需要学习怎样创建错误。 错误往往来自于用户输入新内容，所以我们要在帖子建立的回调函数里检测错误， 并且显示错误信息。
-
-另外， 如果我们得到一个302错误（意味着一个帖子已存在），我们将用户导入已存在的帖子。我们可以从error.details获取帖子的id。 （见第7章）
+我们知道怎样显示错误，但我们还需要在发现之前去触发错误。实际上我们已经建立了良好的错误情境：重复帖子的警告。我们简单地用新的 `throwError` 函数去替代 `postSubmit` 事件 helper 中的 `alert` 调用：
 
 ~~~js
 Template.postSubmit.events({
@@ -112,78 +131,107 @@ Template.postSubmit.events({
     
     var post = {
       url: $(e.target).find('[name=url]').val(),
-      title: $(e.target).find('[name=title]').val(),
-      message: $(e.target).find('[name=message]').val()
-    }
+      title: $(e.target).find('[name=title]').val()
+    };
     
-    Meteor.call('post', post, function(error, id) {
-      if (error) {
-        // display the error to the user
-        throwError(error.reason);
-        
-        if (error.error === 302)
-          Router.go('postPage', {_id: error.details})
-      } else {
-        Router.go('postPage', {_id: id});
-      }
+    Meteor.call('postInsert', post, function(error, result) {
+      // display the error to the user and abort
+      if (error)
+        return throwError(error.reason);
+      
+      // show this result but route anyway
+      if (result.postExists)
+        throwError('This link has already been posted');
+    
+      Router.go('postPage', {_id: result._id});  
     });
   }
 });
 ~~~
-<%= caption "client/views/posts/post_submit.js" %>
-<%= highlight "12~14, 16~21" %>
+<%= caption "client/templates/posts/post_submit.js" %>
+<%= highlight "13,17" %>
 
-<%= commit "9-2", "Actually use the error reporting." %>
+既然到此，我们也针对 `postEdit` 事件 helper 做同样的事情：
 
-试一试： 尝试建立一个帖子并输入URL http://meteor.com。因为这个URL已经和一个已存在的帖子链接， 你可以看到：
+~~~js
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // display the error to the user
+        throwError(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  //...
+});
+~~~
+<%= caption "client/templates/posts/post_edit.js" %>
+<%= highlight "15" %>
 
-<%= screenshot "9-1", "Triggering an error" %>
+<%= commit "9-2", "实际使用错误报告。" %>
+
+
+亲自试一试：尝试建立一个帖子并输入 URL `http://meteor.com`。因为这个 URL 已经存在了，你可以看到：
+
+<%= screenshot "9-2", "触发一个错误" %>
 
 ### 清理错误
 
-当你点击关闭键的时候，错误会被Twitter Bootstrap的内置JavasScript关闭消失。
+你会注意到错误消息在几秒钟后自动消失。这是因为本书开头我们往样式表中添加的一些 CSS 而产生的魔力：
 
-但当Bootstrap在从DOM里面清除错误<div>， 错误没有被从Meteor的集合里面清除。所以当错误信息已被显示，我们要彻底清除及时集合。
-
-首先，我们要修改throwError函数去包含一个显示特性。该特性能够检测一个错误是否已经显示给用户。
-
-修改函数完成以后，我们可以写一个简单的 clearErrors函数来清除这些已显示的错误：
-~~~js
-// Local (client-only) collection
-Errors = new Meteor.Collection(null);
-
-throwError = function(message) {
-  Errors.insert({message: message, seen: false})
+~~~css
+@keyframes fadeOut {
+  0% {opacity: 0;}
+  10% {opacity: 1;}
+  90% {opacity: 1;}
+  100% {opacity: 0;}
 }
 
-clearErrors = function() {
-  Errors.remove({seen: true});
+//...
+
+.alert {
+  animation: fadeOut 2700ms ease-in 0s 1 forwards;
+  //...
 }
 ~~~
-<%= caption "client/helpers/errors.js" %>
-<%= highlight "5,8~10" %>
+<%= caption "client/stylesheets/style.css" %>
 
-////
+我们定义了一个有四帧透明度属性变化（分别是 0%、10%、90% 和 100% 贯穿整个动画过程）的 `fadeOut` CSS 动画，并附在了 `.alert` class 样式。
 
-~~~js
-// ...
+动画时长为 2700 毫秒，使用 `ease-in` 效果，有 0 秒延迟，运行一次，当动画完成时，最后停留在最后一帧。
 
-Router.before(requireLogin, {only: 'postSubmit'})
-Router.before(function() { clearErrors() });
-~~~
-<%= caption "lib/router.js" %>
-<%= highlight "4" %>
+<% note do %>
 
-当正常运行clearErrors()时，错误需要被标注为已显示。在这里我们需要处理一个特别案例： 当一个错误出现，用户被导入到其他路径， 该导入是当场发生的。这意味着用户没有在错误被清理之前看到错误显示。
+### 动画 vs 动画
 
-This is where our seen property will come in handy. We need to ensure that it's only set to true if the user has actually seen the error.
-这时我们的显示特性就有用武之地了，我们需要确保显示特性只有在用户真正看到错误之后才为真。
+你也许在想为什么我们使用基于 CSS 的动画（预先定义，并且在我们应用控制以外），而不用 Meteor 本身来控制动画。
 
-我们可以用到Meteor.defer().该函数让Meteor刚好在一切错误发生之后执行回调函数。 这就好比defer()告诉浏览器在执行命令之前等待一微秒。
+虽然 Meteor 的确提供插入动画的支持，但是我们想在本章专注于错误。所以我们现在使用“笨”CSS 动画，我们把比较炫丽的东西留在以后的动画章节。
 
-在错误模版显示的一微秒以后Meteor会把显示特性设为真。但因为重导入是瞬间发生的，重导入会在defer的回调函数之前发生。 
+<% end %>
 
-这正是我们想要的： 如果重导入没有被执行，那么错误的显示特性就不会为真。
+这可以工作了，但是如果你要触发多个错误（比如，通过提交三次同一个连接），你会看到错误信息会堆叠在一起：
+
+<%= screenshot "9-3", "堆栈溢出。" %>
+
+这是因为虽然 `.alert` 元素在视觉上消失了，但仍存留在 DOM 中。我们需要修正这个问题。
+
+这正是 Meteor 发光的情形。由于 `Errors` 集合是响应性的，我们要做的就是将旧的错误从集合中删除！
+
+我们用 `Meteor.setTimeout` 指定在一定时间（当前情形，3000毫秒）后执行一个回调函数。
+
 ~~~js
 Template.errors.helpers({
   errors: function() {
@@ -193,17 +241,313 @@ Template.errors.helpers({
 
 Template.error.rendered = function() {
   var error = this.data;
-  Meteor.defer(function() {
-    Errors.update(error._id, {$set: {seen: true}});
-  });
+  Meteor.setTimeout(function () {
+    Errors.remove(error._id);
+  }, 3000);
 };
 ~~~
-<%= caption "client/views/includes/errors.js" %>
+<%= caption "client/templates/includes/errors.js" %>
 <%= highlight "7~12" %>
 
-<%= commit "9-3", "Monitor which errors have been seen, and clear on routing." %>
+<%= commit "9-3", "在3秒后清除错误消息。" %>
 
-导入回调函数会在导入浏览器后执行。在回调函数里，它会链接到当前的模版个体， this.data会载入当前的信息载体。
+一旦模板在浏览器中渲染完毕，[`rendered`](http://docs.meteor.com/#template_rendered) 回调函数被触发。其中，`this` 是指当前模板实例，而 `this.data` 是当前被渲染的对象的数据（这种情况下是，一个错误）。
 
-哇呀！ 好多活啊，用户可能会觉得很苦逼吧!
+### 寻求验证
 
+到现在为止，我们还没有对表单进行任何验证。至少，我们想让用户为新帖子提供 URL 和标题。那么我们确保他们这么做。
+
+我们要做两件事：第一，我们给任何有问题的表单字段的父 `div` 标签一个特别的 `has-error` CSS class。第二，我们在字段下方显示一个有用的错误消息。
+
+首先，我们要准备 `postSubmit` 模板来包含这些新 helper：
+
+~~~html
+<template name="postSubmit">
+  <form class="main form">
+    <div class="form-group {{errorClass 'url'}}">
+      <label class="control-label" for="url">URL</label>
+      <div class="controls">
+          <input name="url" id="url" type="text" value="" placeholder="Your URL" class="form-control"/>
+          <span class="help-block">{{errorMessage 'url'}}</span>
+      </div>
+    </div>
+    <div class="form-group {{errorClass 'title'}}">
+      <label class="control-label" for="title">Title</label>
+      <div class="controls">
+          <input name="title" id="title" type="text" value="" placeholder="Name your post" class="form-control"/>
+          <span class="help-block">{{errorMessage 'title'}}</span>
+      </div>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+  </form>
+</template>
+~~~
+<%= caption "client/templates/posts/post_submit.html" %>
+<%= highlight "3,7,10,14" %>
+
+注意我们传递参数（分别是 `url` 和 `title`）到每个 helper。这让我们两次重复使用同一个 helper，基于参数修改它的行为。
+
+现在到了有趣的部分：使这些 helper 真正做点什么事情。
+
+我们会用会话 **Session** 去存储包含任何潜在错误的 `postSubmitErrors` 对象。当用户使用表单时，这个对象会改变，也就是响应性地更新表单代码和内容。
+
+首先，当 `postSubmit` 模板被创建时，我们初始化对象。这确保用户不会看到上次访问该页面时遗留下的旧的错误消息。
+
+然后定义我们的两个模板 helper，紧盯 `Session.get('postSubmitErrors')` 的 `field` 属性（`field` 指 `url` 或 `title` 取决于我们如何调用 helper）。
+
+`errorMessage` 只是返回消息本身，而 `errorClass` 检查消息是否*存在*，如果为真返回 `has-error`。
+
+~~~js
+Template.postSubmit.created = function() {
+  Session.set('postSubmitErrors', {});
+}
+
+Template.postSubmit.helpers({
+  errorMessage: function(field) {
+    return Session.get('postSubmitErrors')[field];
+  },
+  errorClass: function (field) {
+    return !!Session.get('postSubmitErrors')[field] ? 'has-error' : '';
+  }
+});
+~~~
+<%= caption "client/templates/posts/post_submit.js" %>
+
+你可以测试 helper 是否工作正常，打开浏览器控制台并输入以下代码：
+
+~~~js
+Session.set('postSubmitErrors', {title: 'Warning! Intruder detected. Now releasing robo-dogs.'});
+~~~
+<%= caption "浏览器控制台" %>
+
+<%= screenshot "9-4", "红色警告！Red alert!" %>
+
+下一步将 `postSubmitErrors` Session 会话对象绑在表单上。
+
+开始之前，我们在 `posts.js` 中添加一个新的 `validatePost` 函数来监视 `post` 对象，返回一个包含任何错误相关消息的（即，`title` 或 `url` 字段是否未填写）`errors` 对象：
+
+~~~js
+//...
+
+validatePost = function (post) {
+  var errors = {};
+
+  if (!post.title)
+    errors.title = "请填写标题";
+  
+  if (!post.url)
+    errors.url =  "请填写 URL";
+
+  return errors;
+}
+
+//...
+~~~
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "3~13" %>
+
+我们通过 `postSubmit` 事件 helper 去调用这个函数：
+
+~~~js
+Template.postSubmit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var post = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    };
+    
+    var errors = validatePost(post);
+    if (errors.title || errors.url)
+      return Session.set('postSubmitErrors', errors);
+    
+    Meteor.call('postInsert', post, function(error, result) {
+      // 向用户显示错误信息并终止
+      if (error)
+        return throwError(error.reason);
+      
+      // 显示这个结果且继续跳转
+      if (result.postExists)
+        throwError('This link has already been posted');
+    
+      Router.go('postPage', {_id: result._id});  
+    });
+  }
+});
+~~~
+<%= caption "client/templates/posts/post_submit.js" %>
+<%= highlight "10~12" %>
+
+注意如果出现任何错误，我们用 `return` 终止 helper 执行，而不是我们要实际地返回这个值。
+
+<%= screenshot "9-5", "抓到错误." %>
+
+### 服务器端验证
+
+我们还没有完成。我们在*客户端*验证 URL 和标题是否存在，但是在*服务器端*呢？毕竟，还会有人仍然尝试通过浏览器控制台输入一个空帖子来手动调用 `postInsert` 方法。
+
+即使我们不需要在服务器端显示任何错误消息，但是我们依然要利用好那个 `validatePost` 函数。除了这次我们在 `postInsert` *方法*内调用它，而不只是在事件 helper：
+
+~~~js
+Meteor.methods({
+  postInsert: function(postAttributes) {
+    check(this.userId, String);
+    check(postAttributes, {
+      title: String,
+      url: String
+    });
+    
+    var errors = validatePost(postAttributes);
+    if (errors.title || errors.url)
+      throw new Meteor.Error('invalid-post', "你必须为你的帖子填写标题和 URL");
+    
+    var postWithSameLink = Posts.findOne({url: postAttributes.url});
+    if (postWithSameLink) {
+      return {
+        postExists: true,
+        _id: postWithSameLink._id
+      }
+    }
+    
+    var user = Meteor.user();
+    var post = _.extend(postAttributes, {
+      userId: user._id, 
+      author: user.username, 
+      submitted: new Date()
+    });
+    
+    var postId = Posts.insert(post);
+    
+    return {
+      _id: postId
+    };
+  }
+});
+~~~
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "9~11" %>
+
+再次，用户正常情况下不必看到“你必须 为你的帖子填写标题和 URL”的消息。这仅会在当用户想绕过我们煞费苦心创建的用户界面而直接使用浏览器的情况下，才会显示。
+
+为了测试，打开浏览器控制台，输入一个没有 URL 的帖子：
+
+~~~js
+Meteor.call('postInsert', {url: '', title: 'No URL here!'});
+~~~
+
+如果我们完成得顺利的话，你会得到一堆吓人的代码 和“你必须为你的帖子填写标题和 URL”的消息。
+
+<%= commit "9-4", "验证帖子提交内容。" %>
+
+### 编辑验证
+
+为了更加完善，我们为帖子*编辑*表单添加相同的验证。代码看起来十分相似。首先，是模板：
+
+~~~html
+<template name="postEdit">
+  <form class="main form">
+    <div class="form-group {{errorClass 'url'}}">
+      <label class="control-label" for="url">URL</label>
+      <div class="controls">
+          <input name="url" id="url" type="text" value="{{url}}" placeholder="Your URL" class="form-control"/>
+          <span class="help-block">{{errorMessage 'url'}}</span>
+      </div>
+    </div>
+    <div class="form-group {{errorClass 'title'}}">
+      <label class="control-label" for="title">Title</label>
+      <div class="controls">
+          <input name="title" id="title" type="text" value="{{title}}" placeholder="Name your post" class="form-control"/>
+          <span class="help-block">{{errorMessage 'title'}}</span>
+      </div>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary submit"/>
+    <hr/>
+    <a class="btn btn-danger delete" href="#">Delete post</a>
+  </form>
+</template>
+~~~
+<%= caption "client/templates/posts/post_edit.html" %>
+<%= highlight "3,7,10,14" %>
+
+然后是模板 helper：
+
+~~~js
+Template.postEdit.created = function() {
+  Session.set('postEditErrors', {});
+}
+
+Template.postEdit.helpers({
+  errorMessage: function(field) {
+    return Session.get('postEditErrors')[field];
+  },
+  errorClass: function (field) {
+    return !!Session.get('postEditErrors')[field] ? 'has-error' : '';
+  }
+});
+
+Template.postEdit.events({
+  'submit form': function(e) {
+    e.preventDefault();
+    
+    var currentPostId = this._id;
+    
+    var postProperties = {
+      url: $(e.target).find('[name=url]').val(),
+      title: $(e.target).find('[name=title]').val()
+    }
+    
+    var errors = validatePost(postProperties);
+    if (errors.title || errors.url)
+      return Session.set('postEditErrors', errors);
+    
+    Posts.update(currentPostId, {$set: postProperties}, function(error) {
+      if (error) {
+        // 向用户显示错误消息
+        throwError(error.reason);
+      } else {
+        Router.go('postPage', {_id: currentPostId});
+      }
+    });
+  },
+  
+  'click .delete': function(e) {
+    e.preventDefault();
+    
+    if (confirm("Delete this post?")) {
+      var currentPostId = this._id;
+      Posts.remove(currentPostId);
+      Router.go('postsList');
+    }
+  }
+});
+~~~
+<%= caption "client/templates/posts/post_edit.js" %>
+<%= highlight "1~12,25~27,32" %>
+
+就像我们为帖子提交表单所做的，我们也想在服务器端验证帖子。请记住我们不是在用一个方法去编辑帖子，而是直接从客户端的 `update` 调用。
+
+这意味着我们必须添加一个新的 `deny` 回调函数：
+
+~~~js
+//...
+
+Posts.deny({
+  update: function(userId, post, fieldNames, modifier) {
+    var errors = validatePost(modifier.$set);
+    return errors.title || errors.url;
+  }
+});
+
+//...
+~~~
+<%= caption "lib/collections/posts.js" %>
+<%= highlight "3~8" %>
+
+注意的是参数 `post` 是指*已存在的*帖子。我们想验证*更新*，所以我们在 `modifier` 的 `$set` 属性中调用 `valicatePost`（就像是 `Posts.update({$set: {title: ..., url: ...}})`）。
+
+这会正常运行，因为 `modifier.$set` 像整个 `post` 对象那样包含同样两个 `title` 和 `url` 属性。当然，这也的确意味着只部分更新 `title` 或者 `url` 是不行的，但是实践中不应有问题。
+
+你也许注意到，这是我们第二个 `deny` 回调。当添加多个 `deny` 回调时，如果任何一个回调返回 `true`，运行就会失败。在此例中，这意味着 `update` 只有在面向 `title` 和 `url` 两个字段时才会成功，并且这些字段不能为空。
+
+<%= commit "9-5", "当编辑时，验证帖子内容。" %>
