@@ -88,13 +88,13 @@ Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 
 你甚至可以用*同样的参数*订阅相同的发布两次。这也许没有什么用处，但这种灵活性也许将来某天会有用!
 
-### Multiple Collections in a Single Subscription
+### 单一订阅中的多个集合
 
-Unlike more traditional relational databses like MySQL which make use of *joins*, NoSQL databases like Mongo are all about *denormalizing* and *embedding*. Let's see how that works in the context of Meteor.
+不像如MySQL的传统关系型数据库中使用*joins*，类似Mongo的NoSQL数据库拥有的是*去规范化(denormalizing)*和*嵌入(embedding)*。让我们了解它们是怎样在Meteor的环境下工作的。
 
-Let's look at a concrete example. We've added comments to our posts, and so far, we've been happy to only publish the comments on the single post that the user is looking at.
+让我们看一个具体的例子，我们已经对我们的帖子(posts)增加了回复(comments)，到目前为止，我们想要只发布用户当前查看帖子的回复。
 
-However, suppose we wanted to show comments on *all* the posts on the front page (keeping in mind that these posts will change as we paginate through them). This use case presents a good reason for embedding comments in posts, and in fact is what pushed us to denormalize comment *counts*.
+然而，假设我们希望在前端页面中显示*全部*帖子的回复(记着这些帖子会在分页时被改变)。这个用例也是我们将回复嵌入帖子的好理由，事实上这也促使我们非规范化 (denormalize) 回复数量。
 
 Of course we could always just embed comments in posts, getting rid of the `Comments` collection altogether. But like we previously saw in the *Denormalization* chapter, by doing so we would be losing some of the extra benefits of working with separate collections.
 
