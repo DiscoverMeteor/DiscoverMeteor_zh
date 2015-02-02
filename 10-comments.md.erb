@@ -78,7 +78,7 @@ if (Posts.find().count() === 0) {
 ~~~
 <%= caption "server/fixtures.js" %>
 
-不要忘记来发布和订阅我们这个新的集：
+不要忘记来发布和订阅我们这个新的集合：
 
 ~~~js
 Meteor.publish('posts', function() {
@@ -105,22 +105,21 @@ Router.configure({
 <%= caption "lib/router.js" %>
 <%= highlight "5~7" %>
 
-<%= commit "10-1", "Added comments collection, pub/sub and fixtures." %>
+<%= commit "10-1", "添加评论集合、发布/订阅，和测试数据。" %>
 
-请注意，为了使用新的数据，你需要命令‘Meteor reset’清除数据库。不要忘了创建一个新的用户，并重新登录！
+请注意，为了使用新的数据，你需要命令 `Meteor reset` 清除数据库。不要忘了创建一个新的用户，并重新登录！
 
-首先我们在数据库中创建了几个（假的）用户，并从数据库中用他们的‘id’选择出来。然后给第一篇添加注释，链接注释到帖子（‘postId’）和用户（‘userId’）。同时我们还添加了提交日期，评论内容和一个非规范化的'作者'项。
+首先，我们在数据库中创建了几个（假的）用户，并从数据库中用他们的 `id` 选择出来。然后给第一篇添加注释，链接注释到帖子（`postId`）和用户（`userId`）。同时我们还添加了提交日期，评论内容和一个非规范化的作者 `author` 项。
 
 此外我们在路由器中增加等待一个含有评论和帖子订阅的*数组*。
 
 ### 显示评论
 
-把评论存到数据库，同时还需要在讨论页上显示。
+把评论存到数据库，同时还需要在评论页上显示。
 
 ~~~html
 <template name="postPage">
   {{> postItem}}
-
   <ul class="comments">
     {{#each comments}}
       {{> commentItem}}
@@ -141,9 +140,9 @@ Template.postPage.helpers({
 <%= caption "client/templates/posts/post_page.js" %>
 <%= highlight "2~4" %>
 
-我们把‘{{#each comments}}’块放在帖子模板里面，所以在‘comments’助手里，‘this’指向的是当前帖子。要找到相关的评论，我们可通过‘postId’属性链接到该帖子。
+我们把 `{{#each comments}}` 块放在帖子模板里面，所以在 `comments` helper 里，`this` 指向的是当前帖子。要找到相关的评论，我们可通过 `postId` 属性找到链接到该帖子的评论。
 
-我们已经了解助手和Spacebars后，显示一个评论是相当简单的。我们将在’templates‘下，创建一个新的‘comments’目录和一个新的‘commentItem’模板，来存储所有的评论相关的信息：
+我们已经了解 helper 和 Spacebars 后，显示一个评论是相当简单的。我们将在 `templates` 下，创建一个新的 `comments` 目录和一个新的 `commentItem` 模板，来存储所有的评论相关的信息：
 
 ~~~html
 <template name="commentItem">
@@ -158,7 +157,7 @@ Template.postPage.helpers({
 ~~~
 <%= caption "client/templates/comments/comment_item.html" %>
 
-生成一个模板助手来帮助我们产生人性化的’提交‘日期格式：
+让我们编写一个模板 helper 来帮助我们把 `submitted` 提交日期格式人性化的日期格式：
 
 ~~~js
 Template.commentItem.helpers({
@@ -189,7 +188,7 @@ Template.commentItem.helpers({
 <%= caption "client/templates/posts/post_item.html" %>
 <%= highlight "6,7" %>
 
-添加‘commentsCount’助手到`post_item.js`中：
+添加 `commentsCount` helper 到 `post_item.js` 中：
 
 ~~~js
 Template.postItem.helpers({
@@ -213,7 +212,7 @@ Template.postItem.helpers({
 
 现在您应该能够显示初始的评论并看到如下的内容：
 
-<%= screenshot "10-1", "Displaying comments" %>
+<%= screenshot "10-1", "显示评论" %>
 
 ### 提交新评论
 
@@ -259,9 +258,7 @@ Template.postItem.helpers({
 ~~~
 <%= caption "client/templates/comments/comment_submit.html" %>
 
-<%= screenshot "10-2", "The comment submit form" %>
-
-在‘comment_submit.js’中调用‘comment'方法，提交新的评论，这是类似于过去提交帖子的方法：
+在 `comment_submit.js` 中调用 `comment` 方法，提交新的评论，这是类似于过去提交帖子的方法：
 
 ~~~js
 Template.commentSubmit.created = function() {
@@ -305,7 +302,7 @@ Template.commentSubmit.events({
 ~~~
 <%= caption "client/templates/comments/comment_submit.js" %>
 
-类似以前’帖子‘服务器端的Meteor方法，我们将建立一个’评论‘的Meteor方法来创建评论，检查正确性后，插入到评论集。
+类似以前 `post` 服务器端的 Meteor 方法，我们将建立一个 `comment` 的 Meteor 方法来创建评论，检查正确性后，插入到评论集合。
 
 ~~~js
 Comments = new Mongo.Collection('comments');
@@ -337,23 +334,25 @@ Meteor.methods({
 <%= caption "lib/collections/comments.js" %>
 <%= highlight "3~25" %>
 
-<%= commit "10-3", "Created a form to submit comments." %>
+<%= commit "10-3", "创建提交评论表单" %>
 
 这里没做什么太花哨的，只是检查该用户是否已经登录，该评论有一个内容，并且链接到一个帖子。
+
+<%= screenshot "10-2", "评论提交表单" %>
 
 ### 控制订阅评论
 
 如同以往一样，我们将发布属于所有帖子的全部评论到每个连接的客户端。这似乎有点浪费。毕竟在任何给定的时间段，实际上只使用该数据的一小部分。因此让我们提高发布和订阅评论的精度。
 
-如果仔细想想，我们需要订阅'评论'的时间，是当用户访问一个帖子的页面，而此刻只需要加载这个帖子的评论子集。
+如果仔细想想，我们需要订阅 `comments` 评论发布的时间，是当用户访问一个帖子的页面，而此刻只需要加载这个帖子的评论子集。
 
 第一步将改变我们订阅评论的方式。目前是*路由器*级订阅，这意味着当路由器初始化时，加载所有数据。
 
-但是现在希望我们的订阅依赖于路径参数，并且参数可以在任何时候改变。因此需要将我们的订阅代码从*路由器*级改到*路由*级。
+但是现在希望我们的订阅依赖于路径参数，并且参数可以在任何时候改变。因此需要将我们的订阅代码从*路由器*级改到*路径*级。
 
-这样做的另一个后果：每当打开*路经*时加载数据，而不是初始化应用时加载它。这意味着你在程序内浏览时，会等待加载时间。除非你打算加载全部内容到客户端数，这是一个不可避免的缺点。
+这样做的另一个后果：每当打开*路径*时加载数据，而不是初始化应用时加载它。这意味着你在程序内浏览时，会等待加载时间。除非你打算加载全部内容到客户端，这是一个不可避免的缺点。
 
-首先在‘configure’块中通过删除’Meteor.subscribe('comments')‘，停止预装全部评论（换句话说要回以前的方法）：
+首先，在 `configure` 块中通过删除 `Meteor.subscribe('comments')`，停止预装全部评论（换句话说，要回以前的方法）：
 
 ~~~js
 Router.configure({
@@ -368,29 +367,25 @@ Router.configure({
 <%= caption "lib/router.js" %>
 <%= highlight "5" %>
 
-我们将为`postPage`添加一个新的*路径*级的’waitOn‘函数：
+我们将为 `postPage` 添加一个新的*路径*级的 `waitOn` 函数：
 
 ~~~js
-Router.map(function() {
+//...
 
-  //...
-
-  this.route('postPage', {
-    path: '/posts/:_id',
-    waitOn: function() {
-      return Meteor.subscribe('comments', this.params._id);
-    },
-    data: function() { return Posts.findOne(this.params._id); }
-  });
-
-  //...
-
+Router.route('/posts/:_id', {
+  name: 'postPage',
+  waitOn: function() {
+    return Meteor.subscribe('comments', this.params._id);
+  },
+  data: function() { return Posts.findOne(this.params._id); }
 });
+
+//...
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "7~9" %>
+<%= highlight "5~7" %>
 
-我们将’this.params._id‘作为参数传递给订阅。用新的信息确保限制评论属于当前帖子：
+我们将 `this.params._id` 作为参数传递给订阅。所以让我们用这个新信息来确保限制评论属于当前帖子：
 
 ~~~js
 Meteor.publish('posts', function() {
@@ -405,22 +400,22 @@ Meteor.publish('comments', function(postId) {
 <%= caption "server/publications.js" %>
 <%= highlight "5~7" %>
 
-<%= commit "10-4", "Made a simple publication/subscription for comments." %>
+<%= commit "10-4", "设置简单的评论发布/订阅。" %>
 
 这里有一个问题：当我们返回主页，显示所有的帖子有0条评论：
 
-<%= screenshot "10-3", "Our comments are gone!" %>
+<%= screenshot "10-3", "我们的评论消失了！" %>
 
 ### 评论计数
 
-这个问题的原因是：我们只装载`postPage`路经上的评论，所以当我们调用’Comments.find（{postId：this._id}）‘中’commentsCount‘助手，meteor找不到客户端数据为我们提供计数值。
+这个问题的原因是：我们只装载 `postPage` 路径上的评论，所以当我们调用 `Comments.find({postId: this._id})` 中 `commentsCount` helper，Meteor 找不到必要的客户端数据为我们提供计数值。
 
-处理这一问题的最佳办法是*非规范化*的评论计数加到帖子中（如果你明白这意味着什么，不用担心接下来的侧边栏会详解！）。正如我们将看到的，代码中复杂性稍微增加，但从不发布帖子列表的全部评论中，得到的执行性能改善是值得的。
+处理这一问题的最佳办法是*非规范化*的评论计数加到帖子中（如果你不明白这意味着什么，不用担心，接下来的附录会详解！）。正如我们将看到的，代码中复杂性稍微增加，但从不发布帖子列表的_全部_评论中，得到的执行性能改善是值得的。
 
-我们将通过在’POST‘数据结构中增加一个’commentsCount‘属性来实现这一目标。首先更新帖子的初装值（用’meteor reset‘重载他们 - 不要忘了之后重新创建新帐户）：
+我们将通过在 `post` 数据结构中增加一个 `commentsCount` 属性来实现这一目标。首先，更新帖子的测试数据（用 `meteor reset` 去重载它们 —— 不要忘了之后重新创建你的帐户）：
 
 ~~~js
-// Fixture data 
+// 测试数据 
 if (Posts.find().count() === 0) {
   var now = new Date().getTime();
   
@@ -481,9 +476,9 @@ if (Posts.find().count() === 0) {
 <%= caption "server/fixtures.js" %>
 <%= highlight "20,21,45,46,54,55" %>
 
-像往常一样更新初装值文件时，你必须用'meteor reset'重载数据库，以确保它再次运行。
+像往常一样，更新测试数据文件时，你必须用 `meteor reset` 重置数据库，以确保它再次运行。
 
-然后我们要确保所有新帖子的评论计数从0开始：
+然后，我们要确保所有新帖子的评论计数从0开始：
 
 ~~~js
 //...
@@ -502,7 +497,7 @@ var postId = Posts.insert(post);
 <%= caption "collections/posts.js" %>
 <%= highlight "6,7" %>
 
-当我们创建一个新的评论时，使用Mongo的‘$inc’操作（给一个数字值加一），更新有关的’commentsCount‘：
+当我们创建一个新的评论时，使用 Mongo 的 `$inc` 操作（给一个数字字段值加一）更新相关的 `commentsCount`：
 
 ~~~js
 //...
@@ -513,7 +508,7 @@ comment = _.extend(commentAttributes, {
   submitted: new Date()
 });
 
-// update the post with the number of comments
+// 更新帖子的评论数
 Posts.update(comment.postId, {$inc: {commentsCount: 1}});
 
 return Comments.insert(comment);
@@ -523,8 +518,8 @@ return Comments.insert(comment);
 <%= caption "collections/comments.js "%>
 <%= highlight "9,10" %>
 
-最后只需简单地删除’client/templates/posts/post_item.js‘的`commentsCount`助手，因为该值可以从帖子中得到。
+最后只需简单地删除 `client/templates/posts/post_item.js` 的 `commentsCount` helper，因为该值可以从帖子中得到。
 
-<%= commit "10-5", "Denormalized the number of comments into the post." %>
+<%= commit "10-5", "非规范化评论数量到帖子中。" %>
 
 现在用户可以互相对话，如果他们错过了新的评论，这将是不可原谅的。接下来的章节将告诉你如何实现通知，以防止这个情况发生！
