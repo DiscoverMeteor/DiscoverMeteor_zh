@@ -54,9 +54,9 @@ if (Posts.find().count() === 0) {
 
 运行完 `meteor reset` 重启你的 app, 你会看到如下：
 
-<%= screenshot "12-1", "Displaying dummy data. " %>
+<%= screenshot "12-1", "显示初始化数据。" %>
 
-<%= commit "12-1", "Added enough posts that pagination is necessary." %>
+<%= commit "12-1", "添加足够的帖子使分页有必要。" %>
 
 ### 无限分页
 
@@ -64,7 +64,7 @@ if (Posts.find().count() === 0) {
 
 现在需要一个方法告诉服务器端返回给客户端帖子的数量。这些发生在路由订阅`帖子`的过程，我们会利用路由来实现分页。
 
-最简单的限制返回帖子数量的方式是将返回数量加到 URL 中，如 `http://localhost:3000/25`。使用 URL 记录数量的另一个好处是，如果不小心 reload 的了页面，还会返回 25 条帖子。
+最简单的限制返回帖子数量的方式是将返回数量加到 URL 中，如 `http://localhost:3000/25`。使用 URL 记录数量的另一个好处是，如果不小心刷新了页面，还会返回 25 条帖子。
 
 为了恰当的实现分页，我们需要修改帖子的订阅方法。就像我们之前在*评论*那章做的，我们需要将订阅部分的代码从 *router* 级变为 *route* 级。
 
@@ -146,9 +146,9 @@ Meteor.publish('notifications', function() {
 
 <% note do %>
 
-### Passing Parameters
+### 传递参数
 
-我们的订阅代码告诉服务器端，我们信任客户端传来的 js 对象 (在我们的例子中是 `{limit: postsLimit}`) 作为 `find()` 方法的 `options` 参数。这样我们能通过 browser consle 来传 option 对象。
+我们的订阅代码告诉服务器端，我们信任客户端传来的 JavaScript 对象 (在我们的例子中是 `{limit: postsLimit}`) 作为 `find()` 方法的 `options` 参数。这样我们能通过 browser consle 来传任何 option 对象。
 
 在我们的例子中,这样没什么害处，因为用户可以做的无非是改变帖子顺序，或者修改 limit 值（这是我们想让用户做的）。但是对于一个 real-world app 我们必须做必要的限制！
 
@@ -253,17 +253,17 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 <%= caption "lib/router.js" %>
 <%= highlight "6,25~37" %>
 
-<%= commit "12-2", "Augmented the postsList route to take a limit." %>
+<%= commit "12-2", "为 postsList 路径添加限制。" %>
 
 试一下我们的分页。现在我们可以通过 URL 参数来控制页面显示帖子的数量，试一下 `http://localhost:3000/3`。你可以看到如下:
 
-<%= screenshot "12-2", "Controlling the number of posts on the homepage. " %>
+<%= screenshot "12-2", "控制首页显示帖子的数量。" %>
 
 <% note do %>
 
-### Why Not Pages?
+### 为什么不用传统的分页？
 
-为什么我们使用“无限分页”而不用每页显示 10 条帖子的连续分页,就像 Google 的搜索结果分页一样？这是由于 Meteor 的 real-time 性决定的。
+为什么我们使用“无限分页”而不用每页显示 10 条帖子的连续分页,就像 Google 的搜索结果分页一样？这是由于 Meteor 的实时性决定的。
 
 让我们想象一下使用类似 Google 搜索结果的连续分页模式，我们在第2页，显示的是 10 到 20 条帖子。这是碰巧有另外一个用户删除了前面 10 条帖子中的帖子。
 
@@ -271,7 +271,7 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 即使我们可以容忍这种怪异的 UX, 由于技术的原因传统的分页还是很难实现。
 
-让我们回到前一个例子。我们从 `Posts` 集合中发布第 10 到 20 条帖子，但是在客户端我们如何找到这些帖子?我们不能在客户端选择第 10 到 20 条帖子，因为客户端集合只有 10 个帖子。
+让我们回到前一个例子。我们从 `Posts` 集合中发布第 10 到 20 条帖子，但是在客户端我们如何找到这些帖子？我们不能在客户端选择第 10 到 20 条帖子，因为客户端集合只有 10 个帖子。
 
 一个简单的方案是服务器端发布 10 条帖子，在客户端执行一下 `Posts.find()` 找到这 10 条发布的帖子。
 
@@ -283,7 +283,7 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 <% end %>
 
-### Creating a Route Controller
+### 创建路由控制器（Route controller）
 
 你可能已经注意到了我们代码中重复了 `var limit = parseInt(this.params.postsLimit) || 5;` 两次。而且硬编码数字 5，这不是个理想的做法。虽然这不会导致世界末日，但是我们最好还是遵循 DRY 原则 (Don't Repeat Yourself), 让我们看看如何能把代码重构的更好些。
 
@@ -328,9 +328,9 @@ Router.route('/:postsLimit?', {
 
 因为我们的控制器叫做 `PostsListController` 路由叫做 `postsList`, Iron Router 会自动使用他们。因此我们只需要从路由定义中移除 `waitOn` 和 `data` (因为路由已经会处理他们了)。如果我们需要给路由起别的名字,我们可以使用 `controller` 选项(我们将在下一章看到一个例子)。
 
-<%= commit "12-3", "Refactored postsLists route into a RouteController." %>
+<%= commit "12-3", "重构 postsLists 路由为 RouteController." %>
 
-### Adding A Load More Link
+### 添加加载更多链接
 
 我们现在实现了分页，代码看起来还不错。只有一个问题：我们的分页需要手工修改 URL。这显然不是一个好的用户体验，现在让我们来修改它。
 
@@ -409,11 +409,11 @@ PostsListController = RouteController.extend({
 
 下面是你帖子列表现在看上去的样子:
 
-<%= screenshot "12-3", "The “load more” button. " %>
+<%= screenshot "12-3", "“load more” 按钮。 " %>
 
-<%= commit "12-4", "Added nextPath() to the controller and use it to step through posts." %>
+<%= commit "12-4", "添加 nextPath() 到控制器中并使用它来取得更多帖子。" %>
 
-### A Better User Experience
+### 更好的用户体验
 
 现在我们的分页可以工作了，但是有个烦人小问题: 每次我们点击 "load more" 按钮向 router 加载更多的帖子时，Iron Router 的 `waitOn` 特性会在我们等待时显示 `loading` 模板。当结果到来时我们又会回到页面的顶端，我们每次都要滚动页面回到之前看的位置。
 
@@ -479,13 +479,13 @@ PostsListController = RouteController.extend({
 <%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "10~12" %>
 
-<%= commit "12-5", "Add a spinner to make pagination nicer." %>
+<%= commit "12-5", "添加加载图标使分页更好。" %>
 
-### Accessing Any Post
+### 访问任何帖子
 
 现在我们默认每次加载 5 条新帖子，但是当用户访问某个帖子的单独页面时会发生什么?
 
-<%= screenshot "12-4", "An empty template." %>
+<%= screenshot "12-4", "一个空模板。" %>
 
 试一下，我们会得到一个 "not found" 错误。这是有原因的: 我们告诉 router 当我们加载 `postList` route 时订阅 `帖子` 发布。但是我们没有说访问 `postPage` route 时该做什么。
 
@@ -537,6 +537,6 @@ Router.route('/posts/:_id/edit', {
 <%= caption "lib/router.js" %>
 <%= highlight "6~9,16~18" %>
 
-<%= commit "12-6","Use a single post subscription to ensure that we can always see the right post." %>
+<%= commit "12-6","使用单一帖子订阅来确保我们总会看到正确的帖子。" %>
 
 有了分页，我们的程序将不再受规模问题的困扰了，用户可以加入更多的帖子。如果有某种方法可以给帖子链接加上等级 (rank) 不是更好么?我们将在下一章去实现它！
