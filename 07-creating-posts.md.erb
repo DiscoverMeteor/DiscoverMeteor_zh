@@ -95,7 +95,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 ~~~
 <%= caption "client/templates/posts/post_submit.html" %>
 
-注意：这里大量的 class 名称是用来调用 Twitter Bootstrap 的样式。只有表单元素是必不可少的，类的设置只是让我们的 App 更好看一点。在浏览器中显示：
+注意：这里有大量的标签样式，只不过都来自于 Twitter Bootstrap。只有表单元素是必不可少的，样式的设置只是让我们的 App 更好看一点。在浏览器中显示：
 
 <%= screenshot "7-1", "帖子提交页面" %>
 
@@ -141,7 +141,7 @@ Template.postSubmit.events({
 ~~~bash
 meteor remove insecure
 ~~~
-<%= caption "Terminal" %>
+<%= caption "Terminal 终端" %>
 
 执行以后你会注意到，帖子的提交页面不可用了。这是因为没有了 `insecure` 包，从客户端插入帖子集合已经*不再被允许了*。
 
@@ -156,7 +156,7 @@ Posts = new Mongo.Collection('posts');
 
 Posts.allow({
   insert: function(userId, doc) {
-    // only allow posting if you are logged in
+    // 只允许登录用户添加帖子
     return !! userId;
   }
 });
@@ -166,13 +166,13 @@ Posts.allow({
 
 <%= commit "7-2", "移除 insecure 包并允许插入帖子" %>
 
-`Posts.allow` 是告诉 Meteor ：这是一些允许客户端去修改帖子集合的条件。上面的代码，等于说“只要客户拥有 `userId` 就允许去插入帖子”。
+`Posts.allow` 是告诉 Meteor：这是一些允许客户端去修改帖子集合的条件。上面的代码，等于说“只要客户拥有 `userId` 就允许去插入帖子”。
 
-这个拥有 `userId` 用户的修改会传递到 `allow` 和 `deny` 的方法（如果没有用户登录就返回 `null`），这个判断通常都是准确。因为用户帐户是绑定到 Meteor 里面的，我们可以依靠 `userId` 去判断。
+这个拥有 `userId` 用户的修改会传递到 `allow` 和 `deny` 的方法（如果没有用户登录就返回 `null`），这个判断通常都是准确的。因为用户帐户是绑定到 Meteor 核心里面的，我们可以依靠 `userId` 去判断。
 
 我们可以去验证一下，注销登录并创建一个帖子，你在控制台看到的应该是这样：
 
-<%= screenshot "7-2", "（ Insert failed: Access denied ）插入失败：拒绝访问" %>
+<%= screenshot "7-2", "Insert failed: Access denied（插入失败：拒绝访问）" %>
 
 然而，我们仍然需要处理一些问题：
 
@@ -239,9 +239,9 @@ Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 
 <%= screenshot "7-3", "拒绝访问模板" %>
 
-路由器 Hooks 的好处是**响应式**。这意味着当用户登录的时候，我们不需要考虑回调或者其他类似的方法，它就可以马上知道。当用户状态变为已登录的时候，路由器的页面模板立即从 `accessDenied` 变为 `postSubmit` ，而我们无需编写任何代码来去控制它。
+路由器 Hooks 的好处是**响应式**。这意味着当用户登录的时候，我们不需要考虑回调或者其他类似的方法，它就可以马上知道。当用户状态变为已登录的时候，路由器的页面模板立即从 `accessDenied` 变为 `postSubmit`，而我们无需编写任何代码来去控制它。
 
-登录，然后尝试刷新页面。你可能注意到，拒绝访问的页面会短暂地出现在帖子创建页面。这是因为在服务器去检测当前用户之前， Meteor 会尽可能快的去渲染模板。
+登录，然后尝试刷新页面。你可能注意到，拒绝访问的页面会短暂地出现在帖子创建页面。这是因为在服务器去检测当前用户之前，Meteor 会尽可能快的去渲染模板。
 
 为了避免这个问题（这是一种常见的问题，你将会看到更多去处理客户端和服务器之间错综复杂的延迟），我们将短暂显示一个加载的画面，腾出足够时间让我们去判断用户是否有权访问。
 
@@ -428,7 +428,7 @@ Meteor.methods({
   }
 });
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "9~15" %>
 
 我们在数据库中搜寻是否存在相同的 URL。如果找到，我们 `return` 返回那帖子的 `_id` 和 `postExists: true` 来让用户知道这个特别的情况。
@@ -448,13 +448,13 @@ Template.postSubmit.events({
     };
     
     Meteor.call('postInsert', post, function(error, result) {
-      // display the error to the user and abort
+      // 向用户显示错误信息并终止
       if (error)
         return alert(error.reason);
       
-      // show this result but route anyway
+      // 显示结果，跳转页面
       if (result.postExists)
-        alert('This link has already been posted');
+        alert('This link has already been posted（该链接已经存在）');
     
       Router.go('postPage', {_id: result._id});  
     });
@@ -480,8 +480,8 @@ Template.postsList.helpers({
 <%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "3" %>
 
-<%= commit "7-7", "帖子通过时间戳进行排序。" %>
+<%= commit "7-8", "帖子通过时间戳进行排序。" %>
 
 花了一点功夫，我们终于有了一个用户界面，让用户安全地在我们的 App 中输入内容！
 
-但每个 App ，如果允许用户去创建内容，同时也需要给他们一个方式来编辑或删除它。这就是下一章将会说到的。
+但任何一个 App 如果允许用户去创建内容，同时也需要给他们一个方式来编辑或删除它。这就是下一章将会说到的。
