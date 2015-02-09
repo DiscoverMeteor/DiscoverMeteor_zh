@@ -120,6 +120,8 @@ throwError("我就是一个错误!");
 
 在本章中，我们将重点放在处理第一种类型的错误，而不是去抓虫子（bug）。
 
+<% end %>
+
 ### 创建错误
 
 我们知道怎样显示错误，但我们还需要在发现之前去触发错误。实际上我们已经建立了良好的错误情境：重复帖子的警告。我们简单地用新的 `throwError` 函数去替代 `postSubmit` 事件 helper 中的 `alert` 调用：
@@ -544,7 +546,7 @@ Posts.deny({
 <%= caption "lib/collections/posts.js" %>
 <%= highlight "3~8" %>
 
-注意的是参数 `post` 是指*已存在的*帖子。我们想验证*更新*，所以我们在 `modifier` 的 `$set` 属性中调用 `valicatePost`（就像是 `Posts.update({$set: {title: ..., url: ...}})`）。
+注意的是参数 `post` 是指*已存在的*帖子。我们想验证*更新*，所以我们在 `modifier` 的 `$set` 属性中调用 `validatePost`（就像是 `Posts.update({$set: {title: ..., url: ...}})`）。
 
 这会正常运行，因为 `modifier.$set` 像整个 `post` 对象那样包含同样两个 `title` 和 `url` 属性。当然，这也的确意味着只部分更新 `title` 或者 `url` 是不行的，但是实践中不应有问题。
 
