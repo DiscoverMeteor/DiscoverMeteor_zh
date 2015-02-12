@@ -13,6 +13,8 @@ paragraphs: 36
 
 目前你应该对发布和订阅交互模式有一个不错的掌握了。因此，我们废话少说，来看几个更高级的情景。
 
+目前你应该对发布/订阅交互模式有一个不错的掌握了。接下来让我们学习一些高级的方法。
+
 ### 多次发布一个集合
 
 在[我们第一个关于发布的附录中](/chapter/publications-and-subscriptions/)，我们看到了一些更普遍的发布和订阅模式，同时我们学习了 `_publishCursor` 函数，如何让它们非常容易地实现在我们的站点上。
@@ -74,7 +76,7 @@ Meteor.publish('posts', function(options) {
 });
 ~~~
 
-并且我们多次订阅这个发布。事实上或多或少这正是我们在 Microscope 里这样做了：
+并且我们多次订阅这个发布。事实上或多或少我们在 Microscope 里这样做了：
 
 ~~~js
 Meteor.subscribe('posts', {submitted: -1, limit: 10});
@@ -118,14 +120,14 @@ Meteor.publish('topComments', function(topPostIds) {
 ~~~js
 Meteor.publish('topPosts', function(limit) {
   var sub = this, commentHandles = [], postHandle = null;
-  
+
   // send over the top two comments attached to a single post
   function publishPostComments(postId) {
     var commentsCursor = Comments.find({postId: postId}, {limit: 2});
-    commentHandles[postId] = 
+    commentHandles[postId] =
       Mongo.Collection._publishCursor(commentsCursor, sub, 'comments');
   }
-    
+
   postHandle = Posts.find({}, {limit: limit}).observeChanges({
     added: function(id, post) {
       publishPostComments(id);
@@ -141,9 +143,9 @@ Meteor.publish('topPosts', function(limit) {
       sub.removed('posts', id);
     }
   });
-  
+
   sub.ready();
-  
+
   // make sure we clean everything up (note `_publishCursor`
   //   does this for us with the comment observers)
   sub.onStop(function() { postHandle.stop(); });
@@ -174,10 +176,10 @@ Meteor.publish('topPosts', function(limit) {
 ~~~js
   Meteor.publish('videos', function() {
     var sub = this;
-    
+
     var videosCursor = Resources.find({type: 'video'});
     Mongo.Collection._publishCursor(videosCursor, sub, 'videos');
-    
+
     // _publishCursor doesn't call this for us in case we do this more than once.
     sub.ready();
   });
@@ -188,5 +190,3 @@ Meteor.publish('topPosts', function(limit) {
 另一个类似的主意是：发布到客户端的集合，却根本*没有服务端集合*！举例，你也许从一个第三方服务中抓取数据，并发布它们到一个客户端集合。
 
 由于发布 API 的灵活性，可能性是无限的。
-
-
