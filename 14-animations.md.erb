@@ -206,40 +206,40 @@ Template.postsList.rendered = function () {
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 
-一些注释：
+注解：
 
--  
--
--
--
+- 我们计算 `$node` 的高度，便于知道要偏移 `$inBetween` 的元素多少距离。我们使用 `outerHeight(true)` 使 margin 和 padding 加入计算中。
+- 在 DOM 中，我们不知道 `next` 是在 `node` 之前还是之后，所以我们在定义 `$inBetween` 时同时考虑这两种情况。
+- 为了在“传送 teleporting”和“动画 animating”元素之间转换，我们简单地 toggle `animate` CSS 类（在 CSS 样式表中定义了实际动画）。
+- 由于我们用相对定位，所以我们总可以通过重置任何元素的 `top` 属性值为 0 来把元素归位到应在位置。
 
 <% note do %>
 
 ### 强制 Redraw
 
-//// 
+你也许在想 `$node.offset()` 这行代码。为什么我们不打算移动 `$node`，而去关心它的位置呢？
 
-//// 
+要这么想：如果你告诉一台有完美逻辑的机器人向北奔跑 5 千米，跑完后再跑回起点，它也许认为既然又回到起点，那么何不节省能量而待在原地。
 
-//// 
+所以为了确保机器人能跑完 10 千米，我们会告诉它在跑到 5 千米时记录它的坐标才能转向。
 
-//// 
+浏览器以相似的方式工作：如果我们在同一时间只给出 `css('top', oldTop - newTop)` 和 `css('top', 0)` 的话，新坐标就会简单地替换旧坐标，什么也不会发生。如果我们想真正地看到动画，就需要强制浏览器去在元素改变位置后重新绘制它。
 
-//// 
+一个简单的强制重绘的方法是让浏览器检查元素的 `offset` 属性————再次重绘元素才能让浏览器识别它。
 
 <% end %>
 
-//// 
+让我们再试一次。回到“Best”最佳帖子页面，给帖子投票：现在应该可以看到帖子如芭蕾舞般优雅地上下滑动。
 
-<%= gifscreenshot "14-3", "Animated reordering" %>
+<%= gifscreenshot "14-3", "带动画的排序" %>
 
-<%= commit "14-1", "Added post reordering animation." %>
+<%= commit "14-1", "添加了帖子排序动画。" %>
 
 ### Can't Fade Me
 
-////
+既然我们已经搞定比较难的重新排序，那么插入和删除帖子的动画就是小菜一碟了！
 
-////
+首先，我们渐入新帖子（注意为了简单，我们在此用 JavaScript 动画）：
 
 ```js
 Template.postsList.rendered = function () {
@@ -259,15 +259,15 @@ Template.postsList.rendered = function () {
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "3~7" %>
 
-////
+为了更好看到效果，我们通过控制台插入新帖子，来测试动画：
 
 ```js
 Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'})
 ```
 
-<%= gifscreenshot "14-4", "Fading in new posts" %>
+<%= gifscreenshot "14-4", "渐入新帖子" %>
 
-////
+其次，我们动画淡出删除的帖子：
 
 ```js
 Template.postsList.rendered = function () {
@@ -292,26 +292,26 @@ Template.postsList.rendered = function () {
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "12~16" %>
 
-////
+再次，在控制台（用 `Posts.remove('somePostId')`）删除一个帖子来测试动画效果。
 
-<%= gifscreenshot "14-5", "Fading out deleted posts" %>
+<%= gifscreenshot "14-5", "动画淡出删除的帖子" %>
 
 <%= commit "14-2", "Fade items in when they are drawn." %>
 
 
-### Page Transitions
+### 页面过渡
 
-////
+到目前为止，我们已经在页面内动画了元素。但是如果我们想添加页面之间的过渡动画呢？
 
-////
+页面过渡是 Iron Router 的任务。点击一个链接，`{{> yield}}` helper 的内容自动地更换。
 
-////
+就像我们为帖子列表改变 Blaze 默认行为一样，我们也可以为 `{{> yield}}` 做同样的事情，在不同路由之间添加渐隐过渡动画效果！
 
-////
+如果我们想渐入渐隐页面，我们必须要确保它们在各自上方显示。我们用添加了 `position:absolute` 属性的 `.page` container div 来包裹每个页面模板。
 
-////
+但不能相对于窗口来绝对定位我们的页面，因为这样页面会覆盖应用的 header。所以我们给 `#main` div 添加 `position:relative` 以便 `.page` div 的 `position:absolute` 会得到其正确位置。
 
-////
+为了节省时间，我们已经在 `sytle.css` 中添加了必要的 CSS 代码：
 
 ```css
 //...
@@ -329,7 +329,7 @@ Template.postsList.rendered = function () {
 ```
 <%= caption "/client/stylesheets/style.css" %>
 
-////
+是时候添加页面过渡代码了。代码看起来很熟悉，因为这和我们添加和删除帖子时的代码完全一致：
 
 ```js
 Template.layout.rendered = function() {
@@ -350,8 +350,8 @@ Template.layout.rendered = function() {
 ```
 <%= caption "/client/templates/application/layout.js" %>
 
-<%= gifscreenshot "14-6", "Transitioning in-between pages with a fade" %>
+<%= gifscreenshot "14-6", "页面之间的过渡动画" %>
 
-<%= commit "14-3", "Transition between pages by fading." %>
+<%= commit "14-3", "页面间的渐隐过渡。" %>
 
-////
+我们刚刚看了一些为 Meteor 应用添加动画元素的模式。虽然这不是一个详尽的清单，但是希望这会提供一个基础，在其上去构建更复杂的过渡动画。
