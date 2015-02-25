@@ -78,16 +78,16 @@ $ meteor
 
 ### 添加代码包
 
-下面我们使用 Meteor 在项目中引入 [Bootstrap](http://getbootstrap.com/) 框架。
+下面我们使用 Meteor 的 package 系统在项目中引入 [Bootstrap](http://getbootstrap.com/) 框架。
 
-这与通常手动添加 Bootstrap 的 CSS 和 Javascript 文件的方法是没有区别的，只不过我们依赖 Meteor 社区成员 [Andrew Mao](https://github.com/mizzao) ( `mizzao:bootstrap-3` 的 “mizzao” 是 package 作者的用户名) 为我们更新这些文件.
+这与通常手动添加 Bootstrap 的 CSS 和 Javascript 文件的方法是没有区别的，只不过我们依赖代码包维护者来为我们更新这些文件。
 
 既然我们说到此，我们也来添加 [Underscore](http://underscorejs.org/) 代码包。 Underscore 是一个 JavaScript 工具库，对于操纵 JavaScript 数据结构非常有用。
 
 截至写这本书时，`underscore` 代码包依然算作 Meteor “官方”的代码包，所以这个包没有作者：
 
 ~~~bash
-meteor add mizzao:bootstrap-3
+meteor add twbs:bootstrap
 meteor add underscore
 ~~~
 
@@ -175,10 +175,6 @@ CSS 文件将被 Meteor 自动加载并简化。因此，不同于其它的静�
 ~~~css
 .grid-block, .main, .post, .comments li, .comment-form {
   background: #fff;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   padding: 10px;
   margin-bottom: 10px;
@@ -190,14 +186,19 @@ body {
   background: #eee;
   color: #666666; }
 
+#main {
+  position: relative;
+}
+.page {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
 .navbar {
   margin-bottom: 10px; }
   /* line 32, ../sass/style.scss */
   .navbar .navbar-inner {
-    -webkit-border-radius: 0px 0px 3px 3px;
-    -moz-border-radius: 0px 0px 3px 3px;
-    -ms-border-radius: 0px 0px 3px 3px;
-    -o-border-radius: 0px 0px 3px 3px;
     border-radius: 0px 0px 3px 3px; }
 
 #spinner {
@@ -222,7 +223,7 @@ body {
     -o-transition: none;
     transition: none; }
   .post.animate{
-    -webkit-transition: all 300ms 0ms ease-in;
+    -webkit-transition: all 300ms 0ms;
     -moz-transition: all 300ms 0ms ease-in;
     -o-transition: all 300ms 0ms ease-in;
     transition: all 300ms 0ms ease-in; }
@@ -275,10 +276,6 @@ body {
 
 .load-more {
   display: block;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.05);
   text-align: center;
