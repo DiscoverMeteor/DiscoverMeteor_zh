@@ -136,28 +136,23 @@ Accounts.ui.config({
 更重要的是，我们用户的集合似乎在服务器和客户端中并不是包含完全相同的字段。在 Mongo 数据库中，用户拥有大量的数据。为了检验一下，回到你的 Mongo 终端并输入：
 
 ~~~bash
-> db.users.findOne()
+> db.users.find()
 {
-  "createdAt" : 1365649830922,
-  "_id" : "kYdBd9hr3fWPGPcii",
-  "services" : {
-    "password" : {
-      "srp" : {
-        "identity" : "qyFCnw4MmRbmGyBdN",
-        "salt" : "YcBjRa7ArXn5tdCdE",
-        "verifier" : "df2c001edadf4e475e703fa8cd093abd4b63afccbca48fad1d2a0986ff2bcfba920d3f122d358c4af0c287f8eaf9690a2c7e376d701ab2fe1acd53a5bc3e843905d5dcaf2f1c47c25bf5dd87764d1f58c8c01e4539872a9765d2b27c700dcdedadf5ac82521467356d3f91dbeaf9848158987c6d359c5423e6b9cabf34fa0b45"
-      }
+  "_id": "H5kKyxtbkLhmPgtqs",
+  "createdAt": ISODate("2015-02-10T08:26:48.196Z"),
+  "profile": {},
+  "services": {
+    "password": {
+      "bcrypt": "$2a$10$yGPywo3/53IHsdffdwe766roZviT03YBGltJ0UG"
     },
-    "resume" : {
-      "loginTokens" : [
-        {
-          "token" : "BMHipQqjfLoPz7gru",
-          "when" : 1365649830922
-        }
-      ]
+    "resume": {
+      "loginTokens": [{
+        "when": ISODate("2015-02-10T08:26:48.203Z"),
+        "hashedToken": "npxGH7Rmkuxcv098wzz+qR0/jHl0EAGWr0D9ZpOw="
+      }]
     }
   },
-  "username" : "tmeasday"
+  "username": "sacha"
 }
 ~~~
 <%= caption "Mongo console" %>

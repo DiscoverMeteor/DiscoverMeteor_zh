@@ -7,26 +7,27 @@ points: 10
 sidebar: true
 photoUrl: http://www.flickr.com/photos/ikewinski/8390558986/
 photoAuthor: Mike Lewinski
-contents: 学习更多处理发布机制的高级方法。| 了解发布/订阅模型可以得到怎样的弹性机制。
+contents: 学习更多处理发布机制的高级方法。|了解发布/订阅模型可以得到怎样的弹性机制。
 paragraphs: 36
 ---
 
+目前你应该对发布和订阅交互模式有一个不错的掌握了。因此，我们废话少说，来看几个更高级的情景。
 
 目前你应该对发布/订阅交互模式有一个不错的掌握了。接下来让我们学习一些高级的方法。
 
 ### 多次发布一个集合
 
-在我们前面的章节 [发布和订阅](/chapter/publications-and-subscriptions/), 我们看到了一些通用的发布和订阅模式，并学习了使用 `_publishCursor` 函数实现我们现在的网站。
+在[我们第一个关于发布的附录中](/chapter/publications-and-subscriptions/)，我们看到了一些更普遍的发布和订阅模式，同时我们学习了 `_publishCursor` 函数，如何让它们非常容易地实现在我们的站点上。
 
-首先，让我们回忆一下 `_publishCursor` 函数为我们做了什么: 它取得满足当前游标(cursor)的所有文档(document),并将它们推送到客户端的*同名*集合中。注意这个名字和_发布(publication)_的名字是不相关的。
+首先，让我们回忆 `_publishCursor` 到底为我们做了什么：它将整理所有的文档以匹配一个给定的游标（cursor），并将它们推送至*同名的*客户端集合中。注意这与 _publication_ 的名字是不关联的。
 
-这意味着我们可以有_多个订阅_连接客户端与服务端的任何版本的集合。
+这意味着我们可以用_不止一个 publicaton_ 去连接任何集合的客户端与服务端版本。
 
-我们已经在之前的章节使用过这种模式[分页](/chapter/pagination/),在我们发布一个除当前显示帖子之外的分页的子集时。
+我们已经在[分页章节](/chapter/pagination/)用过这个模式，当我们在当前显示的帖子之外，再发布一个所有帖子的分页后的子集。
 
-另一个相似的例子是发布一个大文档集合的*概要*,也就是一个项目的全部细节:
+另一个相似的用例是发布一大组文档的*预览*，和单个文档的全部信息：
 
-<%= diagram "doublecollection", "Publishing a collection twice", "pull-center" %>
+<%= diagram "doublecollection", "两次发布一个集合", "pull-center" %>
 
 ~~~js
 Meteor.publish('allPosts', function() {
@@ -38,13 +39,13 @@ Meteor.publish('postDetail', function(postId) {
 });
 ~~~
 
-客户端现在订阅这两个发布，`'帖子'`集合从这个两个发布获得数据:从第一个订阅中获得标题和用户名列表，从第二个订阅中获得帖子的具体内容。
+现在客户端订阅这两个发布，这 `'posts'` 集合来自于两个源渠道：来自第一个订阅的标题和作者姓名列表，和来自第二个订阅的单个帖子全部信息。
 
-你可能已经意识到 `postDetail` 发布的帖子在 `allPosts` 中也发布了(尽管只有它们属性的子集)。无论怎样，Meteor会通过合并字段来保证没有重复的帖子。
+你也许意识到了 `postDetail` 发布的帖子也被 `allPosts` 发布了（尽管只有它的部分属性）。但是，Meteor 会合并字段及确认没有重复的帖子，来处理数据重叠的问题。
 
-这很好，因为当我们显示帖子摘要列表时，数据对象中刚好有需要显示的数据。然而，当我们显示一个单独的帖子，我们有需要显示的所有数据。当然，我们需要注意在这种情况下客户端并没有所有帖子的全部字段 -- 这是个常见问题！
+这是很棒的，因为现在当我们呈现帖子摘要列表时，我们正在处理的数据对象正好拥有我们需要显示的足够数据。但是，当我们呈现单个帖子时，我们有一切需要展示的数据。当然，在这种情况下，我们需要让客户端不要去期待所有帖子的所有字段都能都显示出来————这是一个常见的问题！
 
-注意你并没有改变文档属性的限制。你可以方便地在两个发布中发布同样的属性，但是内容排序不同。
+注意你并没有改变文档属性的任何限制。你可以很好地在这两个发布中发布同样的属性，但是先后排序不同。
 
 ~~~js
 Meteor.publish('newPosts', function(limit) {
@@ -57,17 +58,17 @@ Meteor.publish('bestPosts', function(limit) {
 ~~~
 <%= caption "server/publications.js" %>
 
-### 多次订阅同一个发布
+### 多次订阅一个发布
 
-我们已经看到了如何多次发布统一集合。由此你可以得到另一个相似的模式:创建一个发布，多次*订阅*它。
+我们已经看了如何多次发布同一个集合。事实证明你可以通过另一个模式来完成非常相近的结果：建立一个单一发布，却多次*订阅*它。
 
-在Microscope中，我们多次订阅 `posts` 发布，Iron Router 为我们建立和取消每次订阅。然而我们也可以自己*同时*订阅多次。
+在 Microscope 中，我们多次重复订阅 `posts` 发布，但 Iron Router 为我们设置并拆开每次的订阅。然而，没有理由我们不能*同时进行*多次订阅。
 
-例如，我们想要同时载入最新的和最佳的帖子到内存:
+举个例子，我们想要将最新的和最好的帖子同时载入内存：
 
-<%= diagram "subscribetwice", "Subscribing twice to one publication", "pull-center" %>
+<%= diagram "subscribetwice", "对一个发布订阅两次", "pull-center" %>
 
-我们建立一个发布:
+我们设定一个单一发布：
 
 ~~~js
 Meteor.publish('posts', function(options) {
@@ -75,36 +76,36 @@ Meteor.publish('posts', function(options) {
 });
 ~~~
 
-并且我们多次订阅这个发布。事实上或多或少的在Microscope里这样做了：
+并且我们多次订阅这个发布。事实上或多或少我们在 Microscope 里这样做了：
 
 ~~~js
 Meteor.subscribe('posts', {submitted: -1, limit: 10});
 Meteor.subscribe('posts', {baseScore: -1, submitted: -1, limit: 10});
 ~~~
 
-这里发生了什么?每个浏览器开启了*两个*不同的订阅，每个订阅连接到*同个*服务端的发布。
+接下来到底发生什么了？每个浏览器开启了*两个*不同的订阅，每个订阅连接到*同个*服务端的发布。
 
-每个订阅提供了不同的参数给发布，但从根本上，每次从服务器端`帖子`集合中获得一个(不同的)文档集合放入客户端集合。
+每个订阅提供了不同的发布参数，但从根本上，每次一个（不同）文档子集从 `posts` 集合提取出来，并通过连接机制发送到客户端集合。
 
-你甚至可以用*同样的参数*订阅相同的发布两次。这也许没有什么用处，但这种灵活性也许将来某天会有用!
+你甚至可以用*同样的参数*订阅两次相同的发布。这个对很多处场景来说很难说有用，但这种弹性机制总有一天会有用的。
 
 ### 单一订阅中的多个集合
 
-不像如MySQL的传统关系型数据库中使用*joins*，类似Mongo的NoSQL数据库拥有的是*去规范化(denormalizing)*和*嵌入(embedding)*。让我们了解它们是怎样在Meteor的环境下工作的。
+不像传统关系型数据库像 MySQL 使用 *joins*，NoSQL 数据库类似 Mongo 都是关于*去规范化*和*嵌入*。让我们看看它们是怎样在 Meteor 环境下工作的。
 
-让我们看一个具体的例子，我们已经对我们的帖子(posts)增加了回复(comments)，到目前为止，我们想要只发布用户当前查看帖子的回复。
+让我们看一个具体的例子。我们已经对我们的帖子添加了评论，到目前为止，我们一直很愉快地只发布用户看的单个帖子的评论。
 
-然而，假设我们希望在前端页面中显示*全部*帖子的回复(记着这些帖子会在分页时被改变)。这个用例也是我们将回复嵌入帖子的好理由，事实上这也促使我们非规范化 (denormalize) 回复数量。
+但是，假设我们希望在首页中显示*全部*帖子的回复（记着这些帖子会在分页时被改变）。这个用例展示了一个很好的理由把评论嵌入帖子中，事实上这是促使我们来非规范化评论*数量*。
 
-当然我们可以只在帖子(posts)中嵌入回复(comments)，并完全删除`Comments`集合。但如同我们前面在*去规范化*章节看到的，这样做我们会丢失一些分离集合带来的好处。
+当然我们可以总是嵌入评论到帖子中，并完全摒除 `Comments` 集合。但如同我们前面在*去规范化*章节看到的，我们将在分离的集合的操作中也会失去一些额外的好处。
 
-But it turns out there's a trick involving subscriptions that makes it possible to embed our comments while preserving separate collections.
+但是事实证明有一个涉及订阅的技巧，在保持分离集合的同时再嵌入我们的评论。
 
-Let's suppose that along with our front-page list of posts, we want to subscribe to a list of the top 2 comments for each post.
+让我们假定除了首页帖子列表之外，我们希望再订阅每个帖子的两个最新评论。
 
-It would be difficult to accomplish this with an independent comments publication, especially if the list of posts was limited in some way (say, the 10 most recent). We'd have to write a publication that looked something like this:
+使用独立的评论发布会很难完成这个要求，尤其在帖子列表受到某些限制时（比如说，最近的10个）。我们必须写一个发布，看起来像下面的代码：
 
-<%= diagram "multiplecollections", "Two collections in one subscription", "pull-center" %>
+<%= diagram "multiplecollections", "一个订阅中的两个集合", "pull-center" %>
 
 ~~~js
 Meteor.publish('topComments', function(topPostIds) {
@@ -112,9 +113,9 @@ Meteor.publish('topComments', function(topPostIds) {
 });
 ~~~
 
-This would be a problem from a performance standpoint, as the publication would need to get torn down and re-established each time the list of `topPostIds` changed.
+从性能角度来看这是个问题，因为这个发布将需要每次在 `topPostIds` 改变时消除及重新建立。
 
-There is a way around this though. We just use the fact that we can not only have more than one *publication* per *collection*, but we can also have more than one *collection* per *publication*:
+有一个途径来解决这个问题。我们可以应用这个事实：就是我们不仅可以在每个*集合*上拥有多次*发布*，而且我们也可以在每个*发布*上拥有多个*集合*。
 
 ~~~js
 Meteor.publish('topPosts', function(limit) {
@@ -151,25 +152,26 @@ Meteor.publish('topPosts', function(limit) {
 });
 ~~~
 
-Note that we aren't returning anything in this publication, as we manually send messages to the `sub` ourselves (via `.added()` and friends). So we don't need to ask `_publishCursor` to do it for us by returning a cursor.
+注意我们在这个发布中没有返回任何东西，因为我们自己手动给 `sub` 发送信息（通过 `.added()` 等方式）。所以我们不必通过返回一个游标来请求 `_publishCursor` 给我们来做这个动作。
 
-Now, every time we publish a post we also automatically publish the top two comments attached to it. And all with a single subscription call!
+现在，每次我们发布一个帖子时，我们也自动发布其2个最新评论。而且所有都在一个订阅调用中！
 
-Although Meteor doesn't make this approach very straightforward yet, you can also look into the `publish-with-relations` package on Atmosphere, which aims to make this pattern easier to use.
+虽然 Meteor 还未直接实现这个方法，但是你也可以参考在 Atomsphere 里的 `publish-with-relations` 包，它的目标就是让这个模式更容易使用。
 
-### Linking different collections
+### 连接不同的集合
 
-What else can our newfound knowledge of the flexibility of subscriptions give us? Well, if we don't use `_publishCursor`, we don't need to follow the constraint that the source collection on the server needs to have the same name as the target collection on the client.
+这样的订阅弹性机制还能给我们更多新知识么？当然，如果我们不使用 `_publishCursor`，我们不必跟着此项约束，就是在服务端的源集合需要与客户端的目标集合有同样的名称。
 
-<%= diagram "linkedcollections", "One collection for two subscriptions", "pull-center" %>
+<%= diagram "linkedcollections", "一个集合对两个订阅", "pull-center" %>
 
-One reason why we would want to do this is *Single Table Inheritance*.
+为什么我们想这么做的一个原因就是*单表继承*。
 
-Suppose that we wanted to reference various types of objects from our posts, each of which stored common fields but also differed slightly in content. For example, we could be building a Tumblr-like blogging engine where each post possesses the usual ID, timestamp, and title; but in addition can also feature an image, video, link, or just text.
+假设我们需要从我们的帖子中引用多种类型的对象，每一个对象存储在相同字段中但又显然是不同内容。例如，我们建立一个类似 Tumblr 的博客引擎，每个帖子具有常见的 ID、时间戳，以及标题；但是额外也有如图像、视频、链接，或者只是文字。
 
-We could store all these objects in a single `'resources'` collection, using a `type` attribute to indicate which sort of object they are. (`video`, `image`, `link`, etc.).
+我们可以将这些对象存储在一个单独的 `'resources'` 集合中，使用 `type` 属性来标记他们是什么类型的对象（`video`、`image`、`link` 等等）。
 
-And although we'd have a single `Resources` collection on the server, we could  transform that single collection into multiple `Videos`, `Images`, etc. collections on the client with the following bit of magic:
+同时，虽然我们有一个服务端的单一的 `Resources` 集合，我们也能够将单一集合转换到多个的 `Videos`、`Images'，等等集合中。
+客户端的集合如下的代码：
 
 ~~~js
   Meteor.publish('videos', function() {
@@ -183,8 +185,8 @@ And although we'd have a single `Resources` collection on the server, we could  
   });
 ~~~
 
-We are telling `_publishCursor` to publish our videos (just like returning) the cursor would do, but rather than publish to the `resources` collection on the client, instead we are publishing from `'resources'` to `'videos'`.
+我们告诉 `_publishCursor` (就像返回）游标会做的一样发布我们的视频，但不是将 `resources` 集合发布到客户端，而是我们从 `resources` 发布到 `videos`。
 
-Another similiar idea is to use publish to a client side collection where there's *no server side collection at all!* For instance, you might grab the data from a 3rd party service, and publish them into a client-side collection.
+另一个类似的主意是：发布到客户端的集合，却根本*没有服务端集合*！举例，你也许从一个第三方服务中抓取数据，并发布它们到一个客户端集合。
 
-Thanks to the flexibility of the publish API, the possibilities are endless.
+由于发布 API 的灵活性，可能性是无限的。

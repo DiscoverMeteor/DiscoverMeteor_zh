@@ -1,66 +1,79 @@
 ---
-title: Animations
+title: 动画
 slug: animations
 date: 0014/01/01
 number: 14
-contents: See what happens behind the scenes when Meteor swaps two DOM elements.|Learn how to animate the reordering of posts.|Learn how to animate the insertion of new posts.
+points: 10
+photoUrl: http://www.flickr.com/photos/ikewinski/8377615133/
+photoAuthor: Mike Lewinski
+contents: 看看当 Meteor 交替两个 DOM 元素时幕后发生了什么。|学习重排帖子时如何加入动画效果。|学习如何在插入和删除帖子时加入动画效果。|学习两页面之间的切换动画
 paragraphs: 58
 ---
 
-////
+我们现在有了实时的投票、评分和排名。然而，由于帖子在首页上跳来跳去，导致了跳动不稳的用户体验。我们用动画来平滑这种过渡。
 
-### Meteor & the DOM
+### 介绍 `_uihooks`
 
-////
+`_uihooks` 相对较新，Blaze 文档也未包含该特性。正如其名称所示，它提供了每当插入、删除或动画元素时可以被触发的 hooks。
 
-////
+Hooks 的全部清单如下：
 
-////
+- `insertElement`: 当新元素被插入时调用。
+- `moveElement`: 当元素被移动时调用。
+- `removeElement`: 当元素被删除时调用。
 
-////
+一旦定义，这些 hooks 就会*替代* Meteor 的默认行为。换句话说，Meteor 会用我们规定的行为来替代默认的插入、移动或删除元素的行为 ———— 这由我们来确定这行为会真正地工作！
 
-1. ////
-2. ////
-3. ////
-4. ////
-5. ////
-6. ////
+### Meteor 与 DOM
 
-////
+在我们开始有趣部分（使东西移动）之前，我们需要理解 Meteor 如何与 DOM（Document Object Model————组成页面内容的 HTML 元素集合）交互的。
 
-<%= diagram "animation_diagram", "Swtiching two posts", "pull-center" %>
+要记住的最关键的一点是，DOM 元素不能真正被“移动”；但是，它们可以被删除，被创建（注意，这是 DOM 本身的限制，而不是 Meteor 的）。所以要给元素 A 和 B 互换位置的错觉，Meteor 实际上会删除元素 B，并在元素 A 前插入一个全新的副本（B'）。
 
-////
+这使得动画有点麻烦，因为我们不能只是把 B 动画移动到新位置，因为 B 在 Meteor 重新渲染页面时就会消失（由于响应性，这瞬间发生）。但请不要担心，我们会找到一个解决办法。
 
-////
+### 苏联赛跑者
 
-////
+不过首先，让我们讲个故事。
 
-### Proper Timing
+在 1980 年，正值冷战。奥运会正在莫斯科举行，苏联决心不惜任何代价要赢得 100 米短跑的金牌。所以，一群聪明的苏联科学家为其中一名运动员装备了一台传送器，只要枪声一响，那名运动员就会瞬间消失，通过时空连续的作用直接出现在终点线上。
 
-////
+还好，赛事官员立刻注意到了这个违规行为，这名运动员没有办法只好又瞬时移动回到起跑器上，才能被允许像其他选手一样赛跑参赛。
 
-////
+我的历史资料没有那么可靠，所以你应该对这个故事半信半疑。但是，尽量尝试记住“有传送器的苏联赛跑者”这个比喻，我们要在这一章中用到这一点。
 
-////
+### 分解
 
-////
+当 Meteor 接收到更新并实时地更改 DOM 时，我们的帖子会立即传送到它的终点位置，就像苏联赛跑者一样。但是不论是在奥运会还是在我们的应用中，我们不能瞬移任何东西。所以我们需要把元件传送回到“起跑器”上，使它“跑”（换句话说，“动画”它）到终点。
 
-////
+所以交换帖子 A 和 B （分别位于 p1 和 p2 位置），我们会经过如下步骤：
 
-////
+1. 删除 B
+2. 在 DOM 中，在 A 之前创建 B'
+3. 传送 B' 到 p2 位置
+4. 传送 A 到 p1 位置
+5. 动画 A 到 p2 位置
+6. 动画 B' 到 p1 位置
 
-### CSS Positioning
+下面图表详细解释上述步骤：
 
-////
+<%= diagram "animation_diagram", "两个帖子换位", "pull-center" %>
 
-////
+再次说明，第 3 、4 步中，我们没有*动画* A 和 B' 到它们的位置，而是瞬间“传送”了它们。因为这是瞬间发生的，这会产生 B 没有被删除的幻觉，并且两个元素被动画到了它们的新位置。
 
-////
+默认情况下，Meteor 负责步骤 1 和 2，我们自己很容易重新实施它们。在步骤 5 和 6 中所有我们在做的事情是移动元素到正确的位置。因此，唯一我们真正需要担心的部分是步骤 3 和 4，即，发送元素到动画的起点。
 
-////
+### CSS 定位
 
-////
+为了在页面中动画渲染的帖子，我们必须用到 CSS 样式。让我们按顺序快速浏览 CSS 定位。
+
+页面元素默认使用**静态**定位。静态定位的元素适应页面内容流，它们在屏幕上的坐标不能更改或动画。
+
+另一方面，**相对**定位是说元素也同样适应页面内容流，但是可以*相对于原始位置*进行定位。
+
+**绝对**定位更进一步，允许你规定元素的 x/y 坐标，坐标相对于**文档**或**第一个绝对或相对定位的父元素**。
+
+我们使用相对定位来动画我们的帖子。我们已经为你准备好了 CSS，你需要做的就是将代码添加到你的样式表中：
 
 ~~~css
 .post{
@@ -70,201 +83,275 @@ paragraphs: 58
 ~~~
 <%= caption "client/stylesheets/style.css" %>
 
-////
+这使步骤 5 和 6 变得简单：我们需要做的是重置 `top` 坐标值为 `0px`（默认值），帖子就会回到它们“正常的”位置。
 
-////
+基本上，我们仅有的挑战是搞明白元素要从相对于它们新位置的哪里开始动画（步骤 3 和 4），换句话说，它们要偏移多少。但这也不难：正确的偏移量就是帖子的原来位置减去它的新位置。
 
-<% note do %>
+### 使用 `_uihooks`
 
-### Position:absolute
+既然我们了解了为帖子列表添加动画的各种因素，我们算是准备好开始添加动画了。我们首先需要把帖子列表放入一个新的 `.wrapper` 容器元素中：
 
-////
-
-////
-
-<% end %>
-
-### Total Recall
-
-////
-
-////
-
-> //// 
-
-////
-
-////
-
-### Ranking Posts
-
-////
-
-////
-
-////
-
-////
-
-~~~js
-Template.postsList.helpers({
-  postsWithRank: function() {
-    this.posts.rewind();
-    return this.posts.map(function(post, index, cursor) {
-      post._rank = index;
-      return post;
-    });
-  }
-});
-~~~
-<%= caption "/client/views/posts/posts_list.js" %>
-<%= highlight "2~8" %>
-
-////
-
-////
-
-~~~html
+```html
 <template name="postsList">
-  <div class="posts">
-    {{#each postsWithRank}}
-      {{> postItem}}
-    {{/each}}
+  <div class="posts page">
+    <div class="wrapper">
+      {{#each posts}}
+        {{> postItem}}
+      {{/each}}
+    </div>
     
     {{#if nextPath}}
       <a class="load-more" href="{{nextPath}}">Load more</a>
+    {{else}}
+      {{#unless ready}}
+        {{> spinner}}
+      {{/unless}}
     {{/if}}
   </div>
 </template>
-~~~
-<%= caption "/client/views/posts/posts_list.html" %>
+```
+<%= caption "/client/templates/posts/post_list.html" %>
+<%= highlight "3,7" %>
 
-<%= highlight "3" %>
+在做其他事情之前，让我们看看当前**没有**动画效果的帖子列表：
+
+<%= gifscreenshot "14-1", "没有动画效果的帖子列表。" %>
+
+现在让我们加入 `_uihooks`。在模板 `rendered` 回调函数中，选择 `.wrapper` div，并定义一个 `moveElement` 的 hook。
+
+```js
+Template.postsList.rendered = function () {
+  this.find('.wrapper')._uihooks = {
+    moveElement: function (node, next) {
+      // 现在不做任何事情
+    }
+  }
+}
+```
+<%= caption "/client/templates/posts/post_list.js" %>
+<%= highlight "1~7" %>
+
+刚刚定义的 `moveElement` 会在元素位置改变时被调用，从而取代 Blaze 的默认行为。由于现在这个函数还是空的，意味着*什么都不会发生*。
+
+去试一下：打开“Best”最佳帖子页面，给一些帖子投票：帖子排序不会发生变化，除非强制刷新（刷新页面或改变路径）。
+
+<%= gifscreenshot "14-2", "空的 moveElement 回调函数：什么也不会发生" %>
+
+我们已经验证 `_uihooks` 可以工作，现在让我们来动画它！
+
+### 帖子排序的动画效果
+
+`moveElement` hook 接受两个参数：`node` 和 `next`。
+
+- `node` 是当前正在移动到新位置的 DOM 元素
+- `next` 是 `node` 移动的新位置*之后*的元素
+
+了解这些之后，我们可以逐一实现如下动画过程（如果你需要刷新一下你的记忆，可参考之前“苏联赛跑者”的例子）。当一个新的位置改变发生时，我们将：
+
+1. 在 `next` 前插入 `node`（换句话说，如果我们没有指定任何 `moveElement` hook 的话，默认行为就会发生）。
+2. 移动 `node` 回到它的起始位置。
+3. 微调 `node` 和 `next` 之间的每个元素，为 `node` 腾出空间。
+4. 动画所有元素回到它们的新默认位置。
+
+我们通过 [jQuery](http://jquery.com) 的魔力来做这些事情，这也是迄今为止最好的操作 DOM 的 JavaScript 库。jQuery 已经超出本书范围，但是让我们快速浏览一下我们即将用到的 jQuery 方法：
+
+- [`$()`](http://api.jquery.com/jQuery/)：使任何一个 DOM 元素成为 jQuery 对象。
+- [`offset()`](http://api.jquery.com/offset/)：取得元素相对于*文档*的当前位置，返回包含 `top` 和 `left` 属性的对象。
+- [`outerHeight()`](http://api.jquery.com/outerHeight/)：取得“outer”元素的高度（包括 padding 和可选的 margin）。
+- [`nextUntil(selector)`](http://api.jquery.com/nextUntil/)：取得所有目标元素之后到（但不包含）匹配 `selector` 的元素。
+- [`insertBefore(selector)`](http://api.jquery.com/insertBefore/)：在匹配 `selector` 的元素之前插入另一个元素。
+- [`removeClass(class)`](http://api.jquery.com/removeClass/)：如果该元素有 `class` CSS 类，删除它。
+- [`css(propertyName, propertyValue)`](http://api.jquery.com/css/)：设置 CSS `propertyName` 属性为 `propertyValue`。 
+- [`height()`](http://api.jquery.com/height/)：取得该元素的高度。 
+- [`addClass(class)`](http://api.jquery.com/addClass/)：为元素添加 `class` CSS 类。
+
+```js
+Template.postsList.rendered = function () {
+  this.find('.wrapper')._uihooks = {
+    moveElement: function (node, next) {
+      var $node = $(node), $next = $(next);
+      var oldTop = $node.offset().top;
+      var height = $node.outerHeight(true);
+
+      // 找出 next 与 node 之间所有的元素
+      var $inBetween = $next.nextUntil(node);
+      if ($inBetween.length === 0)
+        $inBetween = $node.nextUntil(next);
+
+      // 把 node 放在预订位置
+      $node.insertBefore(next);
+
+      // 测量新 top 偏移坐标
+      var newTop = $node.offset().top;
+
+      // 将 node *移回*至原始所在位置
+      $node
+        .removeClass('animate')
+        .css('top', oldTop - newTop);
+
+      // push every other element down (or up) to put them back
+      $inBetween
+        .removeClass('animate')
+        .css('top', oldTop < newTop ? height : -1 * height)
+
+      // 强制重绘
+      $node.offset();
+
+      // 动画，重置所有元素的 top 坐标为 0
+      $node.addClass('animate').css('top', 0);
+      $inBetween.addClass('animate').css('top', 0);
+    }
+  }
+}
+```
+<%= caption "/client/templates/posts/post_list.js" %>
+
+注解：
+
+- 我们计算 `$node` 的高度，便于知道要偏移 `$inBetween` 的元素多少距离。我们使用 `outerHeight(true)` 使 margin 和 padding 加入计算中。
+- 在 DOM 中，我们不知道 `next` 是在 `node` 之前还是之后，所以我们在定义 `$inBetween` 时同时考虑这两种情况。
+- 为了在“传送 teleporting”和“动画 animating”元素之间转换，我们简单地 toggle `animate` CSS 类（在 CSS 样式表中定义了实际动画）。
+- 由于我们用相对定位，所以我们总可以通过重置任何元素的 `top` 属性值为 0 来把元素归位到应在位置。
 
 <% note do %>
 
-### Be Kind, Rewind
+### 强制 Redraw
 
-////
+你也许在想 `$node.offset()` 这行代码。为什么我们不打算移动 `$node`，而去关心它的位置呢？
 
-////
+要这么想：如果你告诉一台有完美逻辑的机器人向北奔跑 5 千米，跑完后再跑回起点，它也许认为既然又回到起点，那么何不节省能量而待在原地。
 
-////
+所以为了确保机器人能跑完 10 千米，我们会告诉它在跑到 5 千米时记录它的坐标才能转向。
+
+浏览器以相似的方式工作：如果我们在同一时间只给出 `css('top', oldTop - newTop)` 和 `css('top', 0)` 的话，新坐标就会简单地替换旧坐标，什么也不会发生。如果我们想真正地看到动画，就需要强制浏览器去在元素改变位置后重新绘制它。
+
+一个简单的强制重绘的方法是让浏览器检查元素的 `offset` 属性————再次重绘元素才能让浏览器识别它。
 
 <% end %>
 
-### Putting it together
+让我们再试一次。回到“Best”最佳帖子页面，给帖子投票：现在应该可以看到帖子如芭蕾舞般优雅地上下滑动。
 
-////
+<%= gifscreenshot "14-3", "带动画的排序" %>
 
-~~~js
-Template.postItem.helpers({
-  //...
-});
+<%= commit "14-1", "添加了帖子排序动画。" %>
 
-Template.postItem.rendered = function(){
-  // animate post from previous position to new position
-  var instance = this;
-  var rank = instance.data._rank;
-  var $this = $(this.firstNode);
-  var postHeight = 80;
-  var newPosition = rank * postHeight;
- 
-  // if element has a currentPosition (i.e. it's not the first ever render)
-  if (typeof(instance.currentPosition) !== 'undefined') {
-    var previousPosition = instance.currentPosition;
-    // calculate difference between old position and new position and send element there
-    var delta = previousPosition - newPosition;
-    $this.css("top", delta + "px");
+### Can't Fade Me
+
+既然我们已经搞定比较难的重新排序，那么插入和删除帖子的动画就是小菜一碟了！
+
+首先，我们渐入新帖子（注意为了简单，我们在此用 JavaScript 动画）：
+
+```js
+Template.postsList.rendered = function () {
+  this.find('.wrapper')._uihooks = {
+    insertElement: function (node, next) {
+      $(node)
+        .hide()
+        .insertBefore(next)
+        .fadeIn();
+    },
+    moveElement: function (node, next) {
+      //...
+    }
   }
-  
-  // let it draw in the old position, then..
-  Meteor.defer(function() {
-    instance.currentPosition = newPosition;
-    // bring element back to its new original position
-    $this.css("top",  "0px");
-  }); 
-};
+}
+```
+<%= caption "/client/templates/posts/post_list.js" %>
+<%= highlight "3~7" %>
 
-Template.postItem.events({
-  //...
-});
-~~~
-<%= caption "/client/views/posts/post_item.js" %>
-<%= highlight "5~27" %>
+为了更好看到效果，我们通过控制台插入新帖子，来测试动画：
 
-<%= commit "14-1", "Added post reordering animation." %>
+```js
+Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'})
+```
 
-////
+<%= gifscreenshot "14-4", "渐入新帖子" %>
 
-////
+其次，我们动画淡出删除的帖子：
 
-////
-
-### Animating New Posts
-
-////
-
-////
-
-1. ////
-2. ////
-
-////
-
-////
-
-~~~js
-Template.postItem.helpers({
-  //...
-});
-
-Template.postItem.rendered = function(){
-  // animate post from previous position to new position
-  var instance = this;
-  var rank = instance.data._rank;
-  var $this = $(this.firstNode);
-  var postHeight = 80;
-  var newPosition = rank * postHeight;
-  
-  // if element has a currentPosition (i.e. it's not the first ever render)
-  if (typeof(instance.currentPosition) !== 'undefined') {
-    var previousPosition = instance.currentPosition;
-    // calculate difference between old position and new position and send element there
-    var delta = previousPosition - newPosition;
-    $this.css("top", delta + "px");
-  } else {
-    // it's the first ever render, so hide element
-    $this.addClass("invisible");
+```js
+Template.postsList.rendered = function () {
+  this.find('.wrapper')._uihooks = {
+    insertElement: function (node, next) {
+      $(node)
+        .hide()
+        .insertBefore(next)
+        .fadeIn();
+    },
+    moveElement: function (node, next) {
+      //...
+    },
+    removeElement: function(node) {
+      $(node).fadeOut(function() {
+        $(this).remove();
+      });
+    }
   }
-  
-  // let it draw in the old position, then..
-  Meteor.defer(function() {
-    instance.currentPosition = newPosition;
-    // bring element back to its new original position
-    $this.css("top",  "0px").removeClass("invisible");
-  }); 
-};
+}
+```
+<%= caption "/client/templates/posts/post_list.js" %>
+<%= highlight "12~16" %>
 
-Template.postItem.events({
-  //...
-});
-~~~
-<%= caption "/client/views/posts/post_item.js" %>
-<%= highlight "19~22,28" %>
+再次，在控制台（用 `Posts.remove('somePostId')`）删除一个帖子来测试动画效果。
+
+<%= gifscreenshot "14-5", "动画淡出删除的帖子" %>
 
 <%= commit "14-2", "Fade items in when they are drawn." %>
 
-////
 
-<% note do %>
+### 页面过渡
 
-### CSS & JavaScript
+到目前为止，我们已经在页面内动画了元素。但是如果我们想添加页面之间的过渡动画呢？
 
-////
+页面过渡是 Iron Router 的任务。点击一个链接，`{{> yield}}` helper 的内容自动地更换。
 
-////
+就像我们为帖子列表改变 Blaze 默认行为一样，我们也可以为 `{{> yield}}` 做同样的事情，在不同路由之间添加渐隐过渡动画效果！
 
-<% end %>
+如果我们想渐入渐隐页面，我们必须要确保它们在各自上方显示。我们用添加了 `position:absolute` 属性的 `.page` container div 来包裹每个页面模板。
 
-////
+但不能相对于窗口来绝对定位我们的页面，因为这样页面会覆盖应用的 header。所以我们给 `#main` div 添加 `position:relative` 以便 `.page` div 的 `position:absolute` 会得到其正确位置。
+
+为了节省时间，我们已经在 `sytle.css` 中添加了必要的 CSS 代码：
+
+```css
+//...
+
+#main{
+  position: relative;
+}
+.page{
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
+//...
+```
+<%= caption "/client/stylesheets/style.css" %>
+
+是时候添加页面过渡代码了。代码看起来很熟悉，因为这和我们添加和删除帖子时的代码完全一致：
+
+```js
+Template.layout.rendered = function() {
+  this.find('#main')._uihooks = {
+    insertElement: function(node, next) {
+      $(node)
+        .hide()
+        .insertBefore(next)
+        .fadeIn();
+    },
+    removeElement: function(node) {
+      $(node).fadeOut(function() {
+        $(this).remove();
+      });
+    }
+  }
+}
+```
+<%= caption "/client/templates/application/layout.js" %>
+
+<%= gifscreenshot "14-6", "页面之间的过渡动画" %>
+
+<%= commit "14-3", "页面间的渐隐过渡。" %>
+
+我们刚刚看了一些为 Meteor 应用添加动画元素的模式。虽然这不是一个详尽的清单，但是希望这会提供一个基础，在其上去构建更复杂的过渡动画。

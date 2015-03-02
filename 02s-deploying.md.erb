@@ -47,47 +47,7 @@ meteor deploy myapp.meteor.com
 
 [Modulus](https://modulus.io/) 是一个部署 Node.js 应用 很好的选择。这是为数不多的 PaaS（platform-as-a-service 平台即服务）的提供商，并且已经正式支持 Meteor ，已经有不少人在它上面去搭建 Meteor 应用了。
 
-<% note do %>
-
-### Demeteorizer
-
-一个开源的 Modulus 工具 [demeteorizer](https://github.com/onmodulus/demeteorizer)，它可以将你的 Meteor 应用转换成标准的 Node.js 应用。
-
-<% end %>
-
-首先去[创建一个账户](https://modulus.io/register)。为了把我们的应用部署到 Modulus，我们需要通过输入以下命令安装 Modulus 命令行工具：
-
-~~~bash
-npm install -g modulus
-~~~
-
-然后进行身份验证：
-
-~~~bash
-modulus login
-~~~
-
-现在我们创建一个 Modulus 项目（注意，你也可以通过 Modulus 的在线控制板完成它）：
-
-~~~bash
-modulus project create
-~~~
-
-下一步将是为我们的应用创建 MongoDB 数据库。我们可以通过 [Modulus itself](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus)、[Compose](https://www.compose.io/) 或者其他任何 MongoDB 的提供商去创建一个 MongoDB 数据库。
-
-一旦我们创建了 MongoDB 数据库，我们可以从 Modulus 的网站中得到我们数据库的 `MONGO_URL` （通过 Dashboard > Databases > Select your database > Administration ），然后用它来配置我们的应用：
-
-~~~bash
-modulus env set MONGO_URL "mongodb://<user>:<pass>@mongo.onmodulus.net:27017/<database_name>"
-~~~
-
-现在该去部署我们的应用了，输入： 
-
-~~~bash
-modulus deploy
-~~~
-
-我们已经成功地把我们的应用部署在 Modulus 。在 [Modulus 说明文档](https://modulus.io/codex/projects) 中可以了解更多关于访问日志文件，自定义域名的设置以及 SSL。
+你可以通过阅读他们的[部署 Meteor 应用指南](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus)去了解更多关于 Modulus 的信息。
 
 ### Meteor Up
 

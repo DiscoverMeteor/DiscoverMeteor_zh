@@ -1,0 +1,214 @@
+---
+title: 创建 Meteor Package
+slug: creating-a-meteor-package
+date: 0009/01/02
+number: 9.5
+points: 10
+sidebar: true
+photoUrl: http://www.flickr.com/photos/rxb/7779426142/
+photoAuthor: Richard
+contents: 写一个应用里的内部包。|给你的包添加测试。|发布你的包到Atmosphere。
+paragraphs: 22
+---
+
+我们在报告错误的工作中已经创建了可重复使用的模式，为什么不把它打包让 Meteor 社区的其他人都可使用呢？
+
+为了开始，我们需要一个 Meteor 开发者账号。你可以从 [meteor.com](meteor.com) 申请，但是很有可能当你注册这本书的时候已经得到了。不管哪种情况，你应该搞清楚你的用户名是什么，因为我们会在本章中大量使用它。
+
+在本章中我们使用用户名 `tmeasday`，当然你也可以换成你自己的。
+
+首先我们需要创建一个结构来存放新的包。使用命令 `meteor create --package tmeasday:errors` 来完成。需要注意的是 Meteor 已经创建了一个名为 `packages/tmeasday:errors/` 的文件夹和一些文件。我们从编辑 `package.js` 开始，这文件会告诉 Meteor 如果使用这个包，有什么对象或函数要导出。
+
+~~~js
+Package.describe({
+  name: "tmeasday:errors",
+  summary: "A pattern to display application errors to the user",
+  version: "1.0.0"
+});
+
+Package.onUse(function (api, where) {
+  api.versionsFrom('0.9.0');
+  
+  api.use(['minimongo', 'mongo-livedata', 'templating'], 'client');
+
+  api.addFiles(['errors.js', 'errors_list.html', 'errors_list.js'], 'client');
+  
+  if (api.export) 
+    api.export('Errors');
+});
+~~~
+<%= caption "packages/tmeasday:errors/package.js" %>
+
+当开发现实使用的 package 时，非常好的习惯就是在 `git` 部分的 `Package.describe` 代码块中，填写你代码库的 Git URL（比如，`https://github.com/tmeasday/meteor-errors.git`）。这样的话，用户可以浏览源代码，并且（假设你使用 GitHub）你的 package 的 readme 会显示在 Atomsphere 上。
+
+让我们添加 3 个文件到 package 中。（我们可以删除 Meteor 自动添加的模板）我们可以从 Microscope 中 pull 这些文件而不用做太多修改，除了一些合适的命名和稍微清晰的 API：
+
+~~~js
+Errors = {
+  // Local (client-only) collection
+  collection: new Mongo.Collection(null),
+  
+  throw: function(message) {
+    Errors.collection.insert({message: message, seen: false})
+  }
+};
+~~~
+<%= caption "packages/tmeasday:errors/errors.js" %>
+
+~~~html
+<template name="meteorErrors">
+  <div class="errors">
+    {{#each errors}}
+      {{> meteorError}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="meteorError">
+  <div class="alert alert-danger" role="alert">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    {{message}}
+  </div>
+</template>
+~~~
+<%= caption "packages/tmeasday:errors/errors_list.html" %>
+
+~~~js
+Template.meteorErrors.helpers({
+  errors: function() {
+    return Errors.collection.find();
+  }
+});
+
+Template.meteorError.rendered = function() {
+  var error = this.data;
+  Meteor.setTimeout(function () {
+    Errors.collection.remove(error._id);
+  }, 3000);
+};
+~~~
+<%= caption "packages/tmeasday:errors/errors_list.js" %>
+
+### 在 Microscope 中测试 package
+
+现在我们需要对 Microscope 做本地测试，以确保代码工作正确。为了链接包到项目，我们用命令 `meteor add tmeasday:errors`。然后，需要删除已经变得多余的现有文件：
+
+~~~bash
+rm client/helpers/errors.js
+rm client/templates/includes/errors.html
+rm client/templates/includes/errors.js
+~~~
+<%= caption "在 bash console 上删除旧文件" %>
+
+我们需要做的另一件事情是做一些小的更新，使用正确的 API：
+
+~~~html
+  {{> header}}
+  {{> meteorErrors}}
+~~~
+<%= caption "client/templates/application/layout.html" %>
+
+~~~js
+Meteor.call('postInsert', post, function(error, result) {
+  if (error) {
+    // display the error to the user
+    Errors.throw(error.reason);
+
+~~~
+<%= caption "client/templates/posts/post_submit.js" %>
+
+~~~js
+Posts.update(currentPostId, {$set: postProperties}, function(error) {
+  if (error) {
+    // display the error to the user
+    Errors.throw(error.reason);
+~~~
+<%= caption "client/templates/posts/post_edit.js" %>
+
+<%= scommit "9-5-1", "创建和链接基本的 errors package。" %>
+
+一旦这些修改完成，我们就可恢复原来分包前的行为了。
+
+### 写测试
+
+开发包的第一个步骤是在一个应用程序中测试它，但接下来就是写一个测试套件，正确的测试包的行为。Meteor 本身自带 Tinytest（内置的包测试仪），它可以很容易地运行测试套件，以便与他人分享包时确保正确。
+
+让我们创建一个测试文件，使用 Tinytest 来运行一些对新的包测试：
+
+~~~js
+Tinytest.add("Errors - collection", function(test) {
+  test.equal(Errors.collection.find({}).count(), 0);
+  
+  Errors.throw('A new error!');
+  test.equal(Errors.collection.find({}).count(), 1);
+  
+  Errors.collection.remove({});
+});
+
+Tinytest.addAsync("Errors - template", function(test, done) {  
+  Errors.throw('A new error!');
+  test.equal(Errors.collection.find({}).count(), 1);
+  
+  // render the template
+  UI.insert(UI.render(Template.meteorErrors), document.body);
+  
+  Meteor.setTimeout(function() {
+    test.equal(Errors.collection.find({}).count(), 0);
+    done();
+  }, 3500);
+});
+~~~
+<%= caption "packages/tmeasday:errors/errors_tests.js" %>
+
+在这些测试中，我们检查基本的 `Meteor.Errors` 的功能是否工作，以及再次确认该模板中的 `rendered` 代码是否仍在工作。
+
+我们不会在这里写 Meteor 包测试的所有细节（而且 API 尚未最终确定，很有可能会有变化），但希望它是在一定程度上自我解释其工作原理。
+
+使用下面的代码告诉 Meteor 如何在 `package.js` 中运行测试：
+
+~~~js
+Package.onTest(function(api) {
+  api.use('tmeasday:errors', 'client');
+  api.use(['tinytest', 'test-helpers'], 'client');  
+  
+  api.addFiles('errors_tests.js', 'client');
+});
+~~~
+<%= caption "packages/tmeasday:errors/package.js" %>
+
+<%= scommit "9-5-2", "为 package 添加测试。" %>
+
+然后我们就可以运行测试：
+
+~~~bash
+meteor test-packages tmeasday:errors
+~~~
+<%= caption "终端 Terminal" %>
+
+<%= screenshot "s7-1", "通过所有测试" %>
+
+### 发布 package
+
+现在我们要发布这个包，把它推送到 Meteor package 服务器，在 Atmopshere 中显示出来，让全世界的人都可使用。
+
+幸运的是这很容易。我们只是 `cd` 到包的目录，运行命令 `meteor publish --create`：
+
+~~~bash
+cd packages/tmeasday:errors
+meteor publish --create
+~~~
+<%= caption "终端 Terminal" %>
+
+既然包已经发布，我们可以从项目中删除它，然后直接从 Atmopshere 重新添加它：
+
+~~~bash
+rm -r packages/errors
+meteor add tmeasday:errors
+~~~
+<%= caption "终端 Terminal（在应用最高级别运行）" %>
+
+<%= scommit "9-5-4", "从开发 tree 中删除 package。" %>
+
+现在我们应该看到 Meteor 第一次下载了我们的 package。很棒！
+
+和往常的附录章节一样，确保先恢复你所做的改动，然后再进行下一章（或者在阅读本书其他章节时，考虑你所做的改动。）
