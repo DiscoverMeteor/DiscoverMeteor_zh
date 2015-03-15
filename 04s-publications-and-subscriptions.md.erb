@@ -117,7 +117,7 @@ Meteor.subscribe('posts', 'bob-smith');
 // 在客户端
 Template.posts.helpers({
   posts: function(){
-    return Posts.find(author: 'bob-smith', category: 'JavaScript');
+    return Posts.find({author: 'bob-smith', category: 'JavaScript'});
   }
 });
 ~~~
