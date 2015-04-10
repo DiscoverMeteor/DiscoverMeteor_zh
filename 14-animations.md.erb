@@ -99,7 +99,7 @@ Hooks 的全部清单如下：
         {{> postItem}}
       {{/each}}
     </div>
-    
+
     {{#if nextPath}}
       <a class="load-more" href="{{nextPath}}">Load more</a>
     {{else}}
@@ -117,16 +117,16 @@ Hooks 的全部清单如下：
 
 <%= gifscreenshot "14-1", "没有动画效果的帖子列表。" %>
 
-现在让我们加入 `_uihooks`。在模板 `rendered` 回调函数中，选择 `.wrapper` div，并定义一个 `moveElement` 的 hook。
+现在让我们加入 `_uihooks`。在模板 `onRendered` 回调函数中，选择 `.wrapper` div，并定义一个 `moveElement` 的 hook。
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       // 现在不做任何事情
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "1~7" %>
@@ -161,12 +161,12 @@ Template.postsList.rendered = function () {
 - [`nextUntil(selector)`](http://api.jquery.com/nextUntil/)：取得所有目标元素之后到（但不包含）匹配 `selector` 的元素。
 - [`insertBefore(selector)`](http://api.jquery.com/insertBefore/)：在匹配 `selector` 的元素之前插入另一个元素。
 - [`removeClass(class)`](http://api.jquery.com/removeClass/)：如果该元素有 `class` CSS 类，删除它。
-- [`css(propertyName, propertyValue)`](http://api.jquery.com/css/)：设置 CSS `propertyName` 属性为 `propertyValue`。 
-- [`height()`](http://api.jquery.com/height/)：取得该元素的高度。 
+- [`css(propertyName, propertyValue)`](http://api.jquery.com/css/)：设置 CSS `propertyName` 属性为 `propertyValue`。
+- [`height()`](http://api.jquery.com/height/)：取得该元素的高度。
 - [`addClass(class)`](http://api.jquery.com/addClass/)：为元素添加 `class` CSS 类。
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       var $node = $(node), $next = $(next);
@@ -202,7 +202,7 @@ Template.postsList.rendered = function () {
       $inBetween.addClass('animate').css('top', 0);
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 
@@ -242,7 +242,7 @@ Template.postsList.rendered = function () {
 首先，我们渐入新帖子（注意为了简单，我们在此用 JavaScript 动画）：
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -254,7 +254,7 @@ Template.postsList.rendered = function () {
       //...
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "3~7" %>
@@ -270,7 +270,7 @@ Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'}
 其次，我们动画淡出删除的帖子：
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -287,7 +287,7 @@ Template.postsList.rendered = function () {
       });
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
 <%= highlight "12~16" %>
@@ -332,7 +332,7 @@ Template.postsList.rendered = function () {
 是时候添加页面过渡代码了。代码看起来很熟悉，因为这和我们添加和删除帖子时的代码完全一致：
 
 ```js
-Template.layout.rendered = function() {
+Template.layout.onRendered(function() {
   this.find('#main')._uihooks = {
     insertElement: function(node, next) {
       $(node)
@@ -346,7 +346,7 @@ Template.layout.rendered = function() {
       });
     }
   }
-}
+});
 ```
 <%= caption "/client/templates/application/layout.js" %>
 
