@@ -192,7 +192,7 @@ Template.postsList.onRendered(function () {
       // push every other element down (or up) to put them back
       $inBetween
         .removeClass('animate')
-        .css('top', oldTop < newTop ? height : -1 * height)
+        .css('top', oldTop < newTop ? height : -1 * height);
 
       // 强制重绘
       $node.offset();
@@ -257,7 +257,7 @@ Template.postsList.onRendered(function () {
 });
 ```
 <%= caption "/client/templates/posts/post_list.js" %>
-<%= highlight "3~7" %>
+<%= highlight "3~8" %>
 
 为了更好看到效果，我们通过控制台插入新帖子，来测试动画：
 
