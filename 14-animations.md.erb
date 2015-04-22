@@ -114,7 +114,7 @@ Hooks 的全部清单如下：
   </div>
 </template>
 ```
-<%= caption "/client/templates/posts/post_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "3,7" %>
 
 在做其他事情之前，让我们看看当前**没有**动画效果的帖子列表：
@@ -132,7 +132,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "1~7" %>
 
 刚刚定义的 `moveElement` 会在元素位置改变时被调用，从而取代 Blaze 的默认行为。由于现在这个函数还是空的，意味着*什么都不会发生*。
@@ -208,7 +208,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 
 注解：
 
@@ -260,7 +260,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "3~7" %>
 
 为了更好看到效果，我们通过控制台插入新帖子，来测试动画：
@@ -293,7 +293,7 @@ Template.postsList.onRendered(function () {
   }
 });
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "12~16" %>
 
 再次，在控制台（用 `Posts.remove('somePostId')`）删除一个帖子来测试动画效果。
@@ -331,7 +331,7 @@ Template.postsList.onRendered(function () {
 
 //...
 ```
-<%= caption "/client/stylesheets/style.css" %>
+<%= caption "client/stylesheets/style.css" %>
 
 是时候添加页面过渡代码了。代码看起来很熟悉，因为这和我们添加和删除帖子时的代码完全一致：
 
@@ -352,7 +352,7 @@ Template.layout.onRendered(function() {
   }
 });
 ```
-<%= caption "/client/templates/application/layout.js" %>
+<%= caption "client/templates/application/layout.js" %>
 
 <%= gifscreenshot "14-6", "页面之间的过渡动画" %>
 
