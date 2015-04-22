@@ -291,7 +291,7 @@ UI.registerHelper('pluralize', function(n, thing) {
 ~~~
 <%= caption "client/helpers/spacebars.js" %>
 
-之前我们创建的 helper 方法都是绑定到某个模板的。但是现在我们用 `UI.registerHelper` 创建一个*全局*的 helper 方法，我们可以在任何模板中使用它:
+之前我们创建的 helper 方法都是绑定到某个模板的。但是现在我们用 `Template.registerHelper` 创建一个*全局*的 helper 方法，我们可以在任何模板中使用它:
 
 ~~~html
 <template name="postItem">

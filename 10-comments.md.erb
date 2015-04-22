@@ -494,7 +494,7 @@ var postId = Posts.insert(post);
 
 //...
 ~~~
-<%= caption "collections/posts.js" %>
+<%= caption "lib/collections/posts.js" %>
 <%= highlight "6,7" %>
 
 当我们创建一个新的评论时，使用 Mongo 的 `$inc` 操作（给一个数字字段值加一）更新相关的 `commentsCount`：
@@ -515,7 +515,7 @@ return Comments.insert(comment);
 
 //...
 ~~~
-<%= caption "collections/comments.js "%>
+<%= caption "lib/collections/comments.js "%>
 <%= highlight "9,10" %>
 
 最后只需简单地删除 `client/templates/posts/post_item.js` 的 `commentsCount` helper，因为该值可以从帖子中得到。

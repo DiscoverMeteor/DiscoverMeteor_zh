@@ -322,7 +322,7 @@ Router.route('/:postsLimit?', {
 
 让我们一步接一步的往下看。首先，我们的创建一个继承 `RouteController` 的控制器。然后像之前一样设置 `template` 属性，然后添加一个新的 `increment` 属性。
 
-然后我们定义一个 `limit` 函数用来返回当前限制的数量，然后定义一个 `findOptions` 函数用来返回 options 对象。这看起来像是个对于的步骤，但是我们后面会用到它。
+然后我们定义一个 `postsLimit` 函数用来返回当前限制的数量，然后定义一个 `findOptions` 函数用来返回 options 对象。这看起来像是个对于的步骤，但是我们后面会用到它。
 
 接下来我们定义 `waitOn` 和 `data` 函数，除了他们现在会用到新的 `findOptions` 函数外其余和之前相同。
 
@@ -373,7 +373,7 @@ PostsListController = RouteController.extend({
 
 让我们来深入的看一下 router 带来的魔术。记住 `postsList` route (它将继承 `PostsListController` 控制器) 使用一个 `postsLimit` 参数。
 
-因此当我们给 `this.route.path()` 传递参数 `{postsLimit: this.limit() + this.increment}` 时，我们告诉 `postsList` route 使用这个 js 对象做数据上线文建立自己的 path。
+因此当我们给 `this.route.path()` 传递参数 `{postsLimit: this.postsLimit() + this.increment}` 时，我们告诉 `postsList` route 使用这个 js 对象做数据上线文建立自己的 path。
 
 换句话说，这和使用 `{{pathFor 'postsList'}}` Spacebars 帮助方法一样， 除了我们用自己的数据上下文替换了隐式的 `this`。
 

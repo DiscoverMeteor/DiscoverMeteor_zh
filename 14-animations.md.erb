@@ -78,10 +78,14 @@ Hooks 的全部清单如下：
 ~~~css
 .post{
   position:relative;
+}
+.post.animate{
   transition:all 300ms 0ms ease-in;
 }
 ~~~
 <%= caption "client/stylesheets/style.css" %>
+
+注意我们只动画有 `.animate` CSS 的帖子。通过添加或删除 CSS 名来控制是否添加动画效果。
 
 这使步骤 5 和 6 变得简单：我们需要做的是重置 `top` 坐标值为 `0px`（默认值），帖子就会回到它们“正常的”位置。
 
