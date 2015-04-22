@@ -196,7 +196,7 @@ Template.postsList.onRendered(function () {
       // push every other element down (or up) to put them back
       $inBetween
         .removeClass('animate')
-        .css('top', oldTop < newTop ? height : -1 * height)
+        .css('top', oldTop < newTop ? height : -1 * height);
 
       // 强制重绘
       $node.offset();
