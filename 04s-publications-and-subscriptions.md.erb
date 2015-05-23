@@ -117,7 +117,7 @@ Meteor.subscribe('posts', 'bob-smith');
 // 在客户端
 Template.posts.helpers({
   posts: function(){
-    return Posts.find(author: 'bob-smith', category: 'JavaScript');
+    return Posts.find({author: 'bob-smith', category: 'JavaScript'});
   }
 });
 ~~~
@@ -170,7 +170,7 @@ Meteor.publish('somePosts', function(){
 
 如果你已经阅读了 [Meteor 发布文档](http://docs.meteor.com/#publishandsubscribe)，你可能被诸如 `added()` 和 `ready()` 之类的用来设置客户端记录属性的函数搞晕了，而且还纠结于似乎我们从来没有使用过这些方法。
 
-原因在于 Meteor 提供了十分重要的简化：`_publishCursor()` 方法。你也没有看到我们用这个方法对吧？也许我么没有直接用，但是如果你在发布函数中返回了一个[游标](/chapter/meteor-vocabulary/)（比如，`Posts.find({'author':'Tom'})`），那个就是 Meteor 使用这个方法的时候。
+原因在于 Meteor 提供了十分重要的简化：`_publishCursor()` 方法。你也没有看到我们用这个方法对吧？也许我们没有直接用，但是如果你在发布函数中返回了一个[游标](/chapter/meteor-vocabulary/)（比如，`Posts.find({'author':'Tom'})`），那个就是 Meteor 使用这个方法的时候。
 
 当 Meteor 看到 `somePosts` 发布函数返回了一个游标，它会调用 `_publishCursor()` 去 —— 你猜猜看 —— 自动发布这个游标。
 

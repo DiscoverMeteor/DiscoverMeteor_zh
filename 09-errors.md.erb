@@ -18,7 +18,7 @@ paragraphs: 31
 
 一开始，我们需要创建一个集合来存储我们的错误。既然错误只与当前会话相关，而且不需要以任何方式长久存在，我们要在这做点新鲜的事儿，创建一个*本地集合（Local collection）*。这意味着，错误 `Errors` 集合将会只存在于*浏览器*中，并且将不作任何尝试去同步回服务器。
 
-为实现它，我们创建在 `client` 文件夹中创建错误（确保这集合只在客户端存在），我们将它的 MongoDB 集合命名为 `null` （因为集合的数据讲不会保存在服务器端的数据库中）：
+为实现它，我们在 `client` 文件夹中创建错误（确保这集合只在客户端存在），我们将它的 MongoDB 集合命名为 `null` （因为集合的数据将不会保存在服务器端的数据库中）：
 
 ~~~js
 // 本地（仅客户端）集合
@@ -130,22 +130,22 @@ throwError("我就是一个错误!");
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     };
-    
+
     Meteor.call('postInsert', post, function(error, result) {
       // display the error to the user and abort
       if (error)
         return throwError(error.reason);
-      
+
       // show this result but route anyway
       if (result.postExists)
         throwError('This link has already been posted');
-    
-      Router.go('postPage', {_id: result._id});  
+
+      Router.go('postPage', {_id: result._id});
     });
   }
 });
@@ -159,14 +159,14 @@ Template.postSubmit.events({
 Template.postEdit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var currentPostId = this._id;
-    
+
     var postProperties = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     }
-    
+
     Posts.update(currentPostId, {$set: postProperties}, function(error) {
       if (error) {
         // display the error to the user
@@ -241,19 +241,19 @@ Template.errors.helpers({
   }
 });
 
-Template.error.rendered = function() {
+Template.error.onRendered(function() {
   var error = this.data;
   Meteor.setTimeout(function () {
     Errors.remove(error._id);
   }, 3000);
-};
+});
 ~~~
 <%= caption "client/templates/includes/errors.js" %>
 <%= highlight "7~12" %>
 
 <%= commit "9-3", "在3秒后清除错误消息。" %>
 
-一旦模板在浏览器中渲染完毕，[`rendered`](http://docs.meteor.com/#template_rendered) 回调函数被触发。其中，`this` 是指当前模板实例，而 `this.data` 是当前被渲染的对象的数据（这种情况下是，一个错误）。
+一旦模板在浏览器中渲染完毕，[`onRendered`](http://docs.meteor.com/#/full/template_onRendered) 回调函数被触发。其中，`this` 是指当前模板实例，而 `this.data` 是当前被渲染的对象的数据（这种情况下是，一个错误）。
 
 ### 寻求验证
 
@@ -300,9 +300,9 @@ Template.error.rendered = function() {
 `errorMessage` 只是返回消息本身，而 `errorClass` 检查消息是否*存在*，如果为真返回 `has-error`。
 
 ~~~js
-Template.postSubmit.created = function() {
+Template.postSubmit.onCreated(function() {
   Session.set('postSubmitErrors', {});
-}
+});
 
 Template.postSubmit.helpers({
   errorMessage: function(field) {
@@ -339,7 +339,7 @@ validatePost = function (post) {
 
   if (!post.title)
     errors.title = "请填写标题";
-  
+
   if (!post.url)
     errors.url =  "请填写 URL";
 
@@ -357,26 +357,26 @@ validatePost = function (post) {
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     };
-    
+
     var errors = validatePost(post);
     if (errors.title || errors.url)
       return Session.set('postSubmitErrors', errors);
-    
+
     Meteor.call('postInsert', post, function(error, result) {
       // 向用户显示错误信息并终止
       if (error)
         return throwError(error.reason);
-      
+
       // 显示这个结果且继续跳转
       if (result.postExists)
         throwError('This link has already been posted');
-    
-      Router.go('postPage', {_id: result._id});  
+
+      Router.go('postPage', {_id: result._id});
     });
   }
 });
@@ -402,11 +402,11 @@ Meteor.methods({
       title: String,
       url: String
     });
-    
+
     var errors = validatePost(postAttributes);
     if (errors.title || errors.url)
       throw new Meteor.Error('invalid-post', "你必须为你的帖子填写标题和 URL");
-    
+
     var postWithSameLink = Posts.findOne({url: postAttributes.url});
     if (postWithSameLink) {
       return {
@@ -414,16 +414,16 @@ Meteor.methods({
         _id: postWithSameLink._id
       }
     }
-    
+
     var user = Meteor.user();
     var post = _.extend(postAttributes, {
-      userId: user._id, 
-      author: user.username, 
+      userId: user._id,
+      author: user.username,
       submitted: new Date()
     });
-    
+
     var postId = Posts.insert(post);
-    
+
     return {
       _id: postId
     };
@@ -478,9 +478,9 @@ Meteor.call('postInsert', {url: '', title: 'No URL here!'});
 然后是模板 helper：
 
 ~~~js
-Template.postEdit.created = function() {
+Template.postEdit.onCreated(function() {
   Session.set('postEditErrors', {});
-}
+});
 
 Template.postEdit.helpers({
   errorMessage: function(field) {
@@ -494,18 +494,18 @@ Template.postEdit.helpers({
 Template.postEdit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var currentPostId = this._id;
-    
+
     var postProperties = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     }
-    
+
     var errors = validatePost(postProperties);
     if (errors.title || errors.url)
       return Session.set('postEditErrors', errors);
-    
+
     Posts.update(currentPostId, {$set: postProperties}, function(error) {
       if (error) {
         // 向用户显示错误消息
@@ -515,10 +515,10 @@ Template.postEdit.events({
       }
     });
   },
-  
+
   'click .delete': function(e) {
     e.preventDefault();
-    
+
     if (confirm("Delete this post?")) {
       var currentPostId = this._id;
       Posts.remove(currentPostId);

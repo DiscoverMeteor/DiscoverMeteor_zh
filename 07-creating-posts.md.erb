@@ -109,12 +109,12 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     };
-    
+
     post._id = Posts.insert(post);
     Router.go('postPage', post);
   }
@@ -316,18 +316,18 @@ Meteor 内置方法是一种服务器端方法提供给客户端调用。其实�
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     };
-    
+
     Meteor.call('postInsert', post, function(error, result) {
       // 显示错误信息并退出
       if (error)
         return alert(error.reason);
-      
-      Router.go('postPage', {_id: result._id});  
+
+      Router.go('postPage', {_id: result._id});
     });
   }
 });
@@ -337,11 +337,11 @@ Template.postSubmit.events({
 
 `Meteor.call` 方法通过第一个参数来调用其方法。你可以为调用方法提供参数（在这种情况下，由表单数据来构建的 `post` 对象），最后加上一个回调，它将在服务器的方法完成后执行。
 
-Meteor 方法回调总会有两个参数，`error` 和 `result`。如果 `error` 参数由于某种原因存在的话，我们会警告用户（使用 `reture` 来终止回调）。如果正常运行的话，我们将用户转到刚刚创建好的帖子评论页面。
+Meteor 方法回调总会有两个参数，`error` 和 `result`。如果 `error` 参数由于某种原因存在的话，我们会警告用户（使用 `return` 来终止回调）。如果正常运行的话，我们将用户转到刚刚创建好的帖子评论页面。
 
 ### 安全检查
 
-我们趁现在这个机会添加 [`audit-argument-checks`](http://docs.meteor.com/#auditargumentchecks) 包来增加一些安全性。
+我们趁现在这个机会添加 [`audit-argument-checks`](http://docs.meteor.com/#full/auditargumentchecks) 包来增加一些安全性。
 
 这个包让你根据预定义的模式检查任何 JavaScript 对象。对于我们来说，我们使用它来检查调用方法的用户是否登陆（通过确认 `Meteor.userId()` 是否是个 `String` 字符串），然后 `postAttributes` 对象是否包含 `title` 和` url` 字符串，来保证我们不会添加任意数据到数据库中。
 
@@ -359,16 +359,16 @@ Meteor.methods({
       title: String,
       url: String
     });
-    
+
     var user = Meteor.user();
     var post = _.extend(postAttributes, {
-      userId: user._id, 
-      author: user.username, 
+      userId: user._id,
+      author: user.username,
       submitted: new Date()
     });
-    
+
     var postId = Posts.insert(post);
-    
+
     return {
       _id: postId
     };
@@ -404,7 +404,7 @@ Meteor.methods({
       title: String,
       url: String
     });
-    
+
     var postWithSameLink = Posts.findOne({url: postAttributes.url});
     if (postWithSameLink) {
       return {
@@ -412,16 +412,16 @@ Meteor.methods({
         _id: postWithSameLink._id
       }
     }
-    
+
     var user = Meteor.user();
     var post = _.extend(postAttributes, {
-      userId: user._id, 
-      author: user.username, 
+      userId: user._id,
+      author: user.username,
       submitted: new Date()
     });
-    
+
     var postId = Posts.insert(post);
-    
+
     return {
       _id: postId
     };
@@ -441,22 +441,22 @@ Meteor.methods({
 Template.postSubmit.events({
   'submit form': function(e) {
     e.preventDefault();
-    
+
     var post = {
       url: $(e.target).find('[name=url]').val(),
       title: $(e.target).find('[name=title]').val()
     };
-    
+
     Meteor.call('postInsert', post, function(error, result) {
       // 向用户显示错误信息并终止
       if (error)
         return alert(error.reason);
-      
+
       // 显示结果，跳转页面
       if (result.postExists)
         alert('This link has already been posted（该链接已经存在）');
-    
-      Router.go('postPage', {_id: result._id});  
+
+      Router.go('postPage', {_id: result._id});
     });
   }
 });

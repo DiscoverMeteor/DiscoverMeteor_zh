@@ -37,7 +37,7 @@ meteor add iron:router
 
 在本章我们会接触很多路由器的不同功能。如果你对类似 Rails 的框架有一定实践经验的话，你可能已经很熟悉大部分的这些词汇概念了。但是如果没有的话，这里有一个快速词汇表让你来了解一下：
 
-- **路由规则（Route）**：路由规则是路由的基本元素。它的工作就是当用户访问 App 的某个 URL 的时候，告诉 App 应该做什么，返回什么东西。 
+- **路由规则（Route）**：路由规则是路由的基本元素。它的工作就是当用户访问 App 的某个 URL 的时候，告诉 App 应该做什么，返回什么东西。
 - **路径（Path）**：路径是访问 App 的 URL。它可以是静态的（`/terms_of_service`）或者动态的（`/posts/xyz`），甚至还可以包含查询参数（`/search?keyword=meteor`）。
 - **目录（Segment）**：路径的一部分，使用正斜杠（`/`）进行分隔。
 - **Hooks**：Hooks 是可以执行在路由之前，之后，甚至是路由正在进行的时候。一个典型的例子是，在显示一个页面之前检测用户是否拥有这个权限。
@@ -46,7 +46,7 @@ meteor add iron:router
 - **布局（Layout）**：你可以想象成一个数码相框的布局。它们包含所有的 HTML 代码放置在当前的模板中，即使模板发生改变它们也不会变。
 - **控制器（Controller）**：有时候，你会发现很多你的模板都在重复使用一些参数。为了不重复你的代码，你可以让这些路由规则继承一个**路由控制器（Routing Controller）**去包含所有的路由逻辑。
 
-关于更多 Iron Router 的信息，请查看  [GitHub上面的完整文档](https://github.com/EventedMind/iron-router). 
+关于更多 Iron Router 的信息，请查看  [GitHub上面的完整文档](https://github.com/EventedMind/iron-router).
 
 <% end %>
 
@@ -76,7 +76,7 @@ Iron Router 负责处理在 HTML `<body>` 标签里面该呈现什么，让我�
 ~~~html
 <template name="layout">
   <div class="container">
-    <header class="navbar navbar-default" role="navigation"> 
+    <header class="navbar navbar-default" role="navigation">
       <div class="navbar-header">
         <a class="navbar-brand" href="/">Microscope</a>
       </div>
@@ -91,7 +91,7 @@ Iron Router 负责处理在 HTML `<body>` 标签里面该呈现什么，让我�
 
 你会注意到我们已经把 `yield` helper 取代了 `postsList` 模板。
 
-完成之后，我们浏览器标签中的内容会消失，浏览器控制台会显示一个错误。这是因为我们还没有告诉路由怎样处理 `/` URL，所以它仅仅呈现一个空的模板。
+完成之后，我们浏览器标签会显示 Iron Router 默认的帮助页面。这是因为我们还没有告诉路由怎样处理 `/` URL，所以它仅仅呈现一个空的模板。
 
 接下来，我们可以恢复之前的根路径 `/` URL 映射到 `postsList` 模板。然后我们在根目录创建一个 `/lib` 目录，并在里面创建 `router.js` 文件：
 
@@ -129,7 +129,7 @@ Router.route('/', {name: 'postsList'});
 我们希望主页链接到帖子列表页面，所以除了指定静态的 `/` URL ，我们还可以使用 Spacebars helper。虽然它们的效果是一样的，不过这给了我们更多的灵活性，如果我们更改了路由规则的映射路径，helper 仍然可以输出正确的 URL 。
 
 ~~~html
-<header class="navbar navbar-default" role="navigation"> 
+<header class="navbar navbar-default" role="navigation">
   <div class="navbar-header">
     <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
   </div>
@@ -144,7 +144,7 @@ Router.route('/', {name: 'postsList'});
 
 ### 等待数据
 
-如果你要部署当前版本的 App（或启动起来去使用上面的链接），你会注意到在所以帖子完全出现之前，列表里面会空了一段时间。这是因为在第一次加载页面的时候，要等到 `posts` 订阅完成后，即从服务器抓取完帖子的数据，才能有帖子显示在页面上。
+如果你要部署当前版本的 App（或启动起来去使用上面的链接），你会注意到在所有帖子完全出现之前，列表里面会空了一段时间。这是因为在第一次加载页面的时候，要等到 `posts` 订阅完成后，即从服务器抓取完帖子的数据，才能有帖子显示在页面上。
 
 这应该要有一个更好的用户体验，比如提供一些视觉上的反馈让用户知道正在读取数据，这样用户才会去继续等待。
 
@@ -346,7 +346,7 @@ Router.route('/posts/:_id', {
 
 ### HTML5 pushState
 
-这里我们需要知道的是，这些 URL 变化的产生原因是正在使用 [HTML5 pushState](https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history?redirectlocale=en-US&redirectslug=Web%2FGuide%2FDOM%2FManipulating_the_browser_history). 
+这里我们需要知道的是，这些 URL 变化的产生原因是正在使用 [HTML5 pushState](https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history?redirectlocale=en-US&redirectslug=Web%2FGuide%2FDOM%2FManipulating_the_browser_history).
 
 路由器通过处理 URLs 的点击去访问网站的内部，这样可以防止浏览器跳出我们的 App ，而不只是为了必要的改变 App 的状态。
 

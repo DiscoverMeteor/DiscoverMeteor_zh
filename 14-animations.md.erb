@@ -78,10 +78,14 @@ Hooks 的全部清单如下：
 ~~~css
 .post{
   position:relative;
+}
+.post.animate{
   transition:all 300ms 0ms ease-in;
 }
 ~~~
 <%= caption "client/stylesheets/style.css" %>
+
+注意我们只动画有 `.animate` CSS 的帖子。通过添加或删除 CSS 名来控制是否添加动画效果。
 
 这使步骤 5 和 6 变得简单：我们需要做的是重置 `top` 坐标值为 `0px`（默认值），帖子就会回到它们“正常的”位置。
 
@@ -99,7 +103,7 @@ Hooks 的全部清单如下：
         {{> postItem}}
       {{/each}}
     </div>
-    
+
     {{#if nextPath}}
       <a class="load-more" href="{{nextPath}}">Load more</a>
     {{else}}
@@ -110,25 +114,25 @@ Hooks 的全部清单如下：
   </div>
 </template>
 ```
-<%= caption "/client/templates/posts/post_list.html" %>
+<%= caption "client/templates/posts/posts_list.html" %>
 <%= highlight "3,7" %>
 
 在做其他事情之前，让我们看看当前**没有**动画效果的帖子列表：
 
 <%= gifscreenshot "14-1", "没有动画效果的帖子列表。" %>
 
-现在让我们加入 `_uihooks`。在模板 `rendered` 回调函数中，选择 `.wrapper` div，并定义一个 `moveElement` 的 hook。
+现在让我们加入 `_uihooks`。在模板 `onRendered` 回调函数中，选择 `.wrapper` div，并定义一个 `moveElement` 的 hook。
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       // 现在不做任何事情
     }
   }
-}
+});
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "1~7" %>
 
 刚刚定义的 `moveElement` 会在元素位置改变时被调用，从而取代 Blaze 的默认行为。由于现在这个函数还是空的，意味着*什么都不会发生*。
@@ -161,12 +165,12 @@ Template.postsList.rendered = function () {
 - [`nextUntil(selector)`](http://api.jquery.com/nextUntil/)：取得所有目标元素之后到（但不包含）匹配 `selector` 的元素。
 - [`insertBefore(selector)`](http://api.jquery.com/insertBefore/)：在匹配 `selector` 的元素之前插入另一个元素。
 - [`removeClass(class)`](http://api.jquery.com/removeClass/)：如果该元素有 `class` CSS 类，删除它。
-- [`css(propertyName, propertyValue)`](http://api.jquery.com/css/)：设置 CSS `propertyName` 属性为 `propertyValue`。 
-- [`height()`](http://api.jquery.com/height/)：取得该元素的高度。 
+- [`css(propertyName, propertyValue)`](http://api.jquery.com/css/)：设置 CSS `propertyName` 属性为 `propertyValue`。
+- [`height()`](http://api.jquery.com/height/)：取得该元素的高度。
 - [`addClass(class)`](http://api.jquery.com/addClass/)：为元素添加 `class` CSS 类。
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     moveElement: function (node, next) {
       var $node = $(node), $next = $(next);
@@ -192,7 +196,7 @@ Template.postsList.rendered = function () {
       // push every other element down (or up) to put them back
       $inBetween
         .removeClass('animate')
-        .css('top', oldTop < newTop ? height : -1 * height)
+        .css('top', oldTop < newTop ? height : -1 * height);
 
       // 强制重绘
       $node.offset();
@@ -202,9 +206,9 @@ Template.postsList.rendered = function () {
       $inBetween.addClass('animate').css('top', 0);
     }
   }
-}
+});
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 
 注解：
 
@@ -242,7 +246,7 @@ Template.postsList.rendered = function () {
 首先，我们渐入新帖子（注意为了简单，我们在此用 JavaScript 动画）：
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -254,9 +258,9 @@ Template.postsList.rendered = function () {
       //...
     }
   }
-}
+});
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "3~7" %>
 
 为了更好看到效果，我们通过控制台插入新帖子，来测试动画：
@@ -270,7 +274,7 @@ Meteor.call('postInsert', {url: 'http://apple.com', title: 'Testing Animations'}
 其次，我们动画淡出删除的帖子：
 
 ```js
-Template.postsList.rendered = function () {
+Template.postsList.onRendered(function () {
   this.find('.wrapper')._uihooks = {
     insertElement: function (node, next) {
       $(node)
@@ -287,9 +291,9 @@ Template.postsList.rendered = function () {
       });
     }
   }
-}
+});
 ```
-<%= caption "/client/templates/posts/post_list.js" %>
+<%= caption "client/templates/posts/posts_list.js" %>
 <%= highlight "12~16" %>
 
 再次，在控制台（用 `Posts.remove('somePostId')`）删除一个帖子来测试动画效果。
@@ -327,12 +331,12 @@ Template.postsList.rendered = function () {
 
 //...
 ```
-<%= caption "/client/stylesheets/style.css" %>
+<%= caption "client/stylesheets/style.css" %>
 
 是时候添加页面过渡代码了。代码看起来很熟悉，因为这和我们添加和删除帖子时的代码完全一致：
 
 ```js
-Template.layout.rendered = function() {
+Template.layout.onRendered(function() {
   this.find('#main')._uihooks = {
     insertElement: function(node, next) {
       $(node)
@@ -346,9 +350,9 @@ Template.layout.rendered = function() {
       });
     }
   }
-}
+});
 ```
-<%= caption "/client/templates/application/layout.js" %>
+<%= caption "client/templates/application/layout.js" %>
 
 <%= gifscreenshot "14-6", "页面之间的过渡动画" %>
 
