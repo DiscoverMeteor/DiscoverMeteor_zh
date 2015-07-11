@@ -339,7 +339,7 @@ Meteor 方法回调总会有两个参数，`error` 和 `result`。如果 `error`
 
 ### 安全检查
 
-我们趁现在这个机会添加 [`audit-argument-checks`](http://docs.meteor.com/#full/auditargumentchecks) 包来增加一些安全性。
+我们趁现在这个机会添加 [`audit-argument-checks`](http://docs.meteor.com/#/full/auditargumentchecks) 包来增加一些安全性。
 
 这个包让你根据预定义的模式检查任何 JavaScript 对象。对于我们来说，我们使用它来检查调用方法的用户是否登陆（通过确认 `Meteor.userId()` 是否是个 `String` 字符串），然后 `postAttributes` 对象是否包含 `title` 和` url` 字符串，来保证我们不会添加任意数据到数据库中。
 
