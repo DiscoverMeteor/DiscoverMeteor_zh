@@ -50,21 +50,19 @@ meteor add accounts-password
 ~~~html
 <template name="header">
   <nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
-      </div>
-      <div class="collapse navbar-collapse" id="navigation">
-        <ul class="nav navbar-nav navbar-right">
-          {{> loginButtons}}
-        </ul>
-      </div>
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{{pathFor 'postsList'}}">Microscope</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navigation">
+      <ul class="nav navbar-nav navbar-right">
+        {{> loginButtons}}
+      </ul>
     </div>
   </nav>
 </template>
@@ -168,4 +166,3 @@ Object {_id: "kYdBd9hr3fWPGPcii", username: "tmeasday"}
 这个例子向我们展示了本地集合是如何成为一个**安全的**数据库**数据子集**。登录用户只能看到那些足够去配合客户端工作（例如：登陆）的集合属性。以后你会知道这是一个非常值得学习的模式。
 
 但这并不意味着你就不能把更多的用户数据发布出来。你可以参考[ Meteor 说明文档](http://docs.meteor.com/#meteor_users)，看看 `Meteor.users` 集合是如何选择性地发布更多的字段。
-
