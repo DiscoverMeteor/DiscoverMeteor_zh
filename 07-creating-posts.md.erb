@@ -42,7 +42,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 
 ### 在头部（Header）添加一个链接
 
-定义了这条路线后，现在我们可以在头部模板（Header）中添加一个访问我们提交页面的链接：
+定义了这条路由后，现在我们可以在头部模板（Header）中添加一个访问我们提交页面的链接：
 
 ~~~html
 <template name="header">
@@ -70,7 +70,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 <%= caption "client/templates/includes/header.html" %>
 <%= highlight "14~16" %>
 
-设置了这个路线就意味着如果用户浏览 `/submit` 的 URL 路径， Meteor 会显示 `postSubmit` 模板。 下面让我们来写这个模板吧：
+设置了这个路由就意味着如果用户浏览 `/submit` 的 URL 路径， Meteor 会显示 `postSubmit` 模板。 下面让我们来写这个模板吧：
 
 ~~~html
 <template name="postSubmit">
