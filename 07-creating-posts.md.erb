@@ -68,7 +68,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 </template>
 ~~~
 <%= caption "client/templates/includes/header.html" %>
-<%= highlight "14~16" %>
+<%= highlight "13~15" %>
 
 设置了这个路由就意味着如果用户浏览 `/submit` 的 URL 路径， Meteor 会显示 `postSubmit` 模板。 下面让我们来写这个模板吧：
 
@@ -266,7 +266,7 @@ Router.onBeforeAction('dataNotFound', {only: 'postPage'});
 Router.onBeforeAction(requireLogin, {only: 'postSubmit'});
 ~~~
 <%= caption "lib/router.js" %>
-<%= highlight "5~10" %>
+<%= highlight "5~9" %>
 
 <%= commit "7-4", "在等待登录的时候显示一个加载画面" %>
 
