@@ -24,11 +24,11 @@ $ curl https://install.meteor.com | sh
 
 ### 选择**不安装** Meteor
 
-如果你无法或者不想在本地安装 Meteor ，我们推荐你使用 [Nitrous.io](http://nitrous.io)。
+如果你不能或者不想在本地安装 Meteor，我们推荐你使用 [Nitrous.io](http://nitrous.io)。
 
-使用 Nitrous.io 可以让你在览器中直接编辑代码并运行程序。我们撰写了[一篇简短的指南](https://www.discovermeteor.com/blog/meteor-nitrous/)，介绍如何使用 Nitrous.io。
+使用 Nitrous.io 让你可以在览器中直接编辑代码并运行程序。我们撰写了[一篇简短的指南](https://www.discovermeteor.com/blog/meteor-nitrous/)，介绍如何使用 Nitrous.io。
 
-你可以一直阅读那篇指南直到“Installing Meteor”部分，然后再回到本章，从“创建简单的应用”一节开始阅读。
+你可以阅读那篇指南一直到“Installing Meteor”的部分，然后再回到本章，从“创建简单的应用”一节开始阅读。
 
 <% end %>
 
@@ -40,7 +40,7 @@ $ curl https://install.meteor.com | sh
 $ meteor create microscope
 ~~~
 
-上述命令会下载 Meteor，然后新建一个基本可用的 Meteor 项目。命令执行完成后，会看到新建了一个文件夹，名为 `microscope/`，包含以下文件：
+上述命令会下载一些代码包，然后新建一个基本可用的 Meteor 项目。命令执行完成后，我们会看到新建了一个文件夹，名为 `microscope/`，包含以下文件：
 
 ~~~bash
 .meteor
@@ -49,7 +49,7 @@ microscope.html
 microscope.js
 ~~~
 
-Meteor 生成的应用只是一个简单的骨架，演示一些简单的模式。
+Meteor 生成的应用只是一个简单的骨架，用来演示一些简单的模式。
 
 虽然这个应用没什么功能，但也能运行。要运行应用，请切换到终端，输入下面的命令：
 
@@ -66,7 +66,7 @@ $ meteor
 
 恭喜！你的第一个 Meteor 应用顺利运行了。顺便说一下，如果想停止运行程序，只要切换到对应的终端窗口按 `ctrl+c` 键即可。
 
-如果你使用 Git，正是时候用 `git init` 来初始化你的项目仓库。
+如果你使用 Git，现在可以用 `git init` 来初始化你的项目仓库了。
 
 <% note do %>
 
@@ -84,22 +84,22 @@ $ meteor
 
 这与通常手动添加 Bootstrap 的 CSS 和 Javascript 文件的方法是没有区别的，只不过我们依赖代码包维护者来为我们更新这些文件。
 
-既然我们说到此，我们也来添加 [Underscore](http://underscorejs.org/) 代码包。 Underscore 是一个 JavaScript 工具库，对于操纵 JavaScript 数据结构非常有用。
+既然说到这里，我们也来添加 [Underscore](http://underscorejs.org/) 代码包。 Underscore 是一个 JavaScript 工具库，对于操纵 JavaScript 数据结构非常有用。
 
 `bootstrap` 代码包由 `twbs` 用户维护，所以该代码包的全名为 `twbs:bootstrap`。
 
-另一方面，`underscore` 代码包依然算作 Meteor “官方”的代码包，所以这个包没有作者：
+另一方面，`underscore` 代码包依然算作是 Meteor “官方”的代码包，所以这个包没有作者：
 
 ~~~bash
 meteor add twbs:bootstrap
 meteor add underscore
 ~~~
 
-注意的是现在我们添加了 Bootstrap **3**。而这本书中的一些截图是老版本的 Microscope 使用 Bootstrap **2** 时截取的，所有它们看起来会有稍微不同。
+请注意，现在我们添加了 Bootstrap **3**。而这本书中的一些截图是老版本的 Microscope 使用 Bootstrap **2** 时截取的，所以它们看起来会稍微不同。
 
 <%= commit "2-2", "添加 bootstrap 和 underscore 代码包" %>
 
-一旦你添加了 Bootstrap 代码包，你应会注意到我们应用的变化：
+一旦你添加了 Bootstrap 代码包，应该会注意到应用的变化：
 
 <%= screenshot "2-1b", "添加了 Bootstrap." %>
 
@@ -111,36 +111,36 @@ meteor add underscore
 
 Meteor 中的代码包有点特殊，分为五种：
 
-- Meteor 核心代码本身分成多个**核心代码包**（core package），每个 Meteor 应用中都包含，你基本上不需要花费精力来维护它们
+- Meteor 核心代码本身分成多个**核心代码包**（core package），每个 Meteor 应用中都包含，你基本上不需要花费精力去维护它们。
 - 常规 Meteor 代码包称为“**isopack**”，或同构代码包（isomorphic package，意味着它们既能在客户端也能在服务器端工作）。**第一类代码包**例如 `accounts-ui` 或 `appcache` 由 Meteor 核心团队维护，与 Meteor [捆绑](http://docs.meteor.com/#packages)在一起。
-- **第三方代码包**就是其他用户开发的 isopack 上传到 Meteor 的代码包服务器上。你可以访问 [Atmosphere](http://atmosphere.meteor.com) 或 `meteor search` 命令来浏览这些代码包。
+- **第三方代码包**就是其他用户开发的上传到 Meteor 的代码包服务器上的常规代码包。你可以访问 [Atmosphere](http://atmosphere.meteor.com) 或运行 `meteor search` 命令来浏览这些代码包。
 - **本地代码包**（local package）是自己开发的代码包，保存在 `/packages` 文件夹中。
-- **NPM 代码包**（NPM package）是 Node.js 的代码包，虽不能直接用于 Meteor，但可以在上述几种代码包中使用
+- **NPM 代码包**（NPM package）是 Node.js 的代码包，虽不能直接用于 Meteor，但可以在上述几种代码包中使用。
 
 <% end %>
 
 ### Meteor 应用的文件结构
 
-开始编写代码之前，我们必须要正确的设置项目。为了保证项目整洁，请打开 `microscope` 文件夹，删除 `microscope.html`、`microscope.js` 和 `microscope.css`。
+开始编写代码之前，我们必须要正确地设置项目。为了保证项目整洁，请打开 `microscope` 文件夹，删除 `microscope.html`、`microscope.js` 和 `microscope.css`。
 
-请在 `microscope` 文件夹中新建四个子文件夹：`/client`，`/server`，`/public` 和 `/lib`。然后在 `/client` 文件夹中新建两个空文件：`main.html` 和 `main.js`。如果程序无法运行了先别担心，从下一章开始我们会编写代码。
+请在 `microscope` 目录中新建四个子目录：`/client`，`/server`，`/public` 和 `/lib`。然后在 `/client` 目录中新建两个空文件：`main.html` 和 `main.js`。如果程序无法运行，先别担心，从下一章开始我们会编写代码。
 
-值得一提的是，上述文件夹中有一些拥有特别的作用。关于文件， Meteor 有以下几条规则：
+值得一提的是，上述目录中有一些拥有特别的作用。关于文件， Meteor 有以下几条规则：
 
-- 在 `/server` 文件夹中的代码只会在服务器端运行。
-- 在 `/client` 文件夹中的代码只会在客户端运行。
+- 在 `/server` 目录中的代码只会在服务器端运行。
+- 在 `/client` 目录中的代码只会在客户端运行。
 - 其它代码则将同时运行于服务器端和客户端上。
-- 请将所有的静态文件（字体，图片等）放置在 `/public` 文件夹中。
+- 请将所有的静态文件（字体，图片等）放置在 `/public` 目录中。
 
 知道 Meteor 以什么顺序加载文件也很有用：
 
-- 在 `/lib` 文件夹中的文件将被优先载入。
+- 在 `/lib` 目录中的文件将被优先载入。
 - 所有以 `main.*` 命名的文件将在其他文件载入后载入。
 - 其他文件以文件名的字母顺序载入。
 
-需要注意的是，即便 Meteor 包含上述规则，这并不意味着它强制你为你的 Meteor 应用采用任何预设的文件结构。上述结构只是我们的建议，并不是一成不变的。
+需要注意的是，即便 Meteor 包含上述规则，这并不意味着它强制你为 Meteor 应用采用任何预设的文件结构。上述结构只是我们的建议，并不是一成不变的。
 
-对此如果你想了解更多，我们强烈建议你参阅 [Meteor 官方文档](http://docs.meteor.com/#structuringyourapp)。
+如果你想对此了解更多，我们强烈建议你参阅 [Meteor 官方文档](http://docs.meteor.com/#structuringyourapp)。
 
 <% note do %>
 
@@ -148,21 +148,21 @@ Meteor 中的代码包有点特殊，分为五种：
 
 如果你之前有过在其它诸如 Ruby on Rails 框架下开发的经历，此时你心中可能会有这样的疑问， Meteor 采用 MVC（Model View Controller）架构吗？
 
-简短的回答是，不。与 Rails 不同，Meteor 并不为你的应用强加任何预设的架构。因此本书将直接给出我们认为最合理的代码，而不对任何现有架构作过多考虑。
+简短的回答是，不。与 Rails 不同，Meteor 并不为应用强加任何预设的架构。因此本书将直接给出我们认为最合理的代码，而不对任何现有架构作过多考虑。
 
 <% end %>
 
-### 不需要 public 文件夹？
+### 不需要 public 目录？
 
-好吧，我们承认在之前小小的忽悠了大家一下。其实我们并不需要为我们的应用建立一个 `public/` 文件夹，因为 Microscope 并不需要使用任何的静态文件。但是值得注意的是，大多数 Meteor 应用都会或多或少使用一些图片，因此我们觉得 `public/` 文件夹还是值得一谈的。
+好吧，我们承认在之前小小地忽悠了大家一下。其实我们并不需要为我们的应用建立一个 `public/` 目录，因为 Microscope 并不需要使用任何的静态文件。但是值得注意的是，大多数 Meteor 应用都会或多或少使用一些图片，因此我们觉得 `public/` 目录还是有必要的。
 
-另外，你可能注意到了一个隐藏的 `.meteor` 文件夹。这是 Meteor 存储它内部代码的地方，尝试更改里面的内容并不是什么好主意。事实上，你根本不需要关心其中的内容。有两个例外是 `.meteor/packages` 文件和 `.meteor/release` 文件。它们分别列出了你安装的所有智能代码包和你使用的 Meteor 版本。当你为你的应用添加代码包或更改 Meteor 版本时，查看这两个文件的变更可能会为你带来一些帮助。
+另外，你可能注意到了一个隐藏的 `.meteor` 目录。这是 Meteor 存储内部代码的地方，尝试更改里面的内容并不是什么好主意。事实上，你根本不需要关心其中的内容。有两个例外是 `.meteor/packages` 文件和 `.meteor/release` 文件。它们分别列出了你安装的所有智能代码包和你使用的 Meteor 版本。当你为应用添加代码包或更改 Meteor 版本时，查看这两个文件的变更可能会为你带来一些帮助。
 
 <% note do %>
 
 ### 下划线命名法 vs 驼峰命名法
 
-对于历史悠久的下划线命名法（`my_variable`）和驼峰命名法（`myVariable`）我们认为选择哪种并不重要，只要你坚持在项目中贯彻它。
+对于历史悠久的下划线命名法（`my_variable`）和驼峰命名法（`myVariable`）我们认为选择哪种并不重要，只要你坚持在项目中保持一致。
 
 在本书中，我们将采用驼峰命名法，因为它是 JavaScript 中的惯例（毕竟它叫 JavaScript 而不是 java_script 呀！）。
 
@@ -172,9 +172,9 @@ Meteor 中的代码包有点特殊，分为五种：
 
 ### 搞定 CSS
 
-本书并不侧重于 CSS 。所以为了避免在 CSS 细节上花费过多时间，我们决定在本书一开始就为大家提供完整的 CSS 文件。因此你不必再担心这个问题。
+本书并不重点讲 CSS 。所以为了避免在 CSS 细节上花费过多时间，我们决定在本书一开始就为大家提供完整的 CSS 文件。因此你不必再担心这个问题。
 
-CSS 文件将被 Meteor 自动加载并简化。因此，不同于其它的静态文件都被放置于 `/public` 文件夹，请将 CSS 文件放入 `/client` 文件夹。请创建一个 `client/stylesheets/` 文件夹并将以下 `style.css` 文件放置入内。
+CSS 文件将被 Meteor 自动加载并简化。因此，不同于其它的静态文件都被放置于 `/public` 目录，请将 CSS 文件放入 `/client` 目录。请创建一个 `client/stylesheets/` 目录并将以下 `style.css` 文件放置其中。
 
 ~~~css
 .grid-block, .main, .post, .comments li, .comment-form {
