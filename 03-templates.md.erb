@@ -4,15 +4,15 @@ slug: templates
 date: 0003/01/01
 number: 3
 points: 1
-contents: 学习关于 Meteor 的模板语言：Spacebars。 |创建三个模板。|学习 Meteor 如何处理控制。|通过静态数据建立一个基本原型。
+contents: 学习关于 Meteor 的模板语言：Spacebars | 创建三个模板 | 学习 Meteor 如何处理控制 | 通过静态数据建立一个基本原型
 paragraphs: 46
 ---
 
 为了更容易地进入 Meteor 的开发，我们将采用从外向内的方法来搭建项目。换句话说，我们将首先建立一个 HTML/JavaScript 的外壳，然后把它放到我们的项目里，内部细节处理稍后再说。
 
-这意味着在本章中，我们只关注 `/client` 目录里面的事情。
+这意味着，在本章中，我们只关注 `/client` 目录里面的事情。
 
-让我们先在 `/client` 目录创建一个 `main.html`  文件，并写入以下代码：
+让我们先在 `/client` 目录中创建一个文件 `main.html`，并写入以下代码：
 
 ~~~html
 <head>
@@ -33,25 +33,25 @@ paragraphs: 46
 ~~~
 <%= caption "client/main.html" %>
 
-这是我们主要的 App 模板。在上面看到很多熟悉的 HTML 标签，除了这个 `{{> postsList}}` 标签，它是 `postsList` 模板的插入点，等一下我们就会说到。现在，先让我们创建更多的模板吧。
+这是我们的 App 的主要模板。在上面我们看到很多熟悉的 HTML 标签，除了这个 `{{> postsList}}` 标签，它是 `postsList` 模板的插入点，等一下我们就会说到。现在，先让我们创建更多的模板吧。
 
 ### Meteor 模板
 
-我们项目的核心是社会新闻网站，它是由一系列的帖子所组成的，而这正是我们要调用模板的原因。
+我们项目的核心是社会新闻网站，它是由一系列的帖子所组成的，而这正是我们要使用模板的原因。
 
-我们先在 `/client` 里面创建一个 `/templates` 目录。这里用来放我们所有的模板，这样可以保持项目结构的清晰整洁，接着在 `/templates` 里面再创建 `/posts` 目录来存放与帖子相关的模板。
+我们先在 `/client` 里面创建一个目录 `/templates`。这里用来存放所有的模板，这样可以保持项目结构的清晰整洁，接着在 `/templates` 里面再创建 `/posts` 目录，用来存放与帖子相关的模板。
 
 <% note do %>
 
 ### 查找文件
 
-Meteor 的强大之处在于文件的查找。无论你把代码文件放在 `/client` 目录下的任何地方，Meteor 都可以找到它并且正确地进行编译。这意味着你永远都不需要手动编写 JavaScript 或 CSS 文件的调用路径。
+Meteor 的强大之处在于文件的查找。无论你把代码文件放在 `/client` 目录下的任何地方，Meteor 都可以找到并且正确地进行编译。这意味着你永远都不需要手动编写 JavaScript 或 CSS 文件的调用路径。
 
-这也意味着你可能会把所有的文件放在同一目录，甚至所有的代码放在同一个文件。但由于 Meteor 会把一切的代码都编译到一个压缩的文件里面，因此我们更偏向于把项目弄得井井有条，使用更整洁的文件结构，提高项目的可读性。
+这也意味着，你可能会把所有的文件放在同一目录中，甚至所有的代码放在同一个文件里。但由于 Meteor 会把一切的代码都编译到一个压缩的文件里面，因此我们更偏向于把项目布置得井井有条，使用更整洁的文件结构，提高项目的可读性。
 
 <% end %>
 
-接下来我们开始创建第二个模板。在 `client/templates/posts` 目录中，创建  `posts_list.html` :
+接下来，我们开始创建第二个模板。在 `client/templates/posts` 目录中，创建  `posts_list.html`:
 
 ~~~html
 <template name="postsList">
@@ -77,9 +77,9 @@ Meteor 的强大之处在于文件的查找。无论你把代码文件放在 `/c
 ~~~
 <%= caption "client/templates/posts/post_item.html" %>
 
-注意模板的 `name="postsList"` 属性，它的作用是告诉 Meteor 去根据这个名称来跟踪这个模板的位置。（注意的是实际文件的文件名不相关。）
+注意模板的 `name="postsList"` 属性，它的作用是告诉 Meteor 去根据这个名称跟踪这个模板的位置。（注意，与实际文件的文件名不相关。）
 
-是时候来介绍 Meteor 的模板系统 **Spacebars** 了。Spacebar 就是简单的 HTML 加上三件事情：*Inclusion* （有时也称作 “partial”）、*Expression* 和 *Block Helper*。
+现在介绍 Meteor 的模板系统 **Spacebars**。Spacebar 就是简单的 HTML 加上三件事情：*Inclusion* （有时也称作 “partial”）、*Expression* 和 *Block Helper*。
 
 *Inclusion* ：通过 `{{> templateName}}` 标记，简单直接地告诉 Meteor 这部分需要用相同名称的模板来取代（在我们的例子中就是 `postItem` ）。
 
@@ -91,13 +91,13 @@ Meteor 的强大之处在于文件的查找。无论你把代码文件放在 `/c
 
 ### 进一步学习
 
-你如果想了解更多关于 Spacebars，可以参考 [Spacebars 文档](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md)。
+你如果想了解更多关于 Spacebars 的内容，可以参考 [Spacebars 文档](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md)。
 
 <% end %>
 
-有了这些知识，我们就可以很容易去理解了。
+有了这些知识，我们就可以很容易理解上面的内容了。
 
-首先，在 `postsList` 模板里，我们通过 `{{#each}}…{{/each}}` Block Helper 去遍历一个 `posts` 对象。然后，每次迭代我们去包含 `postItem` 模板。
+首先，在 `postsList` 模板里，我们通过 `{{#each}}…{{/each}}` Block Helper 遍历 `posts` 对象。然后，每次迭代包含了 `postItem` 模板。
 
 这个 `posts` 对象来自哪里？好问题。它实际上是一个 **模板 helper**，你可以想象它是动态值的占位符（placeholder）。
 
@@ -105,23 +105,23 @@ Meteor 的强大之处在于文件的查找。无论你把代码文件放在 `/c
 
 ### 模板 Helper
 
-到目前为止我们已经学会了使用 Spacebars ，这只是在 HTML 的基础上多几个标签而已。不像其他语言如 PHP （甚至常规 HTML 页面，还包含了 JavaScript）， Meteor 只是让模板和逻辑进行分离，而这些模板本身并不需要做很多复杂的事情。
+到目前为止我们已经学会了使用 Spacebars ，这只是在 HTML 的基础上多加了几个标签而已。不像其他语言如 PHP （甚至常规 HTML 页面，还包含了 JavaScript）， Meteor 只是让模板和逻辑进行分离，而这些模板本身并不需要做很多复杂的事情。
 
 为了让连接变得更流畅，一个模板需要 **helper**。你可以想象这些 helper 就是厨师用食材（你的数据）烹饪好佳肴（模板），再由服务员端到你面前。
 
-换句话说，模板的作用局限于显示或循环变量，而 helper 则扮演着一个相当重要的角色：把值分配给每个变量。
+换句话说，模板的作用仅限于显示或循环变量，而 helper 则扮演着一个相当重要的角色：把值分配给每个变量。
 
 <% note do %>
 
 ### Contoller 控制器?
 
-我们也许会情不自禁地认为包含所有模板 helper 的文件是个 controller（控制器）。但这是很模糊的，因为 controller （至少在 MVC 情况下）通常有些不同的作用。
+我们也许会情不自禁地认为，包含所有模板 helper 的文件是一个 controller（控制器）。但这是很模糊的，因为 controller （至少在 MVC 情况下）通常有不同的作用。
 
-所以我们决定远离那个术语，在谈论关于模板涉及的 JavaScript 代码时，就简单地称为“模板的 helper”或是“模板的逻辑”。
+所以我们决定远离那个术语，在谈论关于模板涉及的 JavaScript 代码时，就简单地称为 “模板的 helper” 或 “模板的逻辑”。
 
 <% end %>
 
-为简单起见，我们将采用与模板同名的方式来命名包含其 helper 的文件，区别是 **.js** 扩展名。那好让我们马上在 `/client/templates/posts` 目录下创建 `posts_list.js` 文件，开始构建我们第一个 helper：
+为简单起见，我们将采用与模板同名的方式来命名包含其 helper 的文件，区别是扩展名为 **.js**。好了，我们马上在 `/client/templates/posts` 目录中创建 `posts_list.js` 文件，开始构建我们的第一个 helper：
 
 ~~~js
 var postsData = [
@@ -144,11 +144,11 @@ Template.postsList.helpers({
 ~~~
 <%= caption "client/templates/posts/posts_list.js" %>
 
-如果你运行是正确的，你现在应该在浏览器中看到这样的画面：
+如果运行正确，你现在应该在浏览器中看到这样的画面：
 
 <%= screenshot "3-1", "我们的第一个带静态数据的模板" %>
 
-我们刚刚在做两件事情。首先我们放置一些虚拟的基本数据到 `postsData` 数组中。原本数据应该是来自数据库的，但由于我们还没有学习到该怎么做（下一章揭晓），所以我们先通过使用静态数据来“作弊”。
+我们刚刚在做两件事情。首先，我们放置一些虚拟的基本数据到 `postsData` 数组中。原本数据应该是来自数据库的，但是由于我们还没有学习到该怎么做（在下一章揭晓），所以我们先通过使用静态数据来“作弊”。
 
 然后，我们使用的是 Meteor 的 `Template.postsList.helpers()` 函数，建立了 `posts` 模板 helper 来返回刚刚定义的 `postsData` 数组。
 
@@ -165,7 +165,7 @@ Template.postsList.helpers({
 ~~~
 <%= caption "client/templates/posts/posts_list.html" %>
 
-定义 `posts` helper 就就让我们的模板可以使用它，所以模板就可以遍历 `postsData` 数组并将里面的每个对象发送到 `postItem` 模板中。
+定义 `posts` helper 就是让我们的模板可以使用它，所以模板就可以遍历 `postsData` 数组并将里面的每个对象发送到 `postItem` 模板中。
 
 <%= commit "3-1", "添加了基本的 post 列表模板和静态数据。" %>
 
@@ -184,17 +184,17 @@ Template.postItem.helpers({
 ~~~
 <%= caption "client/templates/posts/post_item.js" %>
 
-这一次我们 `domain` helper 的值不再是一个数组，而是一个匿名函数。相比起我们之前简化的虚拟数据的例子，这种模式更为常见（而且更有用）。
+这一次， `domain` helper 的值不再是一个数组，而是一个匿名函数。相比起我们之前简化的虚拟数据的例子，这种模式更为常见（而且更有用）。
 
 <%= screenshot "3-2", "显示每个链接的域名。" %>
 
-这个 `domain` helper 方法通过 JavaScript 来获取一个 URL 地址并返回其域名。但是它一开始是从哪里获得 URL 地址呢？
+这个 `domain` helper 方法通过 JavaScript 来获取一个 URL 地址并返回其域名。但是它一开始是从哪里获得 URL 地址的呢？
 
-为了回答这个问题，我们需要回到我们的 `posts_list.html` 模板。`{{#each}}` 代码块不仅遍历我们数组，它还在**代码块范围内将 `this` 的值赋予被遍历的对象**。
+为了回答这个问题，我们需要回到 `posts_list.html` 模板。`{{#each}}` 代码块不仅遍历数组，它还在**代码块范围内将 `this` 的值赋予被遍历的对象**。
 
-这意味着在 `{{#each}}` 标记之间，每个 post 都可以通过 `this` 依次访问，并且一直延伸到模板 helper（`post_item.js`）中。
+这意味着，在 `{{#each}}` 标记之间，每个 post 都可以通过 `this` 依次访问，并且一直延伸到模板 helper（`post_item.js`）中。
 
-我们现在明白了为什么 `this.url` 会返回当前 post 的 URL。而且，如果我们在 `post_item.html` 模板里面使用 `{{title}}` 和 `{{url}}`，Meteor 就会知道需要去调用 `this.title` 和 `this.url` 去返回我们想要的正确值。
+我们现在明白了为什么 `this.url` 会返回当前 post 的 URL。而且，如果我们在 `post_item.html` 模板里面使用 `{{title}}` 和 `{{url}}`，Meteor 就会知道需要调用 `this.title` 和 `this.url` 返回我们想要的正确值。
 
 <%= commit "3-2", "设置 `postItem` 的 `domain` helper。" %>
 
@@ -202,15 +202,15 @@ Template.postItem.helpers({
 
 ### 神奇的 JavaScript
 
-尽管这对于 Meteor 来说并不特别，这里会简单解释一下上面“神奇的 JavaScript 代码”。首先，我们创建一个空的锚（`a`）HTML 标签并储存在内存中。
+尽管这对于 Meteor 来说并不特别，这里会简单解释一下上面 “神奇的 JavaScript 代码”。首先，我们创建一个空的锚（`a`）HTML 标签并储存在内存中。
 
 然后我们将其 `href` 属性设置为当前 post 的 URL （正如我们刚刚讲到的，`this` 在 helper 中正是当前被操作的对象）。
 
-最后，我们利用 `a` 标签的特别的 `hostname` 属性来返回 URL 的域名。
+最后，我们利用 `a` 标签的特别属性 `hostname` 返回 URL 的域名。
 
 <% end %>
 
-如果你正确地紧跟着我们的进度，这时候你就会在浏览器中看到一个 post 列表。但这个列表只是调用了静态数据，它没有利用到 Meteor 实时性的特点。我们将在下一章向你展示该如何去修改！
+如果你正确地紧跟着我们的进度，这时候你就会在浏览器中看到一个 post 列表。但是这个列表只是调用了静态数据，它没有利用到 Meteor 实时性的特点。我们将在下一章向你展示该如何修改！
 
 <% note do %>
 
@@ -218,8 +218,8 @@ Template.postItem.helpers({
 
 你可能已经注意到，当你修改文件的时候，不需要手动刷新页面，浏览器就会自动重新加载。
 
-这是因为 Meteor 跟踪了项目目录下的所有文件，当检测到其中一个文件发生改变，它就会自动刷新你的浏览器。
+这是因为 Meteor 跟踪了项目目录下的所有文件，当检测到其中一个文件发生了改变，它就会自动刷新浏览器。
 
-Meteor 的动态代码重载是相当智能的，它甚至可以在两个刷新动作之间保存你的 App 状态。
+Meteor 的动态代码重载是相当智能的，它甚至可以在两个刷新动作之间保存 App 的状态。
 
 <% end %>
