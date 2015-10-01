@@ -115,7 +115,7 @@ Meteor.setInterval(function() {
 
 [Angular](http://angularjs.org/) 是一个客户端响应式库，是 Google 的家伙们开发的。我们来比较 Meteor 和 Angular 的依赖跟踪方式。他们的实现方式非常不同。
 
-我们已经知道 Meteor 使用一些被称为 comptations 的代码来实现依赖跟踪的。这些 computations 被特殊的 "响应式" 数据源(函数)跟踪，在数据变化的时候将他们自己标记为 invalidate。当需要调用 `invalidate()` 函数时，响应式数据源_显示的_通知所有依赖。请注意这是数据变化时的一般情况，数据源也可以因为其他原因触发 invalidation。
+我们已经知道 Meteor 使用一些被称为 comptations 的代码来实现依赖跟踪的。这些 computations 被特殊的 "响应式" 数据源(函数)跟踪，在数据变化的时候将他们自己标记为 invalidate。当需要调用 `invalidate()` 函数时，响应式数据源_显式的_通知所有依赖。请注意这是数据变化时的一般情况，数据源也可以因为其他原因触发 invalidation。
 
 另外，尽管通常情况下当数据 invalidate 时 computations 只是重新运行，但是你也可以在此时指定任何你想要的行为。这些给了用户很高的响应式控制权。
 
