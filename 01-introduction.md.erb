@@ -3,7 +3,7 @@ title: 简介
 slug: introduction
 date: 0001/01/01
 number: 1
-points: 1
+level: free
 contents: Meteor 的特别之处|本书简介|本书的内容结构
 paragraphs: 35
 ---
@@ -32,23 +32,23 @@ Meteor 这个平台很强大，网页程序开发过程中的很多复杂、容�
 
 那么，你为什么要花时间学习 Meteor，而不去学其他框架呢？拨开 Meteor 的各种功能，我们认为原因只有一个：因为 Meteor 易于学习。
 
-而且，和其他框架不同，使用 Meteor，几小时之内就能开发出一个正常运行的实时网页程序。如果之前做过前端开发，对 JavaScript 已经有所了解，甚至都不用再学习一门新的编程语言。
+而且，和其他框架不同，使用 Meteor，几小时之内就能开发出一个正常运行的实时 web 应用。如果之前做过前端开发，对 JavaScript 已经有所了解，甚至都不用再学习一门新的编程语言。
 
 Meteor 可能就是你要找的理想框架，当然，也可能不是。既然只要几晚或一个周末就能上手，为什么不试试呢？
 
 ### 为什么选择这本书？
 
-在过去的几年中，我们一直在开发很多个 Meteor 项目，范围从网站到移动应用，从商业项目到开源项目。
+在过去的几年中，我们一直在开发很多个 Meteor 项目，范围从 web 应用到 Mobile apps，从商业项目到开源项目。
 
-我们学到了很多，但总是不那么容易找到问题的答案。我们不得不从不同来源讲东西拼凑在一起，并且在许多情况下，我们甚至创造了我们自己的解决方案。所以通过这本书，我们想分享所有这些经验教训，并创建了一个简单的一步一步的指导，来引导你从零开始构建一个完整的 Meteor 应用。
+我们学到了很多，但总是不那么容易找到问题的答案。我们不得不从不同来源将东西拼凑在一起，并且在许多情况下，我们甚至创造了我们自己的解决方案。所以通过这本书，我们想分享所有这些经验教训，并创建了一个简单的一步一步的指导，来引导你从零开始构建一个完整的 Meteor 应用。
 
-我们即将构建的应用是一个简化版的社交新闻网站，类似 [Hacker News](http://news.ycombinator.com) 或 [Reddit](http://reddit.com)，我们称之为 Microscope（借鉴 Meteor 开源应用 [Telescope](http://telesc.pe)），在开发的过程中，我们会解决 构建 Meteor 应用所会遇到的各种要素，例如用户账户、Meteor Collection、路由等等。
+我们即将构建的应用是一个简化版的社交新闻网站，类似 [Hacker News](http://news.ycombinator.com) 或 [Reddit](http://reddit.com)，我们称之为 Microscope（借鉴 Meteor 开源应用 [Telescope](http://telesc.pe)），在开发的过程中，我们会解决构建 Meteor 应用所会遇到的各种要素，例如 user accounts、Meteor Collection、routing 等等。
 
 ### 这本书为谁编写？
 
 我们在写这本书时，目标之一就是要让内容通俗易懂。所以，即使你没有任何 Meteor、Node.js、MVC 框架或服务器端编程经验，都能够读完这本书。
 
-但另一方面，我们也假设你熟悉基本的 JavaScript 语法和概念。但是如果你曾经玩过一些 jQuery 代码或接触过浏览器开发者控制台，你应该是没有问题的。
+但另一方面，我们也假设你熟悉基本的 JavaScript 语法和概念。但是如果你曾经玩过一些 jQuery 代码或用过浏览器 console，你应该是没有问题的。
 
 如果你还不太熟悉 JavaScript，我们建议你在开始阅读本书之前，先阅读一下我们的 [JavaScript primer for Meteor](https://www.discovermeteor.com/blog/javascript-for-meteor/)（英文）。
 
@@ -58,11 +58,11 @@ Meteor 可能就是你要找的理想框架，当然，也可能不是。既然�
 
 <%= image "tom-photo.jpg", "portrait" %>
 
-**Tom Coleman** 是 [Percolate 工作室](http://percolatestudio.com/)的一员。Percolate 工作室是一个程序开发商，致力于高品质的产品和用户体验。他也是 [Atmosphere](http://atmosphere.meteor.com/) 包仓库的维护人之一，同时也参与开发了多个 Meteor 开源项目（例如 [Iron Router](https://github.com/EventedMind/iron-router)）。
+**Tom Coleman** 是 [Percolate Studio](http://percolatestudio.com/)的创始人。Percolate Studio 是一个 web 应用开发商，致力于高品质的产品和用户体验。他也是 [Atmosphere](http://atmosphere.meteor.com/) 仓库的维护人之一，同时也参与开发了多个 Meteor 开源项目。他现在全职工作在 Meteor Development Group。
 
 <%= image "sacha-photo.jpg", "portrait" %>
 
-**Sacha Greif** 是一名产品设计师和网页设计师，为创业项目工作，例如 [Hipmunk](http://www.hipmunk.com/) 和 [RubyMotion](http://rubymotion.com/)。他开发了 [Telescope](http://telesc.pe/) 和 [Sidebar](http://sidebar.io/)，还是 [Folyo](http://folyo.me/) 的创始人。
+**Sacha Greif** 是一名产品设计师和网页设计师，为创业项目工作，例如 [Hipmunk](http://www.hipmunk.com/) 和 [RubyMotion](http://rubymotion.com/)。他开发了 [Telescope](http://telesc.pe/) 和 [Sidebar](http://sidebar.io/) (Sidebar 基于 Telecope)
 
 ### 章节和附录
 
@@ -74,19 +74,19 @@ Meteor 可能就是你要找的理想框架，当然，也可能不是。既然�
 
 如果你是初学者，第一次阅读完全可以跳过附录，熟悉 Meteor 之后再回过头来阅读。
 
-### 代码提交和线上演示
+### Git Commits
 
 阅读编程相关的书籍时最怕遇到这种事情，虽然一直跟着书中的步骤，但突然发现代码和示例不一样了，而且程序也不能正常运行。
 
 为了避免这种情况发生，我们特意[在 GitHub 上为 Microscope 建了仓库](https://github.com/DiscoverMeteor/Microscope)。改动一些代码后，会给出指向 git 提交的链接，而且还会链接到该提交对应的线上演示，方便和你自己本地的版本对比。下面一个示例：
 
-<%= commit "11-2", "在头部显示提醒" %>
+<%= commit "11-2", "在 header 显示 notifications" %>
 
-我们提供的代码提交链接，并不是为了让你使用 `git checkout` 从一个提交跳到另一个提交。自己动手输入程序的代码，学习效果才能更好。
+我们提供的代码，并不是为了让你使用 `git checkout` 从一个提交跳到另一个提交。自己动手写代码，学习效果才能更好。
 
 ### 一些其他资源
 
-如果想更深入地学习 Meteor 的各项功能，最好的资料就是[官方文档](http://docs.meteor.com/)。
+如果想更深入地学习 Meteor 的各项功能，最好的资料就是[官方文档](http://docs.meteor.com/) 和 [Meteor Guide](http://guide.meteor.com)
 
 遇到问题我们建议到 [Stack Overflow](http://stackoverflow.com/questions/tagged/meteor) 网站上寻找帮助。如果想获得实时帮助，可以加入 [IRC](https://webchat.freenode.net/) 的 #meteor 频道。
 
@@ -96,15 +96,15 @@ Meteor 可能就是你要找的理想框架，当然，也可能不是。既然�
 
 阅读本书虽然不完全要求你熟悉 Git 版本控制，但我们强烈推荐你去学。
 
-如果想快速上手，我们推荐阅读 Nick Farina 撰写的文章《[Git Is Simpler Than You Think](http://nfarina.com/post/9868516270/git-is-simpler)》。
+如果想快速上手，我们推荐 Nick Farina 的文章[Git Is Simpler Than You Think](http://nfarina.com/post/9868516270/git-is-simpler)。
 
-对 Git 初学者，我们推荐使用 [GitHub](http://mac.github.com/) （Mac OS），或 [SourceTree](http://www.sourcetreeapp.com/) (Mac OS & Windows)，这两个软件都是免费的。
+对 Git 初学者，我们推荐 [GitHub](http://mac.github.com/) app（Mac OS），或 [SourceTree](http://www.sourcetreeapp.com/) (Mac OS & Windows)，这两个软件都是免费的。他们可以帮你管理 git repo, 无需使用命令行。
 
 <% end %>
 
 ### 联系方式
 
 - 如果想和我们联系，可以发送邮件到 [hello@discovermeteor.com](mailto:hello@discovermeteor.com)。
-- 如果发现本书中有错别字或不当之处，请到 [GitHub 上的仓库](https://github.com/DiscoverMeteor/book/issues)中提交。
-- 如果发现 Microscope 的代码有问题，请到 [Microscope 的仓库](https://github.com/DiscoverMeteor/Microscope/issues)中提交。
+- 如果发现本书中有错别字或不当之处，请到 [提交 bug 到 DiscoverMeteor GitHub repo](https://github.com/DiscoverMeteor/book/issues)。
+- 如果发现 Microscope 的代码有问题，请到 [提交 bug 到 Microscope GitHub repo](https://github.com/DiscoverMeteor/Microscope/issues)。
 - 如果还有其他问题，可以直接在网页的侧栏中留言。
