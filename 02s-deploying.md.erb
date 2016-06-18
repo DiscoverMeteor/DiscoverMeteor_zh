@@ -7,69 +7,69 @@ points: 1
 sidebar: true
 photoUrl: http://www.flickr.com/photos/monomaniacgarage/10703829133/
 photoAuthor: Monomaniacgarage
-contents: 学习如何部署在 Meteor.com 。|学习如何部署在 Modulus 。|学习如何使用 Meteor Up 部署在自己的服务器上。
+contents: 学习如何部署在 Meteor.com |学习如何部署在 Modulus |学习如何使用 Meteor Up 部署在自己的服务器上
 paragraphs: 46
 ---
 
-有些人喜欢不被打扰地工作，直到项目足够完美才去发布，而有些人则迫不及待的要向大家展示自己的项目。
+有些人不喜欢工作被打扰，直到项目足够完美才发布，而有些人则迫不及待的要向大家展示自己的项目。
 
-如果你是第一种人，现在宁愿在本地开发，那么可以果断跳过这一章。相反，如果你更愿意花时间去学习如何把 Meteor 应用部署到线上，我们下面为你提供一些方法。
+如果你是第一种人，现在宁愿在本地开发，就可以果断跳过这一章。相反，如果你更愿意花时间去学习如何把 Meteor 应用部署到线上，我们下面为你提供一些方法。
 
-我们将学习几种不同的方法去部署一个 Meteor 应用。无论你是在开发 Microscope 或任何其他的 Meteor 应用，在你开发过程的任何阶段，可以随意地从它们当中挑选一个。让我们马上开始吧!
+我们将学习用来部署一个 Meteor 应用的几种不同的方法。无论你是在开发 Microscope 或任何其他的 Meteor 应用，在开发过程的任何阶段，可以随意地从它们当中挑选一个。让我们马上开始吧!
 
 <% note do %>
 
 ### 引入附录
 
-这是一个**附录**章节。 不同于其他书的是，本书的附录会让我们深入去了解更多关于 Meteor 的知识。
+这是一个**附录**章节。 不同于其他的书，本书的附录会让我们深入去了解更多关于 Meteor 的知识。
 
-现在如果你更愿意去继续构建 Microscope ，你现在可以先忽略这一章，等有空再回来看也没问题。
+现在如果你更愿意去继续构建 Microscope ，现在可以先忽略这一章，等有空再回来看也没问题。
 
 <% end %>
 
-### 部署在 Meteor
+### 部署在 Meteor 上
 
-首先最简单的是部署到 Meteor 的子域名上（例如： `http://myapp.meteor.com` ），这是我们首先要去学习的。在项目早期，这对于展示你的应用和快速设置一个测试服务器都很有用途。
+首先最简单的是部署到 Meteor 的子域名上（例如： `http://myapp.meteor.com` ），这是我们首先要学习的。在项目早期，这对于展示你的应用并快速设置一个测试服务器都很有用。
 
-而部署在 Meteor 是非常简单的。打开终端，定位到你 Meteor 应用的目录，并输入：
+而部署在 Meteor 上是非常简单的。打开终端，定位到你 Meteor 应用的目录，并输入：
 
 ~~~bash
 meteor deploy myapp.meteor.com
 ~~~
 
-当然，你要把“myapp”替换成你想要的名称，最好是命名一个没有被使用的。如果你的名称已经被使用，Meteor 会提示你去输入密码。如果发生这样的情况，只需通过 `ctrl+c` 来取消当前操作，然后用另一个不同的名称再试一次。
+当然，你要把“myapp”替换成你想要的名字，最好是一个没有被使用的名字。如果名称已经被使用，Meteor 会提示你输入密码。如果发生这样的情况，只需通过 `ctrl+c` 来取消当前操作，然后用另一个不同的名字再试一次。
 
 如果顺利地部署成功了，几秒钟后你就能够在 `http://myapp.meteor.com` 上访问到你的应用了。
 
-你可以参考[官方文档](http://docs.meteor.com/#deploying)去了解更多关于如何直接访问你域名下的数据库，或者为你的应用设置一个自定义域名等等的相关信息。
+你可以参考[官方文档](http://docs.meteor.com/#deploying)，了解更多关于如何直接访问你域名下的数据库，或者为你的应用设置一个自定义域名等相关信息。
 
-### 部署在 Modulus
+### 部署在 Modulus 上
 
-[Modulus](https://modulus.io/) 是一个部署 Node.js 应用 很好的选择。这是为数不多的 PaaS（platform-as-a-service 平台即服务）的提供商，并且已经正式支持 Meteor ，已经有不少人在它上面去搭建 Meteor 应用了。
+[Modulus](https://modulus.io/) 是一个部署 Node.js 应用的很好选择。这是为数不多的 PaaS（platform-as-a-service 平台即服务）提供商，并且已经正式支持 Meteor ，已经有不少人在它上面搭建 Meteor 应用了。
 
-你可以通过阅读他们的[部署 Meteor 应用指南](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus)去了解更多关于 Modulus 的信息。
+你可以通过阅读他们的[部署 Meteor 应用指南](http://help.modulus.io/customer/portal/articles/1647770-using-meteor-with-modulus)了解更多关于 Modulus 的信息。
 
 ### Meteor Up
 
-虽然每天都有新的云端解决方案出来，但是它们通常都有自己的一些问题和限制。目前，把 Meteor 应用部署在自己的服务器才是一个最好的方式。然而麻烦的是，部署到自己的服务器并不是那么简单，尤其如果你注重产品部署上去的质量的话。
+虽然每天都有新的云端解决方案出来，但是它们通常都有自己的一些问题和限制。目前，把 Meteor 应用部署在自己的服务器上才是最好的方式。然而麻烦的是，部署到自己的服务器并不是那么简单，尤其是如果你注重产品部署上去的质量的话。
 
-[Meteor Up](https://github.com/arunoda/meteor-up) （简称 `mup` ）是另一个通过命令行的操作去帮助你解决安装和部署问题。所以让我们看看如何通过 Meteor Up 来部署 Microscope。
+[Meteor Up](https://github.com/arunoda/meteor-up) （简称 `mup` ）是另一个通过命令行的操作去帮助你解决安装和部署问题。所以，让我们看看如何通过 Meteor Up 部署 Microscope。
 
-在此之前，我们需要一个服务器来发布。我们建议使用 [Digital Ocean](http://digitalocean.com)（每月最低5美元），或者  [AWS](http://aws.amazon.com/)（它为小型实例提供免费，如果你只是想试玩玩 Meteor Up 就已经足够了）。
+在此之前，我们需要一台发布用的服务器。我们建议使用 [Digital Ocean](http://digitalocean.com)（每月最低5美元），或者  [AWS](http://aws.amazon.com/)（它为小型实例提供免费，如果你只是想试玩下 Meteor Up 已经足够了）。
 
 无论选择哪种服务，你应该要解决这三样东西：你服务器的 IP 地址，登录账号（通常是 `root` 或者 `ubuntu` ）和登录密码。将它们安全地保存起来，我们很快就会用到。
 
 ### Meteor Up 的初始化
 
-首先，我们需要通过 `npm` 去安装 Meteor Up：
+首先，我们需要通过 `npm` 安装 Meteor Up：
 
 ~~~bash
 npm install -g mup
 ~~~
 
-然后我们将创建一个单独的目录，为我们的 Meteor Up 提供一个特定的部署环境。我们使用单独的目录出于两个原因：第一，这可以很好的避免里面包含任何你 Git 存储库的隐藏文件，尤其如果你是在公共代码库去操作。
+然后我们将创建一个单独的目录，为我们的 Meteor Up 提供一个特定的部署环境。我们使用单独的目录出于两个原因：第一，这可以很好地避免在里面包含任何你的 Git 代码库的隐藏文件，尤其当你是在公共代码库中操作。
 
-第二，通过使用多个单独的目录，我们能够并行地进行多个 Meteor Up 管理和配置。这将会用在实际产品的部署以及分段实例的部署。
+第二，通过使用多个单独的目录，我们能够并行地进行多个 Meteor Up 管理和配置。这将会用在实际产品的部署以及分段实例的部署上。
 
 所以我们来创建这个新目录，并使用它来初始化一个新的 Meteor Up 项目：
 
@@ -89,11 +89,11 @@ mup init
 
 ### Meteor Up 的配置
 
-当初始化一个新项目的时候，Meteor Up 会为了创建两个文件： `mup.json` 和 `settings.json` 。
+当初始化一个新项目的时候，Meteor Up 会为你创建两个文件： `mup.json` 和 `settings.json` 。
 
-`mup.json` 会保存所有我们部署的相关设置，而 `settings.json` 会保存所有应用的相关设置（OAuth token、Analytics token，等等）。
+`mup.json` 会保存我们部署的所有相关设置，而 `settings.json` 会保存应用的所有相关设置（OAuth token、Analytics token，等等）。
 
-下一步就是去配置你的 `mup.json` 文件。 `mup.json` 会默认在执行 `mup init` 的时候生成，而你要做的就是把空白的填上：
+下一步就是去配置你的 `mup.json` 文件。 `mup.json` 会默认在执行 `mup init` 的时候生成，而你要做的就是把空白的项目填上：
 
 ~~~js
 {
@@ -132,40 +132,40 @@ mup init
 
 下一步是为你的应用配置 MongoDB 数据库。我们建议使用 [Compose](https://www.compose.io) 或者其他提供云端 MongoDB 的提供商，因为它们提供专业支持和更好的管理工具。
 
-如果你决定使用 Compose ，把 `setupMongo` 设置为 `false` ，并添加 `MONGO_URL` 环境变量到 `mup.json` 中的 `env` 模块。如果你决定通过 Meteor Up 去访问 MongoDB ，只需要设置 `setupMongo` 为 `true` ，然后 Meteor Up 会完成剩下的工作。
+如果你决定使用 Compose，把 `setupMongo` 设置为 `false` ，并添加 `MONGO_URL` 环境变量到 `mup.json` 中的 `env` 模块。如果你决定通过 Meteor Up 访问 MongoDB，只需要设置 `setupMongo` 为 `true` ，Meteor Up 随后会完成剩余的工作。
 
 **Meteor 应用路径**
 
-因为 Meteor Up 的配置作用在不同的目录，我们需要通过  `app` 属性去把 Meteor Up 指回到应用。只需要设置你完整的本地路径，当你位于你的应用目录里面的时候，你可以使用 `pwd` 命令去获取它。
+因为 Meteor Up 的配置作用在不同的目录，我们需要通过  `app` 属性去把 Meteor Up 指回到应用。只需要设置完整的本地路径，在位于应用目录里面的时候，你可以使用 `pwd` 命令去获取它。
 
 **环境变量**
 
-你可以在 `env` 模块中指定应用的所有环境变量（比如： `ROOT_URL` ， `MAIL_URL` ， `MONGO_URL` 等等）
+你可以在 `env` 模块中指定应用的所有环境变量（比如： `ROOT_URL` ， `MAIL_URL` ， `MONGO_URL` 等等）。
 
 ### 设置和部署
 
-在我们可以部署之前，我们还需要设置服务器去为 Meteor 应用托管。Meteor Up 把这个复杂的过程封装在一个简单的命令上！
+在可以部署之前，我们还需要设置服务器为 Meteor 应用托管。Meteor Up 把这个复杂的过程封装在一条简单的命令中！
 
 ~~~bash
 mup setup
 ~~~
 
-可能需要几分钟，这取决于服务器的性能和网络连接速度。设置成功后，终于可以去部署我们的应用：
+可能需要几分钟，这取决于服务器的性能和网络连接速度。设置成功后，终于可以部署我们的应用了：
 
 ~~~bash
 mup deploy
 ~~~
 
-这将会打包我们的 Meteor 应用并部署到我们刚刚设置好的服务器上。
+这将会打包我们的 Meteor 应用并部署到刚刚设置好的服务器上。
 
 ### 显示日志信息
 
-日志也是非常重要的， Meteor Up 提供非常简单的方法去处理它，通过模仿 `tail -f` 命令，输入：
+日志也是非常重要的，通过模仿 `tail -f` 命令，Meteor Up 提供了非常简单的方法去处理它，输入：
 
 ~~~bash
 mup logs -f
 ~~~
 
-这一小节概述了 Meteor Up 的用法。了解更多关于它的信息，我们建议看看 [Meteor Up 在 GitHub 上详细介绍](https://github.com/arunoda/meteor-up)
+这一小节概述了 Meteor Up 的用法。要了解更多关于它的信息，我们建议看看 [Meteor Up 在 GitHub 上的详细介绍](https://github.com/arunoda/meteor-up)
 
-这三种部署 Meteor 应用的方式应该足够满足大多数的案例了。当然，我们知道一些人会喜欢更进一步地控制和设置他们的 Meteor 服务器。然而这将会是另一个主题，或者另一本书！
+这三种部署 Meteor 应用的方式应该足够满足大多数的案例了。当然，我们知道一些人会喜欢更进一步地控制和设置他们的 Meteor 服务器。然而这将会是另一个主题，或者另一本书的内容！
